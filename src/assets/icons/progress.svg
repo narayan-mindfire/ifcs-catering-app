@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="24px" height="24px" viewBox="0 0 24 24">
+<g class="fm_fill">
+<path d="M20.249,13.377c0,5.307-4.317,9.623-9.625,9.623S1,18.684,1,13.377C1,8.069,5.317,3.75,10.625,3.75V6.5
+	l5.626-3.25L10.625,0v2.75C4.766,2.75,0,7.518,0,13.377C0,19.234,4.766,24,10.625,24c5.858,0,10.625-4.766,10.625-10.623H20.249z"/>
+</g>
+<style type="text/css"><![CDATA[ .fm_fill {fill:#FD9A00;} ]]></style></svg>
