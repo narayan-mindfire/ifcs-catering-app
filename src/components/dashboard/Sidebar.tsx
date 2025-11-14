@@ -1,7 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet, ImageBackground } from "react-native";
-
+import { View, Text, StyleSheet, ImageBackground, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../App";
 import {
   AirplaneIcon,
   DocsIcon,
@@ -10,33 +12,20 @@ import {
 } from "../../assets/icons";
 import { NavigationCard } from "../common/NavigationCard";
 
-type RootStackParamList = { [key: string]: { flightId: string } | undefined };
-type StackNavigationProp<T extends {}> = {
-  navigate: (route: keyof T, params: any) => void;
-};
-type RootNavigationProp = StackNavigationProp<RootStackParamList>;
+type NavigationProp = StackNavigationProp<RootStackParamList>;
+
 const useFlightData = () => ({
   selectedFlight: { id: "mock-flight-123" as string },
 });
-const useNavigation = () => ({
-  navigate: (screen: string, params: any) =>
-    console.log(`MOCK: Sidebar Navigation to ${screen}`),
-});
-interface NavigationCardProps {
-  title: string;
-  IconComponent: React.FC<any>;
-  onPress: () => void;
-  count?: string;
-}
 
-type SidebarScreenName = "SpotCheck" | "StowageLocator" | "Memos" | "Documents";
+type SidebarScreenName = "SpotCheck" | "Flights" | "Memos" | "Documents";
 
 interface SidebarProps {
   userName: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
-  const navigation = useNavigation() as RootNavigationProp;
+  const navigation = useNavigation<NavigationProp>();
   const { selectedFlight } = useFlightData();
 
   const handleNavigate = (screen: SidebarScreenName) => {
@@ -45,8 +34,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
     } else if (selectedFlight) {
       navigation.navigate(screen, { flightId: selectedFlight.id });
     } else {
-      console.log(
-        "MOCK ALERT: Please select a flight first to view its details."
+      Alert.alert(
+        "No Flight Selected",
+        // eslint-disable-next-line prettier/prettier
+        "Please select a flight first to view its details."
       );
     }
   };
@@ -72,12 +63,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
           <NavigationCard
             title="Flights"
             IconComponent={AirplaneIcon}
-            onPress={() => handleNavigate("SpotCheck")}
+            onPress={() => handleNavigate("Flights")}
           />
           <NavigationCard
             title="Spot Check"
             IconComponent={SpotIcon}
-            onPress={() => handleNavigate("StowageLocator")}
+            onPress={() => handleNavigate("SpotCheck")}
           />
           <NavigationCard
             title="Memos"

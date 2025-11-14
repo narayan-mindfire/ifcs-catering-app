@@ -7,20 +7,13 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../App";
 import { DropdownIcon } from "../../assets/icons";
 import { EmairatesIcon } from "../../assets/logos";
 
-type RootStackParamList = { Dashboard: { screen: string } };
-type StackNavigationProp<T extends {}> = {
-  navigate: (route: keyof T, params: any) => void;
-};
-type RootNavigationProp = StackNavigationProp<RootStackParamList>;
-
-const useNavigation = () => ({
-  navigate: (route: keyof RootStackParamList, params: any) =>
-    console.log(`MOCK: Navigating to ${route}`),
-});
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const { width } = Dimensions.get("window");
 
@@ -30,15 +23,14 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
-  const navigation = useNavigation() as RootNavigationProp;
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={headerStyles.header}>
       <View style={headerStyles.headerLeft}>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate("Dashboard", {
-              screen: "DashboardHome",
-            });
+            navigation.navigate("Dashboard");
           }}
         >
           <View>

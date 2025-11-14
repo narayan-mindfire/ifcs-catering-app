@@ -1,22 +1,18 @@
 import React, { useState } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
+import { Header } from "../components/dashboard/Header";
+import { Sidebar } from "../components/dashboard/Sidebar";
+import { UserDropdown } from "../components/common/UserDropdown";
+import { MainContent } from "../components/dashboard/MainContent";
 
 const useAuth = () => ({
   signOut: () => console.log("MOCK: Logout action fired"),
 });
 
-import { Header } from "../components/dashboard/Header";
-import { Sidebar } from "../components/dashboard/Sidebar";
-import { UserDropdown } from "../components/common/UserDropdown";
-
-import { MainContent } from "../components/dashboard/MainContent";
-
 const DashboardContent: React.FC = () => {
   const { signOut } = useAuth();
-
   const [isUserDropdownVisible, setIsUserDropdownVisible] =
     useState<boolean>(false);
-
   const { width } = useWindowDimensions();
 
   const isLargeScreen = width > 1024;
