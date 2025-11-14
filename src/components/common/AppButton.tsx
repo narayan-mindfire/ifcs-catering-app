@@ -31,8 +31,8 @@ export const AppButton: React.FC<AppButtonProps> = ({
     type === "primary"
       ? "#6200EE"
       : type === "secondary"
-      ? "#f0f0f0"
-      : "#D90429";
+        ? "#f0f0f0"
+        : "#D90429";
 
   const textColor = type === "secondary" ? "#333" : "#fff";
 

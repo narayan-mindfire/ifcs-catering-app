@@ -103,7 +103,7 @@ const ShiftControlCard: React.FC = () => {
           <Text style={styles.shiftTime}>10:00 AM - 6:00 PM</Text>
         </View>
         <View style={styles.shiftLeft}>
-          <Text style={styles.shiftTitle}>Today's Working Time</Text>
+          <Text style={styles.shiftTitle}>Today&apos;s Working Time</Text>
           <Text style={styles.shiftTime}>
             {formatTime(workingTimeInSeconds)}
           </Text>
