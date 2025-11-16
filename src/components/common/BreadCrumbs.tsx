@@ -38,7 +38,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleHomePress} style={styles.breadcrumbItem}>
-        <Text style={styles.homeText}>Home</Text>
+        <Text style={styles.homeText}>Dashboard</Text>
       </TouchableOpacity>
 
       <Text style={styles.separator}>›</Text>
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   },
   homeText: {
     fontSize: 20,
-    color: "#007AFF",
+    color: "#666666",
     fontWeight: "500",
   },
   currentText: {
