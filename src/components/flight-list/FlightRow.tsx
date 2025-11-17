@@ -1,14 +1,27 @@
 // Create a new file: /components/FlightRow.tsx
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet, Image, Pressable } from "react-native";
 import { Flight } from "../../const/flightsData";
+import { ActionIcon, ArrowIcon } from "../../assets/icons";
+import { NavigationProp } from "@react-navigation/native";
+import { RootStackParamList } from "../../../App";
 
 interface Props {
   flight: Flight;
+  navigation: NavigationProp<RootStackParamList>;
 }
 
-export const FlightRow: React.FC<Props> = ({ flight }) => {
+export const FlightRow: React.FC<Props> = ({ flight, navigation }) => {
   const logoUrl = `https://content.airhex.com/content/logos/airlines_${flight.airlineCode}_100_100_s.png`;
+
+  const handlePress = () => {
+    console.log("navigation initiated")
+    navigation.navigate('FlightDetails', {
+      flightId: flight.flightNumber,
+      route: `${flight.departure.code}-${flight.arrival.code}`, // Example: MCT-JED
+      date: flight.date,
+    });
+  };
 
   return (
     <View style={styles.rowContainer}>
@@ -84,7 +97,9 @@ export const FlightRow: React.FC<Props> = ({ flight }) => {
 
       {/* Spot */}
       <View style={[styles.cell, { flex: 4, alignItems: "center" }]}>
-        {/* <Icon name="checkmark-circle-outline" size={24} color="#28a745" /> */}
+        <Pressable onPress={handlePress}>
+        <ArrowIcon />
+        </Pressable>
       </View>
     </View>
   );
