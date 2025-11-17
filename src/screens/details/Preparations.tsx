@@ -1,8 +1,6 @@
-// Create new file: /screens/details/PreparationsScreen.tsx
-import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
 
-// You can create a real Icon component
 const ScanIcon = () => <Text style={styles.icon}>[📷]</Text>;
 
 export const PreparationsScreen: React.FC = () => {
@@ -32,7 +30,7 @@ export const PreparationsScreen: React.FC = () => {
       <View style={styles.tableHeader}>
         <Text style={[styles.tableHeaderText, { flex: 1 }]}>Stowage</Text>
         <Text style={[styles.tableHeaderText, { flex: 1 }]}>Carrier</Text>
-        <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'right' }]}>
+        <Text style={[styles.tableHeaderText, { flex: 1, textAlign: "right" }]}>
           Action
         </Text>
       </View>
@@ -47,17 +45,17 @@ export const PreparationsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
   },
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 6,
@@ -68,27 +66,27 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: "500",
+    color: "#333",
   },
   tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: '#f9f9f9',
+    flexDirection: "row",
+    backgroundColor: "#f9f9f9",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   tableHeaderText: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#555',
+    fontWeight: "600",
+    color: "#555",
   },
   tableBody: {
     padding: 16,
   },
   emptyText: {
-    textAlign: 'center',
-    color: '#888',
+    textAlign: "center",
+    color: "#888",
     marginTop: 20,
   },
-}); 
+});

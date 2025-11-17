@@ -1,5 +1,3 @@
-// /screens/FlightsScreen.tsx
-
 import React from "react";
 import { View, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { RouteProp } from "@react-navigation/native";
@@ -9,8 +7,8 @@ import { Header } from "../components/dashboard/Header";
 import { Breadcrumb } from "../components/common/BreadCrumbs";
 
 import { flightsData, FlightListItem } from "../const/flightsData";
-import { FlightRow } from "../components/flight-list/FlightRow"; // Check this path
-import { FlightListHeader } from "../components/flight-list/FlightListHeader"; // Check this path
+import { FlightRow } from "../components/flight-list/FlightRow";
+import { FlightListHeader } from "../components/flight-list/FlightListHeader";
 
 type FlightsScreenRouteProp = RouteProp<RootStackParamList, "Flights">;
 type FlightsScreenNavigationProp = StackNavigationProp<
@@ -24,15 +22,10 @@ interface Props {
 }
 
 const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
-  //
-  // ▼▼▼ THIS FUNCTION MUST BE *INSIDE* THE COMPONENT ▼▼▼
-  // This gives it access to the 'navigation' prop passed to FlightsScreen
-  //
   const renderItem = ({ item }: { item: FlightListItem }) => {
     if (item.type === "separator") {
       return <View style={styles.separator} />;
     }
-    // Now, 'navigation' is defined and will be passed to FlightRow
     return <FlightRow flight={item} navigation={navigation} />;
   };
 

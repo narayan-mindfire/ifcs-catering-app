@@ -1,15 +1,15 @@
-import React from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../../App'; 
+import React from "react";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { StackScreenProps } from "@react-navigation/stack";
+import { RootStackParamList } from "../../App";
 
-import { PreparationsScreen } from './details/Preparations';
-import { FoodOrderScreen } from './details/FoodOrder';
-import { InvoiceScreen } from './details/Invoice';
-import { DeliveriesScreen } from './details/Deliveries';
-import { Header } from '../components/dashboard/Header';
-import { Breadcrumb } from '../components/common/BreadCrumbs';
+import { PreparationsScreen } from "./details/Preparations";
+import { FoodOrderScreen } from "./details/FoodOrder";
+import { InvoiceScreen } from "./details/Invoice";
+import { DeliveriesScreen } from "./details/Deliveries";
+import { Header } from "../components/dashboard/Header";
+import { Breadcrumb } from "../components/common/BreadCrumbs";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -20,17 +20,16 @@ type FlightDetailTabParamList = {
 
 const Tab = createMaterialTopTabNavigator<FlightDetailTabParamList>();
 
-type Props = StackScreenProps<RootStackParamList, 'FlightDetails'>;
+type Props = StackScreenProps<RootStackParamList, "FlightDetails">;
 
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId, route: flightRoute, date } = route.params;
 
-  const [currentTab, setCurrentTab] = React.useState('Preparations');
+  const [currentTab, setCurrentTab] = React.useState("Preparations");
 
   const CustomTabBar = (props: any) => {
     const { state, descriptors, navigation } = props;
-    const activeColor = '#007AFF';
-    const inactiveColor = '#8e8e93';
+    const inactiveColor = "#8e8e93";
 
     return (
       <View style={styles.tabBarContainer}>
@@ -41,7 +40,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
           const onPress = () => {
             const event = navigation.emit({
-              type: 'tabPress',
+              type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
@@ -62,7 +61,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
               <Text
                 style={[
                   styles.tabText,
-                  { color: isFocused ? '#fff' : inactiveColor },
+                  { color: isFocused ? "#fff" : inactiveColor },
                 ]}
               >
                 {label}
@@ -77,7 +76,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Header userName={'Shitanshu'} onUserPress={()=>{}} />
+        <Header userName={"Shitanshu"} onUserPress={() => {}} />
         <Breadcrumb currentScreen={currentTab as keyof RootStackParamList} />
 
         <View style={styles.flightInfo}>
@@ -107,57 +106,56 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
-
 export default FlightDetailsScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: "#e0e0e0",
   },
   breadcrumb: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
     marginBottom: 16,
   },
   flightInfo: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   infoText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginRight: 20,
   },
   tabBarContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 12, 
+    flexDirection: "row",
+    paddingHorizontal: 12,
     paddingTop: 10,
-    backgroundColor: '#fff',
-    gap: 8, 
+    backgroundColor: "#fff",
+    gap: 8,
   },
   tabButton: {
-    flex: 1, 
-    paddingVertical: 16, 
+    flex: 1,
+    paddingVertical: 16,
     borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center', 
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabButtonActive: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
   },
   tabButtonInactive: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
