@@ -22,56 +22,56 @@ const Tab = createMaterialTopTabNavigator<FlightDetailTabParamList>();
 
 type Props = StackScreenProps<RootStackParamList, "FlightDetails">;
 
+const CustomTabBar = ({ state, descriptors, navigation }: any) => {
+  const inactiveColor = "#8e8e93";
+
+  return (
+    <View style={styles.tabBarContainer}>
+      {state.routes.map((route: any, index: number) => {
+        const { options } = descriptors[route.key];
+        const label = options.title || route.name;
+        const isFocused = state.index === index;
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        return (
+          <Pressable
+            key={route.key}
+            onPress={onPress}
+            style={[
+              styles.tabButton,
+              isFocused ? styles.tabButtonActive : styles.tabButtonInactive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: isFocused ? "#fff" : inactiveColor },
+              ]}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+};
+
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId, route: flightRoute, date } = route.params;
 
   const [currentTab, setCurrentTab] = React.useState("Preparations");
-
-  const CustomTabBar = (props: any) => {
-    const { state, descriptors, navigation } = props;
-    const inactiveColor = "#8e8e93";
-
-    return (
-      <View style={styles.tabBarContainer}>
-        {state.routes.map((route: any, index: number) => {
-          const { options } = descriptors[route.key];
-          const label = options.title || route.name;
-          const isFocused = state.index === index;
-
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
-
-          return (
-            <Pressable
-              key={route.key}
-              onPress={onPress}
-              style={[
-                styles.tabButton,
-                isFocused ? styles.tabButtonActive : styles.tabButtonInactive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  { color: isFocused ? "#fff" : inactiveColor },
-                ]}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -87,13 +87,19 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       </View>
 
       <Tab.Navigator
+        style={{ flex: 1 }}
         tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{
+          animationEnabled: false,
+          swipeEnabled: false,
+          lazy: true,
+        }}
         screenListeners={{
           state: (e) => {
-            const state = e.data.state;
-            const activeIndex = state.index;
-            const activeName = state.routes[activeIndex].name;
-            setCurrentTab(activeName);
+            const index = e.data.state.index;
+            const routes = e.data.state.routes;
+            const currentRouteName = routes[index].name;
+            setCurrentTab(currentRouteName);
           },
         }}
       >
@@ -115,17 +121,12 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: "#fff",
-    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
-  breadcrumb: {
-    fontSize: 14,
-    color: "#888",
-    marginBottom: 16,
-  },
   flightInfo: {
     flexDirection: "row",
+    padding: 16,
   },
   infoText: {
     fontSize: 16,
@@ -149,13 +150,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabButtonActive: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#602AF3",
   },
   tabButtonInactive: {
     backgroundColor: "#f0f0f0",
   },
   tabText: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 20,
+    fontWeight: "500",
   },
 });

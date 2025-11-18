@@ -43,11 +43,13 @@ const mockTasks = [
 const formatTime = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
   const formattedHours = String(hours).padStart(2, "0");
   const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(seconds).padStart(2, "0");
 
-  return `${formattedHours} Hrs ${formattedMinutes} Mins`;
+  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 };
 
 const ShiftControlCard: React.FC = () => {
@@ -55,14 +57,13 @@ const ShiftControlCard: React.FC = () => {
   const [shiftState, setShiftState] = useState<ShiftState>("OFF");
   const [workingTimeInSeconds, setWorkingTimeInSeconds] = useState(0);
   const [isEnabled, setIsEnabled] = React.useState(false);
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+  const toggleSwitch = () => setIsEnabled((prev) => !prev);
 
   useEffect(() => {
     if (shiftState === "ON") {
       const intervalId = setInterval(() => {
-        setWorkingTimeInSeconds((prevSeconds) => prevSeconds + 1);
+        setWorkingTimeInSeconds((prev) => prev + 1);
       }, 1000);
-
       return () => clearInterval(intervalId);
     }
   }, [shiftState]);
@@ -78,11 +79,7 @@ const ShiftControlCard: React.FC = () => {
   };
 
   const handleBreakToggle = () => {
-    if (shiftState === "ON") {
-      setShiftState("BREAK");
-    } else if (shiftState === "BREAK") {
-      setShiftState("ON");
-    }
+    setShiftState((prev) => (prev === "ON" ? "BREAK" : "ON"));
   };
 
   return (
@@ -90,8 +87,8 @@ const ShiftControlCard: React.FC = () => {
       <View style={styles.shiftHeader}>
         <Text style={styles.dateText}>Thu 11 13, Thu</Text>
         <Switch
-          trackColor={{ false: "#767577", true: "#81b0ff" }}
-          thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+          trackColor={{ false: "#767577", true: "#b399f9ff" }}
+          thumbColor={isEnabled ? "#602AF3" : "#f4f3f4"}
           onValueChange={toggleSwitch}
           value={isEnabled}
         />
@@ -102,6 +99,7 @@ const ShiftControlCard: React.FC = () => {
           <Text style={styles.shiftTitle}>My Shift</Text>
           <Text style={styles.shiftTime}>10:00 AM - 6:00 PM</Text>
         </View>
+
         <View style={styles.shiftLeft}>
           <Text style={styles.shiftTitle}>Today&apos;s Working Time</Text>
           <Text style={styles.shiftTime}>
@@ -153,7 +151,7 @@ const TasksCard: React.FC = () => {
     <View style={[styles.card, { flex: 1, marginTop: 20 }]}>
       <Text style={styles.tasksTitle}>My Tasks</Text>
 
-      {/* Task Table Header */}
+      {/* Header */}
       <View style={styles.taskTableHeader}>
         <Text style={[styles.taskHeaderText, { flex: 1 }]}>ID</Text>
         <Text style={[styles.taskHeaderText, { flex: 3 }]}>Task</Text>
@@ -165,7 +163,7 @@ const TasksCard: React.FC = () => {
         </Text>
       </View>
 
-      {/* Task List */}
+      {/* List */}
       <ScrollView style={styles.taskList}>
         {mockTasks.map((task) => (
           <View key={task.id} style={styles.taskRow}>
@@ -194,9 +192,8 @@ export const MainContent: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
+  mainContainer: { flex: 1 },
+
   card: {
     backgroundColor: "#ffffff",
     borderRadius: 16,
@@ -207,98 +204,54 @@ const styles = StyleSheet.create({
     shadowRadius: 1.41,
     elevation: 2,
   },
+
   shiftHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 20,
   },
+
   dateText: {
     fontSize: 22,
     fontWeight: "500",
     color: "#333",
   },
+
   shiftBody: {
     flexDirection: "row",
     marginBottom: 20,
   },
+
   shiftRight: {
-    flex: 3,
+    flex: 3.5,
     paddingRight: 10,
   },
   shiftLeft: {
-    flex: 1,
+    flex: 2.5,
     paddingLeft: 10,
   },
+
   shiftTitle: {
     fontSize: 18,
     color: "#666",
     marginBottom: 4,
   },
+
   shiftTime: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
   },
+
   shiftFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  startShiftButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#6200EE",
-    borderRadius: 8,
-    paddingVertical: 12,
-  },
-  startShiftButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  breakButton: {
-    flex: 3,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginRight: 10,
-  },
-  breakButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-  },
-  onBreakButton: {
-    backgroundColor: "#6200EE",
-  },
-  onBreakButtonText: {
-    color: "#ffffff",
-  },
-  endShiftButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#D90429",
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginLeft: 10,
-  },
-  endShiftButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  // Mock Icons
+
   playIcon: {
     width: 0,
     height: 0,
-    backgroundColor: "transparent",
     borderStyle: "solid",
     borderTopWidth: 6,
     borderBottomWidth: 6,
@@ -323,27 +276,32 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginRight: 8,
   },
-  // Task Card Styles
+
   tasksTitle: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 16,
   },
+
   taskTableHeader: {
     flexDirection: "row",
-    backgroundColor: "#F5F5F5",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    backgroundColor: "#F0F0F0",
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    marginBottom: 6,
   },
+
   taskHeaderText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#666",
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#444",
   },
+
   taskList: {
     flex: 1,
   },
+
   taskRow: {
     flexDirection: "row",
     paddingVertical: 16,
@@ -351,12 +309,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#f5f5f5",
     alignItems: "center",
   },
+
   taskCell: {
     fontSize: 18,
     color: "#333",
   },
+
   actionButton: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#666",
     paddingHorizontal: 8,

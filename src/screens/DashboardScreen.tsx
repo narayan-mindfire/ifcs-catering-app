@@ -16,7 +16,7 @@ const DashboardContent: React.FC = () => {
   const { width } = useWindowDimensions();
 
   const isLargeScreen = width > 1024;
-  const sidebarFlex = isLargeScreen ? 4 : 5;
+  const sidebarFlex = isLargeScreen ? 4 : 4;
   const mainContentFlex = isLargeScreen ? 6 : 5;
 
   return (
