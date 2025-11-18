@@ -8,8 +8,7 @@ import { PreparationsScreen } from "./details/Preparations";
 import { FoodOrderScreen } from "./details/FoodOrder";
 import { InvoiceScreen } from "./details/Invoice";
 import { DeliveriesScreen } from "./details/Deliveries";
-import { Header } from "../components/dashboard/Header";
-import { Breadcrumb } from "../components/common/BreadCrumbs";
+import { BreadCrumb } from "../components/common/BreadCrumbs";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -72,12 +71,24 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId, route: flightRoute, date } = route.params;
 
   const [currentTab, setCurrentTab] = React.useState("Preparations");
+  const breadcrumbItems = [
+    {
+      label: "Flights",
+      onPress: () => navigation.navigate("Flights", {} as any),
+    },
+    {
+      label: `Flight Details`,
+      onPress: () => {},
+    },
+    {
+      label: currentTab,
+    },
+  ];
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Header userName={"Shitanshu"} onUserPress={() => {}} />
-        <Breadcrumb currentScreen={currentTab as keyof RootStackParamList} />
+        <BreadCrumb items={breadcrumbItems} />
 
         <View style={styles.flightInfo}>
           <Text style={styles.infoText}>FLIGHT: {flightId}</Text>

@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList } from "react-native";
-// Assuming these icons exist in your project based on previous code
 import { FoodOrderItem, foodOrderData } from "../../const/foodOrderData";
 
 export const FoodOrderScreen: React.FC = () => {
@@ -13,7 +12,6 @@ export const FoodOrderScreen: React.FC = () => {
     },
     { ordered: 0, distributed: 0, loaded: 0 },
   );
-  // Helper to render the "Total" row
   const renderSummaryRow = () => (
     <View style={[styles.tableRow, { backgroundColor: "#fff" }]}>
       <Text style={[styles.tableCell, { flex: 1 }]}></Text>
@@ -63,16 +61,13 @@ export const FoodOrderScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Table Area */}
       <View style={styles.tableContainer}>
-        {/* Header */}
         <View style={styles.tableHeader}>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>Station</Text>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>FLT #</Text>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>SKU</Text>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>Cabin</Text>
           <Text style={[styles.tableHeaderText, { flex: 3 }]}>Name Y</Text>
-          {/* Added Y to simulate the filter icon in your image */}
           <Text
             style={[styles.tableHeaderText, { flex: 1, textAlign: "center" }]}
           >
@@ -90,10 +85,8 @@ export const FoodOrderScreen: React.FC = () => {
           </Text>
         </View>
 
-        {/* Summary Row (Total) */}
         {renderSummaryRow()}
 
-        {/* List */}
         <FlatList
           style={{ flex: 1 }}
           data={[
@@ -154,15 +147,15 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   tableContainer: {
-    flex: 1, // Ensure it fills space
+    flex: 1,
     borderWidth: 1,
     borderColor: "#a09e9eff",
     borderRadius: 10,
-    overflow: "hidden", // Keeps the header inside the border radius
+    overflow: "hidden",
   },
   tableHeader: {
     flexDirection: "row",
-    backgroundColor: "#f2f2f2", // Slightly darker grey as per image
+    backgroundColor: "#f2f2f2",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,

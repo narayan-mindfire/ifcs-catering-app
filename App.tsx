@@ -1,4 +1,3 @@
-// App.tsx
 import "react-native-gesture-handler";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
@@ -8,9 +7,8 @@ import FlightsScreen from "./src/screens/FlightsScreen";
 import MemosScreen from "./src/screens/MemosScreen";
 import DocumentsScreen from "./src/screens/DocumentsScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
-// --- 1. Import the new screen ---
 import FlightDetailsScreen from "./src/screens/FlightDetailsScreen";
-import { Flight } from "./src/const/flightsData"; // Adjust this import path
+import { Header } from "./src/components/dashboard/Header";
 
 export type RootStackParamList = {
   Dashboard: undefined;
@@ -18,7 +16,6 @@ export type RootStackParamList = {
   Flights: { flightId: string };
   Memos: { flightId: string };
   Documents: { flightId: string };
-  // --- 2. Add FlightDetails to the list ---
   FlightDetails: {
     flightId: string;
     route: string;
@@ -28,13 +25,18 @@ export type RootStackParamList = {
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+const CustomHeader = () => {
+  return <Header userName={"Shitanshu"} onUserPress={() => {}} />;
+};
+
 export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Dashboard"
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
+          header: CustomHeader,
           cardStyle: { backgroundColor: "#fff" },
         }}
       >

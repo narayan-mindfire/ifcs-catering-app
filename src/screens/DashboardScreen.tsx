@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
-import { Header } from "../components/dashboard/Header";
 import { Sidebar } from "../components/dashboard/Sidebar";
 import { UserDropdown } from "../components/common/UserDropdown";
 import { MainContent } from "../components/dashboard/MainContent";
@@ -21,11 +20,6 @@ const DashboardContent: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header
-        userName="Shitanshu"
-        onUserPress={() => setIsUserDropdownVisible(true)}
-      />
-
       <View style={styles.bodyContainer}>
         <View style={[styles.sidebarContainer, { flex: sidebarFlex }]}>
           <Sidebar userName="Shitanshu" />

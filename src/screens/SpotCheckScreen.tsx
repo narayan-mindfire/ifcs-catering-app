@@ -3,8 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
-import { Header } from "../components/dashboard/Header";
-import { Breadcrumb } from "../components/common/BreadCrumbs";
+import { BreadCrumb } from "../components/common/BreadCrumbs";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;
 type SpotCheckScreenNavigationProp = StackNavigationProp<
@@ -19,11 +18,19 @@ interface Props {
 
 const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId } = route.params;
+  const breadcrumbItems = [
+    {
+      label: "Dashboard",
+      onPress: () => navigation.navigate("Dashboard"),
+    },
+    {
+      label: "Spot Check",
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <Header userName={"Shitanshu"} onUserPress={() => {}} />
-      <Breadcrumb currentScreen={"SpotCheck"} />
+      <BreadCrumb items={breadcrumbItems} />
 
       <View style={styles.content}>
         <Text style={styles.title}>Spot Check Screen</Text>
