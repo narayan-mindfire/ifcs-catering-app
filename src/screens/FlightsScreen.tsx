@@ -1,10 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
 import { Header } from "../components/dashboard/Header";
 import { Breadcrumb } from "../components/common/BreadCrumbs";
+
+import { flightsData, FlightListItem } from "../const/flightsData";
+import { FlightRow } from "../components/flight-list/FlightRow";
+import { FlightListHeader } from "../components/flight-list/FlightListHeader";
 
 type FlightsScreenRouteProp = RouteProp<RootStackParamList, "Flights">;
 type FlightsScreenNavigationProp = StackNavigationProp<
@@ -18,20 +22,26 @@ interface Props {
 }
 
 const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId } = route.params;
+  const renderItem = ({ item }: { item: FlightListItem }) => {
+    if (item.type === "separator") {
+      return <View style={styles.separator} />;
+    }
+    return <FlightRow flight={item} navigation={navigation} />;
+  };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Header userName={"Shitanshu"} onUserPress={() => {}} />
       <Breadcrumb currentScreen={"Flights"} />
-      <View style={styles.content}>
-        <Text style={styles.title}>Flights Screen</Text>
-        <Text style={styles.flightId}>Flight ID: {flightId}</Text>
-        <Text style={styles.description}>
-          This is the Flights screen. Add your content here.
-        </Text>
-      </View>
-    </View>
+      <FlatList
+        style={{ flex: 1 }} // Add flex: 1 to fill remaining space
+        data={flightsData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={<FlightListHeader />}
+        stickyHeaderIndices={[0]}
+      />
+    </SafeAreaView>
   );
 };
 
@@ -40,43 +50,13 @@ export default FlightsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  header: {
     backgroundColor: "#ffffff",
-    padding: 20,
+  },
+  separator: {
+    height: 24,
+    backgroundColor: "#e1e1e1ff",
+    borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderBottomColor: "#e1e8ed",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: "#007AFF",
-    fontWeight: "600",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 10,
-  },
-  flightId: {
-    fontSize: 18,
-    color: "#6b7280",
-    marginBottom: 20,
-  },
-  description: {
-    fontSize: 16,
-    color: "#9ca3af",
-    textAlign: "center",
+    borderColor: "#e0e0e0",
   },
 });
