@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 
 export const InvoiceScreen: React.FC = () => (
   <View style={styles.container}>
-    <Text>Invoice Content</Text>
+    <Text style={{ fontSize: 24 }}>COMING UP SOON</Text>
   </View>
 );
 
