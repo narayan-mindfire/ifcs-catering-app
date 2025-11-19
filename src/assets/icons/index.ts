@@ -21,15 +21,19 @@ import DownloadIcon from "./download.svg";
 import PrintIcon from "./print.svg";
 import ThreeDotsIcon from "./dots.svg";
 import RotateRightIcon from "./rotate.svg";
-
-// --- New Icons from folder ---
+import UserIcon from "./user.svg";
+import QrIcon from "./preparation/qr.svg";
+import LockOpenIcon from "./preparation/lock-open.svg";
+import StringIcon from "./preparation/string.svg";
+import DeliveryIcon from "./preparation/delivery.svg";
+import CheckIcon from "./preparation/check.svg";
 import AddIcon from "./add.svg";
 import AirplaneFlightIcon from "./airplaneFlight.svg";
 import AirplaneIcon from "./airplane.svg";
 import BowlIcon from "./bowl.svg";
 import BoxIcon from "./box.svg";
 import CalendarIcon from "./calendar.svg";
-import CheckIcon from "./check.svg";
+import CheckIconSuccess from "./check.svg";
 import DelayIcon from "./delay.svg";
 import DeleteIcon from "./delete.svg";
 import DropdownIconAlt from "./dropdownIcon.svg";
@@ -89,6 +93,7 @@ export {
   BoxIcon,
   CalendarIcon,
   CheckIcon,
+  CheckIconSuccess,
   DelayIcon,
   DeleteIcon,
   DropdownIconAlt,
@@ -113,4 +118,9 @@ export {
   StatusIcon,
   TimerIcon,
   UtensilIcon,
+  UserIcon,
+  QrIcon,
+  LockOpenIcon,
+  StringIcon,
+  DeliveryIcon,
 };

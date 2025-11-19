@@ -10,7 +10,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../App";
-import { DropdownIcon } from "../../assets/icons";
+import { DropdownIcon, UserIcon } from "../../assets/icons";
 import { EmairatesIcon } from "../../assets/logos";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
@@ -50,7 +50,9 @@ export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
             onPress={onUserPress}
           >
             <View style={headerStyles.profileImage}>
-              <Text style={headerStyles.profileImageText}>👤</Text>
+              <Text style={headerStyles.profileImageText}>
+                <UserIcon />
+              </Text>
             </View>
             <Text style={headerStyles.userName}>
               {userName} <DropdownIcon />
@@ -59,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
         </View>
         <View style={headerStyles.airlineLogoWrapper}>
           <View style={headerStyles.airlineLogo}>
-            <EmairatesIcon />
+            <EmairatesIcon height={65} width={60} />
           </View>
         </View>
       </View>
@@ -80,6 +82,7 @@ const headerStyles = StyleSheet.create({
     elevation: 3,
     position: "relative",
     zIndex: 1,
+    marginTop: 10,
   },
   headerLeft: { flex: 1 },
   logoImage: { height: width > 768 ? 40 : 35, width: width > 768 ? 200 : 180 },
@@ -95,7 +98,6 @@ const headerStyles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 17.5,
-    backgroundColor: "#f3f4f6",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
@@ -117,8 +119,8 @@ const headerStyles = StyleSheet.create({
 
   airlineLogo: {
     backgroundColor: "#D71921",
-    width: width > 768 ? 90 : 95,
-    height: width > 768 ? 95 : 90,
+    width: width > 768 ? 60 : 65,
+    height: width > 768 ? 65 : 60,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",

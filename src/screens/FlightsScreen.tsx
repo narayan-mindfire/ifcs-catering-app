@@ -3,8 +3,7 @@ import { View, StyleSheet, FlatList, SafeAreaView } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
-import { Header } from "../components/dashboard/Header";
-import { Breadcrumb } from "../components/common/BreadCrumbs";
+import { BreadCrumb } from "../components/common/BreadCrumbs";
 
 import { flightsData, FlightListItem } from "../const/flightsData";
 import { FlightRow } from "../components/flight-list/FlightRow";
@@ -29,12 +28,21 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
     return <FlightRow flight={item} navigation={navigation} />;
   };
 
+  const breadcrumbItems = [
+    {
+      label: "Dashboard",
+      onPress: () => navigation.navigate("Dashboard"),
+    },
+    {
+      label: "Flights",
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
-      <Header userName={"Shitanshu"} onUserPress={() => {}} />
-      <Breadcrumb currentScreen={"Flights"} />
+      <BreadCrumb items={breadcrumbItems} />
       <FlatList
-        style={{ flex: 1 }} // Add flex: 1 to fill remaining space
+        style={{ flex: 1 }}
         data={flightsData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}

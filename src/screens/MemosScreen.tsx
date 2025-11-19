@@ -3,8 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
-import { Header } from "../components/dashboard/Header";
-import { Breadcrumb } from "../components/common/BreadCrumbs";
+import { BreadCrumb } from "../components/common/BreadCrumbs";
 
 type MemosScreenRouteProp = RouteProp<RootStackParamList, "Memos">;
 type MemosScreenNavigationProp = StackNavigationProp<
@@ -19,11 +18,18 @@ interface Props {
 
 const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId } = route.params;
-
+  const breadcrumbItems = [
+    {
+      label: "Dashboard",
+      onPress: () => navigation.navigate("Dashboard"),
+    },
+    {
+      label: "Memos",
+    },
+  ];
   return (
     <View style={styles.container}>
-      <Header userName={"Shitanshu"} onUserPress={() => {}} />
-      <Breadcrumb currentScreen={"Memos"} />
+      <BreadCrumb items={breadcrumbItems} />
       <View style={styles.content}>
         <Text style={styles.title}>Memos Screen</Text>
         <Text style={styles.flightId}>Flight ID: {flightId}</Text>
