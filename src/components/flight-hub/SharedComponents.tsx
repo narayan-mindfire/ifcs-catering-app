@@ -70,7 +70,39 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             <SignatureScreen
               ref={ref}
               onOK={handleSignature}
-              webStyle={`.m-signature-pad--footer {display: none; margin: 0px;}`}
+              webStyle={`
+                .m-signature-pad--footer {
+                  display: none;
+                  margin: 0px;
+                }
+                .m-signature-pad {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                }
+                .m-signature-pad--body {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  margin: 0;
+                }
+                .m-signature-pad--body canvas {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                }
+              `}
+              style={{
+                flex: 1,
+                width: "100%",
+                height: "100%",
+              }}
             />
           </View>
 
@@ -137,7 +169,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: { fontSize: 18, fontWeight: "600", color: "#27262C" },
   closeText: { fontSize: 20, color: "#7A7A7A" },
-  signatureContainer: { flex: 1, backgroundColor: "#fff" },
+  signatureContainer: { flex: 1, backgroundColor: "#d12222ff" },
   modalFooter: {
     flexDirection: "row",
     padding: 16,

@@ -7,7 +7,7 @@ import { RootStackParamList } from "../../App";
 import { PreparationsScreen } from "./details/Preparations";
 import { FoodOrderScreen } from "./details/FoodOrder";
 import { InvoiceScreen } from "./details/Invoice";
-import { DeliveriesScreen } from "./details/Deliveries";
+import DeliveriesScreen from "./details/Deliveries";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 
 type FlightDetailTabParamList = {
@@ -104,6 +104,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           animationEnabled: false,
           swipeEnabled: false,
           lazy: true,
+          lazyPreloadDistance: 1,
         }}
         screenListeners={{
           state: (e) => {

@@ -7,7 +7,7 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { SignatureModal, Checkbox } from "./SharedComponents";
+import { SignatureModal } from "./SharedComponents";
 import { CrewCompliance } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 
@@ -16,7 +16,6 @@ interface CrewComplianceTabProps {
   onUpdateCompliance: (compliance: CrewCompliance) => void;
   onAddPreparer: (preparer: {
     fullName: string;
-    type: "Airline Representative" | "Third Party Security Guard";
     raicNumber: string;
     note?: string;
   }) => void;
@@ -32,9 +31,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   );
   const [showSignatureModal, setShowSignatureModal] = useState(false);
 
-  const [selectedType, setSelectedType] = useState<
-    "Airline Representative" | "Third Party Security Guard"
-  >("Airline Representative");
   const [fullName, setFullName] = useState("");
   const [raicNumber, setRaicNumber] = useState("");
   const [note, setNote] = useState("");
@@ -68,7 +64,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     if (!fullName.trim() || !raicNumber.trim()) return;
     onAddPreparer({
       fullName: fullName.trim(),
-      type: selectedType,
       raicNumber: raicNumber.trim(),
       note: note.trim() || undefined,
     });
@@ -83,19 +78,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         <Text style={styles.sectionTitle}>
           Additional Requirement for Flight to the USA
         </Text>
-
-        <View style={styles.radioGroup}>
-          <Checkbox
-            checked={selectedType === "Airline Representative"}
-            onChange={() => setSelectedType("Airline Representative")}
-            label="Airline Representative"
-          />
-          <Checkbox
-            checked={selectedType === "Third Party Security Guard"}
-            onChange={() => setSelectedType("Third Party Security Guard")}
-            label="Third Party Security Guard"
-          />
-        </View>
 
         <Text style={styles.label}>Name</Text>
         <TextInput
