@@ -15,12 +15,18 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.ifcscateringapp",
-      "newArchEnabled": false
+      "newArchEnabled": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "usesCleartextTraffic": true
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
