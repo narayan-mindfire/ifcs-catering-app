@@ -93,7 +93,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.flightInfo}>
           <Text style={styles.infoText}>FLIGHT: {flightId}</Text>
           <Text style={styles.infoText}>ROUTE: {flightRoute}</Text>
-          <Text style={styles.infoText}>DATE: {date}</Text>
+          <Text style={styles.infoText}>DATE: {date.split("T")[0]}</Text>
         </View>
       </View>
 
