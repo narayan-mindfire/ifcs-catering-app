@@ -41,7 +41,7 @@ export const ComplianceSignatureCard: React.FC<
             <Image
               source={{ uri: signature }}
               style={styles.signatureImage}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </View>
           <Text style={styles.timestamp}>
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   confirmationText: { fontSize: 16, color: "#6d6d6dff", flex: 1 },
   label: { fontSize: 16, color: "#4F4B58", marginBottom: 6 },
   signatureDisplay: {
-    height: 150,
+    height: 250,
     borderWidth: 1,
     borderColor: "#EAE9EC",
     borderRadius: 12,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   signatureImage: { width: "100%", height: "100%" },
   signaturePlaceholder: {
-    height: 150,
+    height: 250,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: "#c1c2c3",
