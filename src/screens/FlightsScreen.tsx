@@ -37,6 +37,7 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchFlights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // --- 2. DEDUPLICATION LOGIC (The Fix) ---
