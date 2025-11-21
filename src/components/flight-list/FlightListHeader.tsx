@@ -4,38 +4,35 @@ import { View, Text, StyleSheet } from "react-native";
 export const FlightListHeader: React.FC = () => {
   return (
     <View style={styles.headerContainer}>
-      {/* Row 1: Grouped Header */}
       <View
         style={[styles.headerRow, styles.groupHeader, styles.horizontalPadding]}
       >
-        {/* Flight Group: flex 53 (6+12+8+3+6+6+6+6) */}
-        <View style={[styles.groupCell, { flex: 51 }]}>
+        <View style={[styles.groupCell, { flex: 57 }]}>
           <View style={styles.groupCellContent}>
-            {/* <Icon name="airplane" size={16} color="#555" /> */}
             <Text style={styles.groupHeaderText}>Flight</Text>
           </View>
         </View>
 
-        {/* Aircraft Group: flex 15 (10+5) */}
-        <View style={[styles.groupCell, { flex: 15 }]}>
+        <View style={[styles.groupCell, { flex: 10 }]}>
           <View style={styles.groupCellContent}>
-            {/* <Icon name="airplane-outline" size={16} color="#555" /> */}
-            <Text style={styles.groupHeaderText}>Aircraft</Text>
+            <Text style={[styles.groupHeaderText, { paddingEnd: 22 }]}>
+              Aircraft
+            </Text>
           </View>
         </View>
 
-        {/* PAX Group: flex 5 (5) */}
+        {/* PAX Group: flex 5 */}
         <View style={[styles.groupCell, { flex: 5 }]}>
           <View style={styles.groupCellContent}>
-            {/* <Icon name="people-outline" size={16} color="#555" /> */}
-            <Text style={styles.groupHeaderText}>PAX</Text>
+            <Text style={[styles.groupHeaderText, { paddingEnd: 22 }]}>
+              PAX
+            </Text>
           </View>
         </View>
 
-        {/* Spot Group: flex 4 (4) */}
+        {/* Spot Group: flex 4 */}
         <View style={[styles.groupCell, styles.noBorder, { flex: 4 }]}>
           <View style={styles.groupCellContent}>
-            {/* <Icon name="eye-outline" size={16} color="#555" /> */}
             <Text style={styles.groupHeaderText}>Spot</Text>
           </View>
         </View>
@@ -49,7 +46,7 @@ export const FlightListHeader: React.FC = () => {
           styles.horizontalPadding,
         ]}
       >
-        {/* Flight columns: Total Flex 53 */}
+        {/* Flight columns */}
         <View style={[styles.columnCell, { flex: 6 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}>Airline</Text>
@@ -70,47 +67,44 @@ export const FlightListHeader: React.FC = () => {
             <Text style={styles.columnHeaderText}>Type</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 6 }]}>
+        <View style={[styles.columnCell, { flex: 7 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}>Date</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 6 }]}>
+        <View style={[styles.columnCell, { flex: 7 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}>Departure</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 6 }]}>
+        <View style={[styles.columnCell, { flex: 7 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}>Arrival</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, styles.rightBorder, { flex: 6 }]}>
+        <View style={[styles.columnCell, styles.rightBorder, { flex: 7 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}>Status</Text>
           </View>
         </View>
 
-        {/* Aircraft columns: Total Flex 15 */}
+        {/* Aircraft columns */}
         <View style={[styles.columnCell, styles.rightBorder, { flex: 10 }]}>
           <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>AC Type/AC Reg</Text>
-          </View>
-        </View>
-        <View style={[styles.columnCell, styles.rightBorder, { flex: 5 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Ground</Text>
+            <Text style={[styles.columnHeaderText, { textAlign: "center" }]}>
+              AC Type/Reg
+            </Text>
           </View>
         </View>
 
-        {/* PAX column: Total Flex 5 */}
         <View style={[styles.columnCell, styles.rightBorder, { flex: 5 }]}>
           <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Total</Text>
+            <Text style={[styles.columnHeaderText, { textAlign: "center" }]}>
+              Total
+            </Text>
           </View>
         </View>
 
-        {/* Spot column: Total Flex 4 */}
         <View style={[styles.columnCell, { flex: 4 }]}>
           <View style={styles.columnCellContent}>
             <Text style={styles.columnHeaderText}></Text>
@@ -132,7 +126,6 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
   },
   horizontalPadding: {
-    // Moved padding here to affect the whole row consistently
     paddingHorizontal: 10,
   },
   groupHeader: {
@@ -141,7 +134,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
   },
   groupCell: {
-    // Only apply border to the right side of the cell
     // borderRightWidth: 1,
     // borderRightColor: "#7b7979ff",
   },
@@ -149,11 +141,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 10, // Increased vertical padding
   },
   groupHeaderText: {
     marginLeft: 6,
-    fontSize: 14,
+    fontSize: 16, // Increased from 14
     fontWeight: "600",
     color: "#333",
   },
@@ -171,7 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   columnHeaderText: {
-    fontSize: 12,
+    fontSize: 14, // Increased from 12
     fontWeight: "500",
     color: "#000000ff",
     textAlign: "left",

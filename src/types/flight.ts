@@ -39,7 +39,7 @@ export interface Flight {
   airline: Airline | null;
   paxCounts: PaxCounts | null;
   loadingPlan: { name: string } | null;
-
+  flightTypeIataCode: string | null;
   cutoffTime: string | null;
 }
 

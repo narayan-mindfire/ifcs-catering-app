@@ -28,65 +28,65 @@ interface Props {
   navigation: FlightsScreenNavigationProp;
 }
 
-const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
+const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   const { flightGroups, isLoading, error, fetchFlights } = useFlightStore();
 
-  // --- 1. FILTER STATE ---
   const [dateFilter, setDateFilter] = useState("");
   const [flightNumFilter, setFlightNumFilter] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [airlineFilter, setAirlineFilter] = useState("");
 
   useEffect(() => {
     fetchFlights();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- 2. DEDUPLICATION LOGIC (The Fix) ---
   const cleanedFlightGroups = useMemo(() => {
-    // Step A: Find all Flight IDs that exist inside a "Paired" group (length > 1)
     const idsInPairs = new Set<string>();
-
     flightGroups.forEach((group) => {
       if (group.length > 1) {
         group.forEach((flight) => idsInPairs.add(flight.id));
       }
     });
 
-    // Step B: Filter the groups
     return flightGroups.filter((group) => {
-      // Always keep pairs
       if (group.length > 1) return true;
-
-      // For single flights, only keep them if their ID is NOT in the paired list
       const singleFlightId = group[0].id;
       return !idsInPairs.has(singleFlightId);
     });
   }, [flightGroups]);
 
-  // --- 3. FILTER LOGIC (Applied to cleanedFlightGroups) ---
   const filteredData = useMemo(() => {
-    if (!dateFilter && !flightNumFilter) return cleanedFlightGroups;
+    if (!dateFilter && !flightNumFilter && !airlineFilter)
+      return cleanedFlightGroups;
 
     return cleanedFlightGroups.filter((group) => {
       return group.some((flight) => {
-        // Flight Number Check
         const fullFlightNum = `${flight.airline?.code || "WY"}${flight.flightNumber}`;
         const matchesNum = flightNumFilter
           ? fullFlightNum.toLowerCase().includes(flightNumFilter.toLowerCase())
           : true;
 
-        // Date Check
         const matchesDate = dateFilter
           ? flight.scheduledDeparture.startsWith(dateFilter)
           : true;
 
-        return matchesNum && matchesDate;
+        const matchesAirline = airlineFilter
+          ? flight.airline?.name
+              ?.toLowerCase()
+              .includes(airlineFilter.toLowerCase()) ||
+            flight.airline?.code
+              ?.toLowerCase()
+              .includes(airlineFilter.toLowerCase())
+          : true;
+
+        return matchesNum && matchesDate && matchesAirline;
       });
     });
-  }, [cleanedFlightGroups, dateFilter, flightNumFilter]);
+  }, [cleanedFlightGroups, dateFilter, flightNumFilter, airlineFilter]);
 
   const renderFlightGroup = ({ item: group }: { item: Flight[] }) => {
     const isPaired = group.length > 1;
-
     return (
       <View style={styles.groupContainer}>
         {group.map((flight, index) => (
@@ -97,6 +97,7 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
             isLastInGroup={index === group.length - 1}
             isFirstInGroup={index === 0}
             isPaired={isPaired}
+            flightGroup={group} // Add this line
           />
         ))}
       </View>
@@ -119,7 +120,7 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
   if (error && flightGroups.length === 0) {
     return (
       <SafeAreaView style={[styles.container, styles.center]}>
-        <Text style={{ color: "red" }}>{error}</Text>
+        <Text style={{ color: "red", fontSize: 16 }}>{error}</Text>
       </SafeAreaView>
     );
   }
@@ -128,22 +129,31 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <BreadCrumb items={breadcrumbItems} />
 
-      {/* --- FILTER UI SECTION --- */}
       <View style={styles.filterContainer}>
         <View style={styles.filterInputWrapper}>
           <TextInput
             style={styles.filterInput}
-            placeholder="date"
+            placeholder="Date"
             placeholderTextColor="#999"
             value={dateFilter}
             onChangeText={setDateFilter}
           />
         </View>
 
+        {/* <View style={styles.filterInputWrapper}>
+          <TextInput
+            style={styles.filterInput}
+            placeholder="Airline"
+            placeholderTextColor="#999"
+            value={airlineFilter}
+            onChangeText={setAirlineFilter}
+          />
+        </View> */}
+
         <View style={styles.filterInputWrapper}>
           <TextInput
             style={styles.filterInput}
-            placeholder="Flight"
+            placeholder="Flight #"
             placeholderTextColor="#999"
             value={flightNumFilter}
             onChangeText={setFlightNumFilter}
@@ -164,7 +174,7 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
         ListEmptyComponent={
           !isLoading ? (
             <View style={styles.center}>
-              <Text style={{ marginTop: 20, color: "#888" }}>
+              <Text style={{ marginTop: 20, color: "#888", fontSize: 16 }}>
                 No flights found matching filters.
               </Text>
             </View>
@@ -197,7 +207,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  // --- FILTER STYLES ---
   filterContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -211,13 +220,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#d1d1d1",
-    width: 150,
-    height: 40,
+    width: 140,
+    height: 45,
     justifyContent: "center",
   },
   filterInput: {
     paddingHorizontal: 10,
-    fontSize: 14,
+    fontSize: 16,
     color: "#333",
     height: "100%",
   },

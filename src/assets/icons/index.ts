@@ -58,6 +58,7 @@ import SquaresIcon from "./squares.svg";
 import StatusIcon from "./status.svg";
 import TimerIcon from "./timer.svg";
 import UtensilIcon from "./utensil.svg";
+import LockIcon from "./lock.svg";
 
 // --- Export all icons together ---
 export {
@@ -123,4 +124,5 @@ export {
   LockOpenIcon,
   StringIcon,
   DeliveryIcon,
+  LockIcon,
 };

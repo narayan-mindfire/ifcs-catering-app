@@ -1,5 +1,13 @@
-import React from "react";
-import { View, Text, StyleSheet, Pressable, FlatList } from "react-native";
+import React, { useState, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
 import {
   BoxIcon,
   CheckIcon,
@@ -13,8 +21,37 @@ import {
   StringIcon,
 } from "../../assets/icons";
 import { stowageData, StowageItem } from "../../const/PreparationData";
+import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
+
+const PAX_DATA = [
+  { label: "Business Studio", value: "" },
+  { label: "Business", value: "17" },
+  { label: "Economy", value: "243" },
+  { label: "Crew", value: "14" },
+];
 
 export const PreparationsScreen: React.FC = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<StowageItem | null>(null);
+
+  const buttonRef = useRef<View>(null);
+
+  const handleOpenPaxModal = () => {
+    buttonRef.current?.measure((fx, fy, width, height, px, py) => {
+      setDropdownPos({
+        top: py + height + 8, // Position 8px below the button
+        left: px, // Align with the left edge of the button
+      });
+      setModalVisible(true);
+    });
+  };
+
+  const handleOpenDetailModal = (item: StowageItem) => {
+    setSelectedItem(item); // Optional: Pass data to modal later
+    setDetailModalVisible(true);
+  };
   const renderItem = ({ item }: { item: StowageItem }) => (
     <View style={styles.tableRow}>
       <Text style={[styles.tableCell, { flex: 1, fontWeight: "600" }]}>
@@ -28,13 +65,49 @@ export const PreparationsScreen: React.FC = () => {
         <LockOpenIcon height={30} width={30} />
         <CheckIcon height={30} width={30} />
         <DeliveryIcon height={30} width={30} />
-        <InfoIcon height={30} width={30} />
+        <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
+          <InfoIcon height={30} width={30} />
+        </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      {/* Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
+          <View
+            style={[
+              styles.modalContent,
+              {
+                top: dropdownPos.top,
+                left: dropdownPos.left,
+              },
+            ]}
+          >
+            <Text style={styles.modalTitle}>Passenger Count</Text>
+            <View style={styles.modalDivider} />
+
+            {PAX_DATA.map((item, index) => (
+              <View key={index} style={styles.modalRow}>
+                <Text style={styles.modalLabel}>{item.label}</Text>
+                <Text style={styles.modalValue}>{item.value}</Text>
+              </View>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       <View style={styles.buttonRow}>
         <View style={styles.leftButton}>
           <Pressable style={styles.actionButton}>
@@ -54,11 +127,15 @@ export const PreparationsScreen: React.FC = () => {
             <Text style={styles.actionButtonText}>Load Scan</Text>
           </Pressable>
         </View>
+
         <View style={styles.rightButton}>
-          <Pressable style={styles.actionButton}>
-            <SeatIcon />
-            <Text style={styles.actionButtonText}>PAX Count</Text>
-          </Pressable>
+          <View ref={buttonRef} collapsable={false}>
+            <Pressable style={styles.actionButton} onPress={handleOpenPaxModal}>
+              <SeatIcon />
+              <Text style={styles.actionButtonText}>PAX Count</Text>
+            </Pressable>
+          </View>
+
           <Pressable style={styles.actionButton}>
             <PrintIcon />
             <Text style={styles.actionButtonText}>Print</Text>
@@ -91,6 +168,12 @@ export const PreparationsScreen: React.FC = () => {
           )}
         />
       </View>
+      <FlightPreparationDetailsModal
+        visible={detailModalVisible}
+        onClose={() => setDetailModalVisible(false)}
+        stowage={selectedItem?.stowage}
+        carrier={selectedItem?.carrier}
+      />
     </View>
   );
 };
@@ -104,6 +187,7 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: "row",
     marginBottom: 20,
+    zIndex: 1,
   },
   leftButton: {
     flex: 1,
@@ -123,9 +207,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 6,
     marginRight: 12,
-  },
-  icon: {
-    marginRight: 8,
   },
   actionButtonText: {
     fontSize: 20,
@@ -160,8 +241,6 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 24,
   },
-
-  // --- NEW STYLES ---
   tableRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -180,9 +259,50 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
   },
-  actionIcon: {
-    fontSize: 18,
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "transparent",
+  },
+  modalContent: {
+    position: "absolute",
+    width: 250,
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: "#eee",
+    marginBottom: 10,
+  },
+  modalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  modalLabel: {
+    fontSize: 14,
     color: "#555",
-    marginHorizontal: 4,
+    flex: 1,
+  },
+  modalValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
   },
 });

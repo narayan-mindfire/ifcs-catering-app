@@ -11,5 +11,5 @@ export const formatTime = (isoString: string | null): string => {
 export const formatDate = (isoString: string | null): string => {
   if (!isoString) return "-";
   const date = new Date(isoString);
-  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  return date.toLocaleDateString("en-US", { month: "short", day: "2-digit" });
 };

@@ -67,7 +67,7 @@ export const FoodOrderScreen: React.FC = () => {
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>FLT #</Text>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>SKU</Text>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>Cabin</Text>
-          <Text style={[styles.tableHeaderText, { flex: 3 }]}>Name Y</Text>
+          <Text style={[styles.tableHeaderText, { flex: 3 }]}>Name</Text>
           <Text
             style={[styles.tableHeaderText, { flex: 1, textAlign: "center" }]}
           >
