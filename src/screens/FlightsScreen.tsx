@@ -130,17 +130,26 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
       <BreadCrumb items={breadcrumbItems} />
 
       <View style={styles.filterContainer}>
-        <View style={styles.filterInputWrapper}>
-          <TextInput
-            style={styles.filterInput}
-            placeholder="Date"
-            placeholderTextColor="#999"
-            value={dateFilter}
-            onChangeText={setDateFilter}
-          />
+        <View>
+          <Text style={{ color: "#333" }}>station</Text>
+          <Text
+            style={{ textAlign: "center", fontWeight: "600", fontSize: 48 }}
+          >
+            YUL
+          </Text>
         </View>
+        <View style={{ flexDirection: "row" }}>
+          <View style={styles.filterInputWrapper}>
+            <TextInput
+              style={styles.filterInput}
+              placeholder="Date"
+              placeholderTextColor="#999"
+              value={dateFilter}
+              onChangeText={setDateFilter}
+            />
+          </View>
 
-        {/* <View style={styles.filterInputWrapper}>
+          {/* <View style={styles.filterInputWrapper}>
           <TextInput
             style={styles.filterInput}
             placeholder="Airline"
@@ -150,14 +159,15 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
           />
         </View> */}
 
-        <View style={styles.filterInputWrapper}>
-          <TextInput
-            style={styles.filterInput}
-            placeholder="Flight #"
-            placeholderTextColor="#999"
-            value={flightNumFilter}
-            onChangeText={setFlightNumFilter}
-          />
+          <View style={styles.filterInputWrapper}>
+            <TextInput
+              style={styles.filterInput}
+              placeholder="Flight #"
+              placeholderTextColor="#999"
+              value={flightNumFilter}
+              onChangeText={setFlightNumFilter}
+            />
+          </View>
         </View>
       </View>
 
@@ -209,7 +219,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 10,

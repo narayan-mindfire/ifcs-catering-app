@@ -21,7 +21,12 @@ import {
   StringIcon,
 } from "../../assets/icons";
 import { stowageData, StowageItem } from "../../const/PreparationData";
+// Custom Components
 import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
+import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
+// Import your PDF file here
+// Ensure 'sample.pdf' exists in your assets folder
+const SAMPLE_PDF = require("../../assets/sample.pdf");
 
 const PAX_DATA = [
   { label: "Business Studio", value: "" },
@@ -31,40 +36,61 @@ const PAX_DATA = [
 ];
 
 export const PreparationsScreen: React.FC = () => {
-  const [modalVisible, setModalVisible] = useState(false);
+  // --- State: Pax Modal ---
+  const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
+
+  // --- State: Detail Modal ---
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<StowageItem | null>(null);
 
+  // --- State: PDF Modal ---
+  const [pdfVisible, setPdfVisible] = useState(false);
+
+  // Ref for positioning Pax Modal
   const buttonRef = useRef<View>(null);
+
+  // --- Handlers ---
 
   const handleOpenPaxModal = () => {
     buttonRef.current?.measure((fx, fy, width, height, px, py) => {
       setDropdownPos({
-        top: py + height + 8, // Position 8px below the button
-        left: px, // Align with the left edge of the button
+        top: py + height + 5, // Position slightly below button
+        left: px, // Align left edge
       });
-      setModalVisible(true);
+      setPaxModalVisible(true);
     });
   };
 
   const handleOpenDetailModal = (item: StowageItem) => {
-    setSelectedItem(item); // Optional: Pass data to modal later
+    setSelectedItem(item);
     setDetailModalVisible(true);
   };
+
+  const handleOpenPdf = () => {
+    setPdfVisible(true);
+  };
+
   const renderItem = ({ item }: { item: StowageItem }) => (
     <View style={styles.tableRow}>
       <Text style={[styles.tableCell, { flex: 1, fontWeight: "600" }]}>
         {item.stowage}
       </Text>
       <Text style={[styles.tableCell, { flex: 3 }]}>{item.carrier}</Text>
+
       <View style={[styles.actionCell, { flex: 4 }]}>
-        <QrIcon height={30} width={30} />
+        {/* 1. PDF Trigger */}
+        <TouchableOpacity onPress={handleOpenPdf}>
+          <QrIcon height={30} width={30} />
+        </TouchableOpacity>
+
         <BoxIcon height={30} width={30} />
         <StringIcon height={30} width={30} />
         <LockOpenIcon height={30} width={30} />
         <CheckIcon height={30} width={30} />
         <DeliveryIcon height={30} width={30} />
+
+        {/* 2. Details Modal Trigger */}
         <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
           <InfoIcon height={30} width={30} />
         </TouchableOpacity>
@@ -74,21 +100,28 @@ export const PreparationsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Modal */}
+      {/* --- 1. PDF Viewer Modal --- */}
+      <PdfViewerModal
+        visible={pdfVisible}
+        onClose={() => setPdfVisible(false)}
+        source={SAMPLE_PDF}
+      />
+
+      {/* --- 2. Pax Count Dropdown Modal --- */}
       <Modal
         animationType="fade"
         transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        visible={paxModalVisible}
+        onRequestClose={() => setPaxModalVisible(false)}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setModalVisible(false)}
+          onPress={() => setPaxModalVisible(false)}
         >
           <View
             style={[
-              styles.modalContent,
+              styles.paxModalContent,
               {
                 top: dropdownPos.top,
                 left: dropdownPos.left,
@@ -108,6 +141,15 @@ export const PreparationsScreen: React.FC = () => {
         </TouchableOpacity>
       </Modal>
 
+      {/* --- 3. Details Modal --- */}
+      <FlightPreparationDetailsModal
+        visible={detailModalVisible}
+        onClose={() => setDetailModalVisible(false)}
+        stowage={selectedItem?.stowage}
+        carrier={selectedItem?.carrier}
+      />
+
+      {/* --- Top Button Row --- */}
       <View style={styles.buttonRow}>
         <View style={styles.leftButton}>
           <Pressable style={styles.actionButton}>
@@ -129,6 +171,7 @@ export const PreparationsScreen: React.FC = () => {
         </View>
 
         <View style={styles.rightButton}>
+          {/* Ref attached here for measurement */}
           <View ref={buttonRef} collapsable={false}>
             <Pressable style={styles.actionButton} onPress={handleOpenPaxModal}>
               <SeatIcon />
@@ -143,6 +186,7 @@ export const PreparationsScreen: React.FC = () => {
         </View>
       </View>
 
+      {/* --- Main List Table --- */}
       <View style={styles.tableContainer}>
         <View style={styles.tableHeader}>
           <Text style={[styles.tableHeaderText, { flex: 1 }]}>Stowage</Text>
@@ -158,7 +202,6 @@ export const PreparationsScreen: React.FC = () => {
           style={{ flex: 1 }}
           data={[...stowageData, ...stowageData, ...stowageData]}
           removeClippedSubviews={false}
-          onLayout={() => {}}
           renderItem={renderItem}
           keyExtractor={(item, index) => item.id + index}
           ListEmptyComponent={() => (
@@ -168,12 +211,6 @@ export const PreparationsScreen: React.FC = () => {
           )}
         />
       </View>
-      <FlightPreparationDetailsModal
-        visible={detailModalVisible}
-        onClose={() => setDetailModalVisible(false)}
-        stowage={selectedItem?.stowage}
-        carrier={selectedItem?.carrier}
-      />
     </View>
   );
 };
@@ -259,17 +296,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 20,
   },
-
   modalOverlay: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: "transparent", // Allows clicking outside to close
   },
-  modalContent: {
+  paxModalContent: {
     position: "absolute",
     width: 250,
     backgroundColor: "white",
     borderRadius: 8,
     padding: 16,
+    // Drop Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -279,7 +316,7 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0",
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#333",
     marginBottom: 10,
@@ -296,7 +333,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   modalLabel: {
-    fontSize: 14,
+    fontSize: 18,
     color: "#555",
     flex: 1,
   },
