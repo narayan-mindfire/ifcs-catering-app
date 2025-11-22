@@ -17,7 +17,6 @@ interface Props {
 }
 
 const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId } = route.params;
   const breadcrumbItems = [
     {
       label: "Dashboard",
