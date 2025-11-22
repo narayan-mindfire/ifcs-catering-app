@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: { backgroundColor: "#602AF3", borderColor: "#602AF3" },
   checkmark: { color: "#fff", fontWeight: "bold", fontSize: 14 },
-  checkboxLabel: { fontSize: 16, color: "#4F4B58" },
+  checkboxLabel: { fontSize: 18, color: "#4F4B58" },
 
   modalOverlay: {
     flex: 1,
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderColor: "red",
     borderRadius: 8,
   },
-  clearButtonText: { color: "red", fontWeight: "600" },
+  clearButtonText: { color: "red", fontWeight: "600", fontSize: 18 },
   saveButton: {
     flex: 1,
     padding: 12,
@@ -193,5 +193,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#602AF3",
     borderRadius: 8,
   },
-  saveButtonText: { color: "#fff", fontWeight: "600" },
+  saveButtonText: { color: "#fff", fontWeight: "600", fontSize: 18 },
 });

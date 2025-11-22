@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#4F4B58",
     marginBottom: 12,
     fontWeight: "600",
@@ -161,13 +161,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignItems: "center",
   },
-  label: { fontSize: 16, color: "#4F4B58", marginBottom: 6, marginTop: 10 },
+  label: { fontSize: 18, color: "#4F4B58", marginBottom: 6, marginTop: 10 },
   input: {
     borderWidth: 1,
     borderColor: "#EAE9EC",
     borderRadius: 12,
     padding: 12,
-    fontSize: 16,
+    fontSize: 18,
     color: "#27262C",
     backgroundColor: "#fff",
   },
@@ -201,11 +201,11 @@ const styles = StyleSheet.create({
   },
   checkboxMark: {
     color: "#602AF3",
-    fontSize: 16,
+    fontSize: 18,
     marginRight: 10,
     fontWeight: "bold",
   },
-  confirmationText: { fontSize: 16, color: "#27262C", flex: 1 },
+  confirmationText: { fontSize: 18, color: "#27262C", flex: 1 },
 
   signatureDisplay: {
     height: 150,
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   timestamp: {
     textAlign: "right",
     color: "#A09CAB",
-    fontSize: 14,
+    fontSize: 16,
     marginTop: 4,
   },
 });

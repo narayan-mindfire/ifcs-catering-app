@@ -34,10 +34,8 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
 
       <View style={styles.content}>
         <Text style={styles.title}>Spot Check Screen</Text>
-        <Text style={styles.flightId}>Flight ID: {flightId}</Text>
-        <Text style={styles.description}>
-          This is the Spot Check screen. Add your content here.
-        </Text>
+        {/* <Text style={styles.flightId}>Flight ID: {flightId}</Text> */}
+        <Text style={styles.description}>This is the Spot Check screen.</Text>
       </View>
     </View>
   );

@@ -163,7 +163,7 @@ const DeliveriesScreen: React.FC = () => {
             {AddIcon ? (
               <AddIcon width={16} height={16} />
             ) : (
-              <Text style={{ fontSize: 16, color: "#27262C" }}>+</Text>
+              <Text style={{ fontSize: 18, color: "#27262C" }}>+</Text>
             )}
             <Text style={styles.addButtonText}>Add New Delivery</Text>
           </Pressable>
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
 
   emptyState: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyTitle: { fontSize: 18, color: "#A09CAB", marginBottom: 8 },
-  emptySub: { fontSize: 14, color: "#A09CAB" },
+  emptySub: { fontSize: 28, color: "#A09CAB" },
 });
 
 export default DeliveriesScreen;

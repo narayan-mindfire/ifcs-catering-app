@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     padding: 24,
     alignItems: "center",
   },
-  text: { fontSize: 14, color: "#A09CAB" },
+  text: { fontSize: 18, color: "#A09CAB" },
 });
 
 export default DispatcherCommentsTab;

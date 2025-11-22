@@ -73,7 +73,7 @@ export const FlightRow: React.FC<Props> = ({
 
       <View style={[styles.cell, { flex: 8 }]}>
         <Text style={styles.flightNumber}>
-          {flight.airline?.code}
+          {flight.airline?.designator}
           {flight.flightNumber}
         </Text>
       </View>

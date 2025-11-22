@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 12,
     borderTopRightRadius: 12,
   },
-  headerText: { fontWeight: "600", color: "#4F4B58", fontSize: 14 },
+  headerText: { fontWeight: "600", color: "#4F4B58", fontSize: 18 },
   listContainer: { flex: 1 },
   row: {
     flexDirection: "row",
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#EAE9EC",
     alignItems: "center",
   },
-  cellText: { color: "#27262C", fontSize: 14 },
+  cellText: { color: "#27262C", fontSize: 18 },
   signatureBox: {
     padding: 4,
     borderWidth: 1,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   signatureImage: { height: 40, width: "100%" },
-  timestamp: { fontSize: 10, color: "#A09CAB", marginTop: 2 },
+  timestamp: { fontSize: 16, color: "#A09CAB", marginTop: 2 },
   signLink: { color: "#A09CAB", textDecorationLine: "underline" },
   emptyState: { padding: 20, alignItems: "center" },
   emptyText: { color: "#A09CAB" },
