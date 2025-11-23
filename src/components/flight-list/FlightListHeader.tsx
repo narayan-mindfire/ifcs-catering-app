@@ -1,176 +1,113 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 
 export const FlightListHeader: React.FC = () => {
   return (
-    <View style={styles.headerContainer}>
-      <View
-        style={[styles.headerRow, styles.groupHeader, styles.horizontalPadding]}
-      >
-        <View style={[styles.groupCell, { flex: 57 }]}>
-          <View style={styles.groupCellContent}>
-            <Text style={styles.groupHeaderText}>Flight</Text>
+    <View className="bg-bg-quaternary border-b border-border-secondary">
+      {/* Row 1: Group Header */}
+      <View className="flex-row items-stretch bg-bg-tertiary border-b border-border-muted px-2.5">
+        <View className="flex-[57]">
+          <View className="flex-row justify-center items-center py-2.5">
+            <Text className="ml-1.5 text-base font-semibold text-text-primary">
+              Flight
+            </Text>
           </View>
         </View>
 
-        <View style={[styles.groupCell, { flex: 10 }]}>
-          <View style={styles.groupCellContent}>
-            <Text style={[styles.groupHeaderText, { paddingEnd: 22 }]}>
+        <View className="flex-[10]">
+          <View className="flex-row justify-center items-center py-2.5">
+            <Text className="text-base font-semibold text-text-primary pr-[22px]">
               Aircraft
             </Text>
           </View>
         </View>
 
         {/* PAX Group: flex 5 */}
-        <View style={[styles.groupCell, { flex: 5 }]}>
-          <View style={styles.groupCellContent}>
-            <Text style={[styles.groupHeaderText, { paddingEnd: 22 }]}>
+        <View className="flex-[5]">
+          <View className="flex-row justify-center items-center py-2.5">
+            <Text className="text-base font-semibold text-text-primary pr-[22px]">
               PAX
             </Text>
           </View>
         </View>
 
         {/* Spot Group: flex 4 */}
-        <View style={[styles.groupCell, styles.noBorder, { flex: 4 }]}>
-          <View style={styles.groupCellContent}>
-            <Text style={styles.groupHeaderText}>Spot</Text>
+        <View className="flex-[4]">
+          <View className="flex-row justify-center items-center py-2.5">
+            <Text className="text-base font-semibold text-text-primary">
+              Spot
+            </Text>
           </View>
         </View>
       </View>
 
       {/* Row 2: Column Header */}
-      <View
-        style={[
-          styles.headerRow,
-          styles.columnHeader,
-          styles.horizontalPadding,
-        ]}
-      >
+      <View className="flex-row items-stretch bg-border-secondary px-2.5">
         {/* Flight columns */}
-        <View style={[styles.columnCell, { flex: 6 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Airline</Text>
+        <View className="flex-[6] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Airline</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 12 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Route</Text>
+        <View className="flex-[12] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Route</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 8 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Flight #</Text>
+        <View className="flex-[8] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Flight #</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 3 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Type</Text>
+        <View className="flex-[3] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Type</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 7 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Date</Text>
+        <View className="flex-[7] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Date</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 7 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Departure</Text>
+        <View className="flex-[7] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Departure</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, { flex: 7 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Arrival</Text>
+        <View className="flex-[7] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Arrival</Text>
           </View>
         </View>
-        <View style={[styles.columnCell, styles.rightBorder, { flex: 7 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}>Status</Text>
+        <View className="flex-[7] px-1 border-r border-black mr-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black">Status</Text>
           </View>
         </View>
 
         {/* Aircraft columns */}
-        <View style={[styles.columnCell, styles.rightBorder, { flex: 10 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={[styles.columnHeaderText, { textAlign: "center" }]}>
+        <View className="flex-[10] px-1 border-r border-black mr-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black text-center">
               AC Type/Reg
             </Text>
           </View>
         </View>
 
-        <View style={[styles.columnCell, styles.rightBorder, { flex: 5 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={[styles.columnHeaderText, { textAlign: "center" }]}>
+        <View className="flex-[5] px-1 border-r border-black mr-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black text-center">
               Total
             </Text>
           </View>
         </View>
 
-        <View style={[styles.columnCell, { flex: 4 }]}>
-          <View style={styles.columnCellContent}>
-            <Text style={styles.columnHeaderText}></Text>
+        <View className="flex-[4] px-1">
+          <View className="justify-center py-3">
+            <Text className="text-sm font-medium text-black"></Text>
           </View>
         </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: "#f9f9f9",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "stretch",
-  },
-  horizontalPadding: {
-    paddingHorizontal: 10,
-  },
-  groupHeader: {
-    backgroundColor: "#f0f0f0",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  groupCell: {
-    // borderRightWidth: 1,
-    // borderRightColor: "#7b7979ff",
-  },
-  groupCellContent: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 10, // Increased vertical padding
-  },
-  groupHeaderText: {
-    marginLeft: 6,
-    fontSize: 16, // Increased from 14
-    fontWeight: "600",
-    color: "#333",
-  },
-  noBorder: {
-    borderRightWidth: 0,
-  },
-  columnHeader: {
-    backgroundColor: "#b6b6b6ff",
-  },
-  columnCell: {
-    paddingHorizontal: 4,
-  },
-  columnCellContent: {
-    justifyContent: "center",
-    paddingVertical: 12,
-  },
-  columnHeaderText: {
-    fontSize: 14, // Increased from 12
-    fontWeight: "500",
-    color: "#000000ff",
-    textAlign: "left",
-  },
-  rightBorder: {
-    borderRightWidth: 1,
-    borderRightColor: "#000",
-    marginRight: 4,
-  },
-});

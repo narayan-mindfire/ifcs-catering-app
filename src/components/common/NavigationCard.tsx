@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { BlurView } from "expo-blur";
 import { SvgProps } from "react-native-svg";
 import { RedirectIcon } from "../../assets/icons";
@@ -30,27 +24,35 @@ export const NavigationCard: React.FC<NavigationCardProps> = ({
   onPress,
 }) => {
   return (
-    <TouchableOpacity style={styles.navCard} onPress={onPress}>
+    <TouchableOpacity
+      className="rounded-xl p-[15px] w-[48%] aspect-[1.5] overflow-hidden justify-start border border-[#ffffff7c] bg-[#0000000d]"
+      onPress={onPress}
+    >
       <BlurView
         intensity={20}
         tint="dark"
-        style={[StyleSheet.absoluteFill, styles.blurView]}
+        className="absolute inset-0 rounded-xl"
       />
       <RedirectIcon
-        style={styles.navCardArrow}
+        style={{ position: "absolute", top: 10, right: 15 }}
         fill="rgba(255, 255, 255, 0.7)"
         width={24}
         height={24}
       />
-      <View style={styles.navCardMainContent}>
-        <IconComponent width={40} height={40} style={styles.navCardIconImage} />
-        <View style={styles.navCardTitleContainer}>
-          {/* 4. Apply the dynamic font size */}
-          <Text style={[styles.navCardTitle, { fontSize: titleFontSize }]}>
+      <View className="items-start">
+        <IconComponent width={40} height={40} style={{ marginBottom: 4 }} />
+        <View className="flex-row items-baseline mt-2">
+          <Text
+            className="font-medium text-white"
+            style={{ fontSize: titleFontSize }}
+          >
             {title}
           </Text>
           {count && (
-            <Text style={[styles.navCardCount, { fontSize: countFontSize }]}>
+            <Text
+              className="text-white ml-[6px]"
+              style={{ fontSize: countFontSize }}
+            >
               ({count})
             </Text>
           )}
@@ -59,44 +61,3 @@ export const NavigationCard: React.FC<NavigationCardProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  navCard: {
-    borderRadius: 12,
-    padding: 15,
-    width: "48%",
-    aspectRatio: 1.5,
-    overflow: "hidden",
-    justifyContent: "flex-start",
-    borderColor: "#ffffff7c",
-    backgroundColor: "#0000000d",
-    borderWidth: 1,
-  },
-  navCardMainContent: {
-    alignItems: "flex-start",
-  },
-  navCardTitleContainer: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    marginTop: 8,
-  },
-  navCardTitle: {
-    fontWeight: "500",
-    color: "#ffffff",
-  },
-  navCardIconImage: {
-    marginBottom: 4,
-  },
-  navCardCount: {
-    color: "#ffffff",
-    marginLeft: 6,
-  },
-  navCardArrow: {
-    position: "absolute",
-    top: 10,
-    right: 15,
-  },
-  blurView: {
-    borderRadius: 12,
-  },
-});

@@ -1,10 +1,12 @@
-import apiClient from "./axiosClient";
-import { FlightApiResponse, Flight } from "../types/flight";
+// import apiClient from "./axiosClient";
+// import { FlightApiResponse, Flight } from "../types/flight";
+import { flights } from "../const/mocks/mockFlightResponse";
 
 export const flightService = {
-  getAll: async (): Promise<Flight[]> => {
-    const response = await apiClient.get<FlightApiResponse>("/flights");
-    const nestedFlights = response.data.data;
+  getAll: async (): Promise<any> => {
+    // const response = await apiClient.get<FlightApiResponse>("/flights");
+    const response = flights;
+    const nestedFlights = response.data;
     const flatFlights = nestedFlights.flat();
 
     return flatFlights;

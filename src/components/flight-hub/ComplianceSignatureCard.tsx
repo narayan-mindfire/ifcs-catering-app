@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { Checkbox } from "./SharedComponents";
 
 interface ComplianceSignatureCardProps {
@@ -24,94 +24,42 @@ export const ComplianceSignatureCard: React.FC<
   onSign,
 }) => {
   return (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+    <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+      <View className="flex-row justify-between items-center mb-4 border-b border-border-muted pb-2.5">
+        <Text className="text-base text-text-secondary font-semibold max-w-[80%]">
+          {title}
+        </Text>
         <Checkbox checked={isCompliant} onChange={onToggleCompliance} />
       </View>
 
-      <View style={styles.confirmationBox}>
-        <Text style={styles.confirmationText}>{confirmationText}</Text>
+      <View className="flex-row items-center mb-5">
+        <Text className="text-base text-text-muted flex-1">
+          {confirmationText}
+        </Text>
       </View>
 
-      <Text style={styles.label}>Signature</Text>
+      <Text className="text-base text-text-secondary mb-1.5">Signature</Text>
       {signature ? (
         <View>
-          <View style={styles.signatureDisplay}>
+          <View className="h-[250px] border border-border-muted rounded-xl bg-bg-surface overflow-hidden">
             <Image
               source={{ uri: signature }}
-              style={styles.signatureImage}
+              className="w-full h-full"
               resizeMode="cover"
             />
           </View>
-          <Text style={styles.timestamp}>
+          <Text className="text-right text-text-tertiary text-xs mt-1">
             Signed: {signedAt ? new Date(signedAt).toLocaleDateString() : ""}
           </Text>
         </View>
       ) : (
-        <Pressable style={styles.signaturePlaceholder} onPress={onSign}>
-          <Text style={styles.placeholderText}>Click here to sign</Text>
+        <Pressable
+          className="h-[250px] border-2 border-dashed border-border-secondary rounded-xl bg-bg-tertiary justify-center items-center"
+          onPress={onSign}
+        >
+          <Text className="text-text-tertiary">Click here to sign</Text>
         </Pressable>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    padding: 16,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EAE9EC",
-    paddingBottom: 10,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    color: "#4F4B58",
-    fontWeight: "600",
-    maxWidth: "80%",
-  },
-  confirmationBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  confirmationText: { fontSize: 16, color: "#6d6d6dff", flex: 1 },
-  label: { fontSize: 16, color: "#4F4B58", marginBottom: 6 },
-  signatureDisplay: {
-    height: 250,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-  },
-  signatureImage: { width: "100%", height: "100%" },
-  signaturePlaceholder: {
-    height: 250,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: "#c1c2c3",
-    borderRadius: 12,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: { color: "#A09CAB" },
-  timestamp: {
-    textAlign: "right",
-    color: "#A09CAB",
-    fontSize: 12,
-    marginTop: 4,
-  },
-});

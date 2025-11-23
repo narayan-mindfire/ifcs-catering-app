@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
@@ -55,87 +55,92 @@ export const FlightRow: React.FC<Props> = ({
     );
   };
 
-  const rowStyle = [styles.rowContainer, !isLastInGroup && styles.attachedRow];
-
   return (
-    <View style={rowStyle}>
-      <View style={[styles.cell, { flex: 6, alignItems: "flex-start" }]}>
+    <View
+      className={`flex-row items-stretch bg-bg-surface px-2.5 min-h-[70px] ${
+        !isLastInGroup
+          ? "border-b-0 border-b-transparent"
+          : "border-b border-border-secondary"
+      }`}
+    >
+      <View className="flex-[6] py-2.5 px-1 justify-center items-start">
         {AirlineIcon ? (
           <AirlineIcon width={50} height={50} />
         ) : (
-          <Text style={{ fontSize: 14 }}>N/A</Text>
+          <Text className="text-sm">N/A</Text>
         )}
       </View>
 
-      <View style={[styles.cell, { flex: 12 }]}>
-        <Text style={styles.routeText}>{getRouteDisplay()}</Text>
+      <View className="flex-[12] py-2.5 px-1 justify-center">
+        <Text className="text-base text-text-primary font-semibold">
+          {getRouteDisplay()}
+        </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 8 }]}>
-        <Text style={styles.flightNumber}>
+      <View className="flex-[8] py-2.5 px-1 justify-center">
+        <Text className="text-[17px] font-semibold text-black">
           {flight.airline?.designator}
           {flight.flightNumber}
         </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 3 }]}>
-        <Text style={styles.regularText}>{flight.flightTypeIataCode}</Text>
+      <View className="flex-[3] py-2.5 px-1 justify-center">
+        <Text className="text-base text-text-primary">
+          {flight.flightTypeIataCode}
+        </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 7 }]}>
-        <Text style={styles.regularText}>
+      <View className="flex-[7] py-2.5 px-1 justify-center">
+        <Text className="text-base text-text-primary">
           {formatDate(flight.scheduledDeparture)}
         </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 7 }]}>
-        <Text style={styles.statusText}>STD</Text>
-        <Text style={styles.timeText}>
+      <View className="flex-[7] py-2.5 px-1 justify-center">
+        <Text className="text-xs text-text-muted mb-0.5 uppercase">STD</Text>
+        <Text className="text-[17px] font-semibold text-black">
           {formatTime(flight.scheduledDeparture)}
         </Text>
-        <Text style={styles.codeText}>{flight.departureDestination}</Text>
+        <Text className="text-base font-semibold text-bg-button">
+          {flight.departureDestination}
+        </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 7 }]}>
-        <Text style={styles.statusText}>STA</Text>
-        <Text style={styles.timeText}>
+      <View className="flex-[7] py-2.5 px-1 justify-center">
+        <Text className="text-xs text-text-muted mb-0.5 uppercase">STA</Text>
+        <Text className="text-[17px] font-semibold text-black">
           {formatTime(flight.scheduledArrival)}
         </Text>
-        <Text style={styles.codeText}>{flight.arrivalDestination}</Text>
+        <Text className="text-base font-semibold text-bg-button">
+          {flight.arrivalDestination}
+        </Text>
       </View>
 
-      <View style={[styles.cell, styles.rightBorderCell, { flex: 7 }]}>
+      <View className="flex-[7] py-2.5 px-1 justify-center border-r border-border-secondary mr-1">
         <Text
-          style={[
-            styles.regularText,
-            { color: flight.isCancelled ? "red" : "#333" },
-          ]}
+          className="text-base"
+          style={{ color: flight.isCancelled ? "red" : "#333" }}
         >
           {flight.isCancelled ? "Cancelled" : flight.status}
         </Text>
       </View>
 
-      <View style={[styles.cell, styles.rightBorderCell, { flex: 10 }]}>
-        <Text style={[styles.regularText, { textAlign: "center" }]}>
+      <View className="flex-[10] py-2.5 px-1 justify-center border-r border-border-secondary mr-1">
+        <Text className="text-base text-text-primary text-center">
           {flight.aircraft?.type || "-"}
         </Text>
-        <Text style={[styles.acRegText, { textAlign: "center" }]}>
+        <Text className="text-sm text-text-secondary text-center">
           {flight.aircraft?.registration || "-"}
         </Text>
       </View>
-      <View
-        style={[
-          styles.cell,
-          styles.rightBorderCell,
-          { flex: 5, alignItems: "center" },
-        ]}
-      >
-        <Text style={[styles.paxText, { textAlign: "center" }]}>
+
+      <View className="flex-[5] py-2.5 px-1 justify-center items-center border-r border-border-secondary mr-1">
+        <Text className="text-[17px] font-medium text-black text-center">
           {flight.passengers?.totalCount ?? "-"}
         </Text>
       </View>
 
-      <View style={[styles.cell, { flex: 4, alignItems: "center" }]}>
+      <View className="flex-[4] py-2.5 px-1 justify-center items-center">
         <Pressable onPress={handlePress}>
           <ArrowIcon width={24} height={24} />
         </Pressable>
@@ -143,68 +148,3 @@ export const FlightRow: React.FC<Props> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  rowContainer: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#7b7979ff",
-    paddingHorizontal: 10,
-    minHeight: 70,
-  },
-  attachedRow: {
-    borderBottomWidth: 0,
-    borderBottomColor: "transparent",
-  },
-  cell: {
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    justifyContent: "center",
-  },
-  rightBorderCell: {
-    borderRightWidth: 1,
-    borderRightColor: "#7b7979ff",
-    marginRight: 4,
-  },
-  routeText: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "600",
-  },
-  flightNumber: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#000",
-  },
-  regularText: {
-    fontSize: 16,
-    color: "#333",
-  },
-  statusText: {
-    fontSize: 12,
-    color: "#888",
-    marginBottom: 2,
-    textTransform: "uppercase",
-  },
-  timeText: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#000",
-  },
-  codeText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#00529b",
-  },
-  acRegText: {
-    fontSize: 14,
-    color: "#555",
-  },
-  paxText: {
-    fontSize: 17,
-    fontWeight: "500",
-    color: "#000",
-  },
-});

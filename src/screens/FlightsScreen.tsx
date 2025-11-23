@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
-  StyleSheet,
   FlatList,
   ActivityIndicator,
   View,
@@ -125,7 +124,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   const renderFlightGroup = ({ item: group }: { item: Flight[] }) => {
     const isPaired = group.length > 1;
     return (
-      <View style={styles.groupContainer}>
+      <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
         {group.map((flight, index) => (
           <FlightRow
             key={flight.id}
@@ -147,7 +146,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 
   if (isLoading && flightGroups.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
+      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
         <ActivityIndicator size="large" color="#00529b" />
       </SafeAreaView>
     );
@@ -155,40 +154,45 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 
   if (error && flightGroups.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
-        <Text style={{ color: "red", fontSize: 16 }}>{error}</Text>
+      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
+        <Text className="text-red-500 text-base">{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-bg-tertiary">
       <BreadCrumb items={breadcrumbItems} />
 
-      <View style={styles.filterContainer}>
+      <View className="flex-row justify-between items-end px-4 py-3 bg-bg-tertiary">
         <View>
-          <Text style={styles.stationCode}>YUL</Text>
+          <Text className="font-extrabold text-4xl text-text-primary">YUL</Text>
         </View>
-        <View style={styles.filtersRight}>
+        <View className="flex-row gap-2.5">
           <Pressable
-            style={styles.filterInputWrapper}
+            className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center"
             onPress={() => setShowDatePicker(!showDatePicker)}
           >
             <Text
-              style={[styles.filterText, !selectedDate && { color: "#999" }]}
+              className={`px-2.5 text-base flex-1 ${
+                selectedDate ? "text-text-primary" : "text-text-tertiary"
+              }`}
             >
               {selectedDate ? formatDateToISO(selectedDate) : "Date"}
             </Text>
             {selectedDate && (
-              <Pressable onPress={clearDate} style={styles.clearButton}>
-                <Text style={styles.clearButtonText}>✕</Text>
+              <Pressable
+                onPress={clearDate}
+                className="px-2.5 h-full justify-center"
+              >
+                <Text className="text-sm text-text-tertiary font-bold">✕</Text>
               </Pressable>
             )}
           </Pressable>
 
-          <View style={styles.filterInputWrapper}>
+          <View className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center">
             <TextInput
-              style={styles.filterInput}
+              className="px-2.5 text-base text-text-primary h-full flex-1"
               placeholder="Flight #"
               placeholderTextColor="#999"
               value={flightNumFilter}
@@ -199,29 +203,36 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {showDatePicker && (
-        <View style={styles.datePickerContainer}>
-          <View style={styles.datePickerWrapper}>
+        <View className="bg-black/50 absolute top-0 left-0 right-0 bottom-0 z-[1000] justify-center items-center">
+          <View className="bg-bg-surface rounded-xl p-4 shadow-lg min-w-[300px]">
             <DateTimePicker
               testID="dateTimePicker"
               value={selectedDate || new Date()}
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={onDateChange}
-              style={styles.datePicker}
+              style={{
+                width: "100%",
+                height: Platform.OS === "ios" ? 350 : "auto",
+              }}
             />
             {Platform.OS === "ios" && (
-              <View style={styles.datePickerButtons}>
+              <View className="flex-row justify-between mt-4 gap-3">
                 <Pressable
-                  style={[styles.dateButton, styles.cancelButton]}
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-tertiary"
                   onPress={clearDate}
                 >
-                  <Text style={styles.cancelButtonText}>Clear</Text>
+                  <Text className="text-text-primary text-base font-semibold">
+                    Clear
+                  </Text>
                 </Pressable>
                 <Pressable
-                  style={[styles.dateButton, styles.confirmButton]}
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-button"
                   onPress={confirmDateIOS}
                 >
-                  <Text style={styles.confirmButtonText}>Done</Text>
+                  <Text className="text-text-surface text-base font-semibold">
+                    Done
+                  </Text>
                 </Pressable>
               </View>
             )}
@@ -241,8 +252,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={{ paddingBottom: 20 }}
         ListEmptyComponent={
           !isLoading ? (
-            <View style={styles.center}>
-              <Text style={{ marginTop: 20, color: "#888", fontSize: 16 }}>
+            <View className="justify-center items-center">
+              <Text className="mt-5 text-text-muted text-base">
                 No flights found matching filters.
               </Text>
             </View>
@@ -254,137 +265,3 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default FlightsScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  center: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  groupContainer: {
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#7b7979ff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: "#f5f5f5",
-  },
-  stationLabel: {
-    color: "#555",
-    fontSize: 12,
-    textTransform: "uppercase",
-    marginBottom: -4,
-  },
-  stationCode: {
-    fontWeight: "800",
-    fontSize: 36,
-    color: "#333",
-  },
-  filtersRight: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  filterInputWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d1d1",
-    width: 140,
-    height: 45,
-    justifyContent: "center",
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  filterInput: {
-    paddingHorizontal: 10,
-    fontSize: 16,
-    color: "#333",
-    height: "100%",
-    flex: 1,
-  },
-  filterText: {
-    paddingHorizontal: 10,
-    fontSize: 16,
-    color: "#333",
-    flex: 1,
-  },
-  clearButton: {
-    paddingHorizontal: 10,
-    height: "100%",
-    justifyContent: "center",
-  },
-  clearButtonText: {
-    fontSize: 14,
-    color: "#999",
-    fontWeight: "bold",
-  },
-  // --- DATE PICKER STYLES ---
-  datePickerContainer: {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  datePickerWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    minWidth: 300,
-  },
-  datePicker: {
-    width: "100%",
-    height: Platform.OS === "ios" ? 350 : "auto",
-  },
-  datePickerButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 16,
-    gap: 12,
-  },
-  dateButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#f0f0f0",
-  },
-  confirmButton: {
-    backgroundColor: "#00529b",
-  },
-  cancelButtonText: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  confirmButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
