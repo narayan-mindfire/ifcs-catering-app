@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   FlatList,
   Modal,
@@ -21,11 +20,9 @@ import {
   StringIcon,
 } from "../../assets/icons";
 import { stowageData, StowageItem } from "../../const/PreparationData";
-// Custom Components
 import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
-// Import your PDF file here
-// Ensure 'sample.pdf' exists in your assets folder
+
 const SAMPLE_PDF = require("../../assets/sample.pdf");
 
 const PAX_DATA = [
@@ -36,27 +33,19 @@ const PAX_DATA = [
 ];
 
 export const PreparationsScreen: React.FC = () => {
-  // --- State: Pax Modal ---
   const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
-
-  // --- State: Detail Modal ---
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<StowageItem | null>(null);
-
-  // --- State: PDF Modal ---
   const [pdfVisible, setPdfVisible] = useState(false);
 
-  // Ref for positioning Pax Modal
   const buttonRef = useRef<View>(null);
-
-  // --- Handlers ---
 
   const handleOpenPaxModal = () => {
     buttonRef.current?.measure((fx, fy, width, height, px, py) => {
       setDropdownPos({
-        top: py + height + 5, // Position slightly below button
-        left: px, // Align left edge
+        top: py + height + 5,
+        left: px,
       });
       setPaxModalVisible(true);
     });
@@ -72,14 +61,13 @@ export const PreparationsScreen: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: StowageItem }) => (
-    <View style={styles.tableRow}>
-      <Text style={[styles.tableCell, { flex: 1, fontWeight: "600" }]}>
+    <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary">
+      <Text className="flex-1 text-lg text-text-primary font-semibold">
         {item.stowage}
       </Text>
-      <Text style={[styles.tableCell, { flex: 3 }]}>{item.carrier}</Text>
+      <Text className="flex-[3] text-lg text-text-primary">{item.carrier}</Text>
 
-      <View style={[styles.actionCell, { flex: 4 }]}>
-        {/* 1. PDF Trigger */}
+      <View className="flex-[4] flex-row justify-end items-center gap-5">
         <TouchableOpacity onPress={handleOpenPdf}>
           <QrIcon height={30} width={30} />
         </TouchableOpacity>
@@ -90,7 +78,6 @@ export const PreparationsScreen: React.FC = () => {
         <CheckIcon height={30} width={30} />
         <DeliveryIcon height={30} width={30} />
 
-        {/* 2. Details Modal Trigger */}
         <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
           <InfoIcon height={30} width={30} />
         </TouchableOpacity>
@@ -99,15 +86,15 @@ export const PreparationsScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
-      {/* --- 1. PDF Viewer Modal --- */}
+    <View className="flex-1 bg-bg-surface p-4">
+      {/* PDF Viewer Modal */}
       <PdfViewerModal
         visible={pdfVisible}
         onClose={() => setPdfVisible(false)}
         source={SAMPLE_PDF}
       />
 
-      {/* --- 2. Pax Count Dropdown Modal --- */}
+      {/* Pax Count Dropdown Modal */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -115,33 +102,40 @@ export const PreparationsScreen: React.FC = () => {
         onRequestClose={() => setPaxModalVisible(false)}
       >
         <TouchableOpacity
-          style={styles.modalOverlay}
+          className="flex-1 bg-transparent"
           activeOpacity={1}
           onPress={() => setPaxModalVisible(false)}
         >
           <View
-            style={[
-              styles.paxModalContent,
-              {
-                top: dropdownPos.top,
-                left: dropdownPos.left,
-              },
-            ]}
+            className="absolute w-[250px] bg-bg-surface rounded-lg p-4 shadow-lg border border-border-muted"
+            style={{
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+            }}
           >
-            <Text style={styles.modalTitle}>Passenger Count</Text>
-            <View style={styles.modalDivider} />
+            <Text className="text-xl font-bold text-text-primary mb-2.5">
+              Passenger Count
+            </Text>
+            <View className="h-px bg-border-muted mb-2.5" />
 
             {PAX_DATA.map((item, index) => (
-              <View key={index} style={styles.modalRow}>
-                <Text style={styles.modalLabel}>{item.label}</Text>
-                <Text style={styles.modalValue}>{item.value}</Text>
+              <View
+                key={index}
+                className="flex-row justify-between items-center mb-2"
+              >
+                <Text className="text-lg text-text-secondary flex-1">
+                  {item.label}
+                </Text>
+                <Text className="text-sm font-semibold text-text-primary">
+                  {item.value}
+                </Text>
               </View>
             ))}
           </View>
         </TouchableOpacity>
       </Modal>
 
-      {/* --- 3. Details Modal --- */}
+      {/* Details Modal */}
       <FlightPreparationDetailsModal
         visible={detailModalVisible}
         onClose={() => setDetailModalVisible(false)}
@@ -149,49 +143,67 @@ export const PreparationsScreen: React.FC = () => {
         carrier={selectedItem?.carrier}
       />
 
-      {/* --- Top Button Row --- */}
-      <View style={styles.buttonRow}>
-        <View style={styles.leftButton}>
-          <Pressable style={styles.actionButton}>
+      {/* Top Button Row */}
+      <View className="flex-row mb-5 z-10">
+        <View className="flex-1 flex-row justify-start">
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
-            <Text style={styles.actionButtonText}>Prep Scan</Text>
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Prep Scan
+            </Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
-            <Text style={styles.actionButtonText}>Verify Seal</Text>
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Verify Seal
+            </Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
-            <Text style={styles.actionButtonText}>Assemble Scan</Text>
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Assemble Scan
+            </Text>
           </Pressable>
-          <Pressable style={styles.actionButton}>
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
-            <Text style={styles.actionButtonText}>Load Scan</Text>
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Load Scan
+            </Text>
           </Pressable>
         </View>
 
-        <View style={styles.rightButton}>
-          {/* Ref attached here for measurement */}
+        <View className="flex-1 flex-row justify-end">
           <View ref={buttonRef} collapsable={false}>
-            <Pressable style={styles.actionButton} onPress={handleOpenPaxModal}>
+            <Pressable
+              className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
+              onPress={handleOpenPaxModal}
+            >
               <SeatIcon />
-              <Text style={styles.actionButtonText}>PAX Count</Text>
+              <Text className="text-xl font-normal m-0.5 text-text-primary">
+                PAX Count
+              </Text>
             </Pressable>
           </View>
 
-          <Pressable style={styles.actionButton}>
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <PrintIcon />
-            <Text style={styles.actionButtonText}>Print</Text>
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Print
+            </Text>
           </Pressable>
         </View>
       </View>
 
-      {/* --- Main List Table --- */}
-      <View style={styles.tableContainer}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Stowage</Text>
-          <Text style={[styles.tableHeaderText, { flex: 3 }]}>Carrier</Text>
-          <Text style={[styles.tableHeaderText, { flex: 4 }]}>
+      {/* Main List Table */}
+      <View className="flex-1 border border-border-secondary rounded-[10px]">
+        <View className="flex-row bg-bg-quaternary p-4 border-b border-border-muted rounded-t-[10px]">
+          <Text className="flex-1 text-lg font-semibold text-text-secondary">
+            Stowage
+          </Text>
+          <Text className="flex-[3] text-lg font-semibold text-text-secondary">
+            Carrier
+          </Text>
+          <Text className="flex-[4] text-lg font-semibold text-text-secondary">
             <Text style={{ paddingLeft: 600, textAlign: "center" }}>
               Action
             </Text>
@@ -205,8 +217,10 @@ export const PreparationsScreen: React.FC = () => {
           renderItem={renderItem}
           keyExtractor={(item, index) => item.id + index}
           ListEmptyComponent={() => (
-            <View style={styles.tableBody}>
-              <Text style={styles.emptyText}>No stowage data found.</Text>
+            <View className="p-4">
+              <Text className="text-center text-text-muted mt-6">
+                No stowage data found.
+              </Text>
             </View>
           )}
         />
@@ -214,132 +228,3 @@ export const PreparationsScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 16,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    marginBottom: 20,
-    zIndex: 1,
-  },
-  leftButton: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-  },
-  rightButton: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  actionButtonText: {
-    fontSize: 20,
-    fontWeight: "400",
-    margin: 2,
-    color: "#333",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#f9f9f9",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    borderRadius: 10,
-  },
-  tableHeaderText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#555",
-  },
-  tableContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#a09e9eff",
-    borderRadius: 10,
-  },
-  tableBody: {
-    padding: 16,
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: 24,
-  },
-  tableRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  tableCell: {
-    fontSize: 18,
-    color: "#333",
-  },
-  actionCell: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    gap: 20,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "transparent", // Allows clicking outside to close
-  },
-  paxModalContent: {
-    position: "absolute",
-    width: 250,
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 16,
-    // Drop Shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-  },
-  modalDivider: {
-    height: 1,
-    backgroundColor: "#eee",
-    marginBottom: 10,
-  },
-  modalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  modalLabel: {
-    fontSize: 18,
-    color: "#555",
-    flex: 1,
-  },
-  modalValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
-});

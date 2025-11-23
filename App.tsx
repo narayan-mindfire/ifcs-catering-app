@@ -1,5 +1,7 @@
 import "react-native-gesture-handler";
+import { useFonts } from "expo-font";
 import React from "react";
+import "./global.css";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import SpotCheckScreen from "./src/screens/SpotCheckScreen";
@@ -9,6 +11,7 @@ import DocumentsScreen from "./src/screens/DocumentsScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
 import FlightDetailsScreen from "./src/screens/FlightDetailsScreen";
 import { Header } from "./src/components/dashboard/Header";
+import { ActivityIndicator } from "react-native";
 
 export type RootStackParamList = {
   Dashboard: undefined;
@@ -30,6 +33,15 @@ const CustomHeader = () => {
 };
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // Arial: require("./assets/fonts/ARIAL.TTF"),
+    Rubik: require("./assets/fonts/Rubik.ttf"),
+    roboto: require("./assets/fonts/Roboto.ttf"),
+  });
+  if (!fontsLoaded) {
+    return <ActivityIndicator />;
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator

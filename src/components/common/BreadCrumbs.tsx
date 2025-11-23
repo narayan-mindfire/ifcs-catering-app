@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 
 interface BreadcrumbItem {
   label: string;
@@ -16,7 +16,7 @@ export const BreadCrumb: React.FC<GenericBreadcrumbProps> = ({ items }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-row items-center px-6 py-3 bg-bg-surface w-full border-b border-b-[#e1e8ed]">
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         const hasAction = !!item.onPress && !isLast;
@@ -24,23 +24,35 @@ export const BreadCrumb: React.FC<GenericBreadcrumbProps> = ({ items }) => {
         if (isLast) {
           return (
             <React.Fragment key={index}>
-              <Text style={styles.currentActiveText}>{item.label}</Text>
+              <Text className="text-[22px] text-[#3a3939] font-bold">
+                {item.label}
+              </Text>
             </React.Fragment>
           );
         }
+
         const itemContent = (
           <TouchableOpacity
             key={index}
             onPress={item.onPress}
             disabled={!hasAction}
-            style={styles.breadcrumbItem}
+            className="mx-1"
           >
-            <Text style={hasAction ? styles.linkText : styles.staticText}>
+            <Text
+              className={`text-lg ${
+                hasAction
+                  ? "text-[#6e6d6dff] font-medium"
+                  : "text-[#232222ff] font-normal"
+              }`}
+            >
               {item.label}
             </Text>
           </TouchableOpacity>
         );
-        const separator = !isLast && <Text style={styles.separator}>›</Text>;
+
+        const separator = !isLast && (
+          <Text className="text-lg text-[#999999] mx-2">›</Text>
+        );
 
         return (
           <React.Fragment key={index}>
@@ -52,39 +64,3 @@ export const BreadCrumb: React.FC<GenericBreadcrumbProps> = ({ items }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: "#ffffff",
-    width: "100%",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e1e8ed",
-  },
-  breadcrumbItem: {
-    marginHorizontal: 4,
-  },
-  linkText: {
-    fontSize: 18,
-    color: "#6e6d6dff",
-    fontWeight: "500",
-  },
-  staticText: {
-    fontSize: 18,
-    color: "#232222ff",
-    fontWeight: "400",
-  },
-  currentActiveText: {
-    fontSize: 22,
-    color: "#3a3939",
-    fontWeight: "700",
-  },
-  separator: {
-    fontSize: 18,
-    color: "#999999",
-    marginHorizontal: 8,
-  },
-});

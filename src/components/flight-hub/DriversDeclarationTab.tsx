@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { DriversDeclaration } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
@@ -48,36 +48,46 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
+    >
       {/* Form Section */}
-      <View style={styles.card}>
-        <Text style={styles.label}>Driver*</Text>
+      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Driver*
+        </Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={driverName}
           onChangeText={setDriverName}
           placeholder="Driver"
         />
 
-        <Text style={styles.label}>RAIC #*</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          RAIC #*
+        </Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={raicNumber}
           onChangeText={setRaicNumber}
           placeholder="RAIC #"
         />
 
-        <Text style={styles.label}>Truck Seal*</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Truck Seal*
+        </Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={truckSeal}
           onChangeText={setTruckSeal}
           placeholder="Truck Seal"
         />
 
-        <Text style={styles.label}>Company*</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Company*
+        </Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={company}
           onChangeText={setCompany}
           placeholder="Company"
@@ -103,79 +113,5 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flexDirection: "row", padding: 10, gap: 20 },
-  card: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    padding: 16,
-  },
-  sectionTitle: { fontSize: 18, color: "#4F4B58", fontWeight: "600" },
-  label: { fontSize: 18, color: "#4F4B58", marginBottom: 6, marginTop: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 18,
-    color: "#27262C",
-    backgroundColor: "#fff",
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    backgroundColor: "#f0f0f0",
-    padding: 12,
-    borderRadius: 12,
-  },
-  confirmationBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    marginBottom: 20,
-  },
-  checkboxMark: {
-    color: "#602AF3",
-    fontSize: 18,
-    marginRight: 10,
-    fontWeight: "bold",
-  },
-  confirmationText: { fontSize: 18, color: "#27262C", flex: 1 },
-  signatureDisplay: {
-    height: 150,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-  },
-  signatureImage: { width: "100%", height: "100%" },
-  signaturePlaceholder: {
-    height: 150,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: "#c1c2c3",
-    borderRadius: 12,
-    backgroundColor: "#dfdddd",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: { color: "#A09CAB" },
-  timestamp: {
-    textAlign: "right",
-    color: "#A09CAB",
-    fontSize: 14,
-    marginTop: 4,
-  },
-});
 
 export default DriversDeclarationTab;

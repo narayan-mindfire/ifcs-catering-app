@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, StyleSheet, useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { Sidebar } from "../components/dashboard/Sidebar";
 import { UserDropdown } from "../components/common/UserDropdown";
 import { MainContent } from "../components/dashboard/MainContent";
@@ -19,13 +19,16 @@ const DashboardContent: React.FC = () => {
   const mainContentFlex = isLargeScreen ? 6 : 5;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.bodyContainer}>
-        <View style={[styles.sidebarContainer, { flex: sidebarFlex }]}>
+    <View className="flex-1 bg-bg-quaternary">
+      <View className="flex-1 flex-row py-5">
+        <View className="ml-5 mr-2.5" style={{ flex: sidebarFlex }}>
           <Sidebar userName="Shitanshu" />
         </View>
 
-        <View style={[styles.mainContent, { flex: mainContentFlex }]}>
+        <View
+          className="rounded-2xl overflow-hidden shadow-sm mr-5 bg-bg-surface"
+          style={{ flex: mainContentFlex }}
+        >
           <MainContent />
         </View>
       </View>
@@ -42,28 +45,5 @@ const DashboardContent: React.FC = () => {
 const DashboardScreen: React.FC = () => {
   return <DashboardContent />;
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  bodyContainer: {
-    flex: 1,
-    flexDirection: "row",
-    paddingVertical: 20,
-  },
-  sidebarContainer: {
-    marginLeft: 20,
-    marginRight: 10,
-  },
-  mainContent: {
-    borderRadius: 16,
-    overflow: "hidden",
-    elevation: 3,
-    marginRight: 20,
-    backgroundColor: "#ffffff",
-  },
-});
 
 export default DashboardScreen;
