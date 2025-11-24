@@ -152,7 +152,6 @@ const DeliveriesScreen: React.FC = () => {
 
   return (
     <View className="flex-1 flex-row bg-bg-surface">
-      {/* Sidebar */}
       <View className="w-[260px] border-r border-border-muted p-4 bg-bg-surface">
         <View className="pb-4 border-b border-border-muted mb-4">
           <Text className="text-lg font-semibold text-text-primary mb-3">
@@ -280,7 +279,7 @@ const DeliveriesScreen: React.FC = () => {
                         : "text-text-secondary"
                     }`}
                   >
-                    Driver&apos;s Declaration
+                    Driver&apos;s Compliance
                   </Text>
                 </Pressable>
                 <Pressable

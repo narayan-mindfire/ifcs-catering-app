@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Switch, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+  Modal,
+} from "react-native";
 import { AppButton } from "../common/AppButton";
 
 const mockTasks = [
@@ -45,30 +52,98 @@ const formatTime = (totalSeconds: number) => {
   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 };
 
+const EndShiftModal: React.FC<{
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}> = ({ visible, onClose, onConfirm }) => {
+  return (
+    <Modal
+      transparent={true}
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View className="flex-1 bg-black/50 justify-center items-center px-5">
+        <View className="bg-bg-surface rounded-2xl p-6 w-full max-w-[500px] shadow-lg">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-2xl font-bold text-text-primary">
+              End Shift?
+            </Text>
+            <TouchableOpacity onPress={onClose} className="p-1">
+              <View className="relative">
+                <View className="w-6 h-0.5 bg-text-secondary absolute rotate-45 top-1.5" />
+                <View className="w-6 h-0.5 bg-text-secondary absolute -rotate-45 top-1.5" />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <Text className="text-lg text-text-secondary mb-3">
+            Are you sure, you want to end your Shift?
+          </Text>
+
+          <Text className="text-lg text-text-secondary mb-6">
+            This can not be undone!
+          </Text>
+
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={onClose}
+              className="flex-1 bg-bg-surface border-2 border-border-secondary py-3.5 rounded-xl"
+            >
+              <Text className="text-center text-lg font-semibold text-text-primary">
+                No, Don&apos;t End.
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={onConfirm}
+              className="flex-1 bg-[#EF4444] py-3.5 rounded-xl"
+            >
+              <Text className="text-center text-lg font-semibold text-text-surface">
+                Yes, End My Shift!
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 const ShiftControlCard: React.FC = () => {
   type ShiftState = "OFF" | "ON" | "BREAK";
   const [shiftState, setShiftState] = useState<ShiftState>("OFF");
-  const [workingTimeInSeconds, setWorkingTimeInSeconds] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentSessionTime, setCurrentSessionTime] = useState(0);
+  const [totalWorkingTimeToday, setTotalWorkingTimeToday] = useState(0);
   const [isEnabled, setIsEnabled] = React.useState(false);
+  const [showEndShiftModal, setShowEndShiftModal] = useState(false);
   const toggleSwitch = () => setIsEnabled((prev) => !prev);
 
   useEffect(() => {
     if (shiftState === "ON") {
       const intervalId = setInterval(() => {
-        setWorkingTimeInSeconds((prev) => prev + 1);
+        setCurrentSessionTime((prev) => prev + 1);
+        setTotalWorkingTimeToday((prev) => prev + 1);
       }, 1000);
       return () => clearInterval(intervalId);
     }
   }, [shiftState]);
 
   const handleStartShift = () => {
-    setWorkingTimeInSeconds(0);
+    setCurrentSessionTime(0);
     setShiftState("ON");
   };
 
-  const handleEndShift = () => {
-    setWorkingTimeInSeconds(0);
+  const handleEndShiftClick = () => {
+    setShowEndShiftModal(true);
+  };
+
+  const handleEndShiftConfirm = () => {
+    setCurrentSessionTime(0);
     setShiftState("OFF");
+    setShowEndShiftModal(false);
   };
 
   const handleBreakToggle = () => {
@@ -76,74 +151,82 @@ const ShiftControlCard: React.FC = () => {
   };
 
   return (
-    <View className="bg-bg-surface rounded-2xl p-5 shadow-sm">
-      <View className="flex-row justify-between items-center mb-5">
-        <Text className="text-[22px] font-medium text-text-primary">
-          Thu 11 13, Thu
-        </Text>
-        <Switch
-          trackColor={{ false: "#767577", true: "#b399f9ff" }}
-          thumbColor={isEnabled ? "#602AF3" : "#f4f3f4"}
-          onValueChange={toggleSwitch}
-          value={isEnabled}
-        />
-      </View>
-
-      <View className="flex-row mb-5">
-        <View className="flex-[3.5] pr-2.5">
-          <Text className="text-lg text-text-secondary mb-1">My Shift</Text>
-          <Text className="text-lg font-bold text-text-primary">
-            10:00 AM - 6:00 PM
+    <>
+      <View className="bg-bg-surface rounded-2xl p-5 shadow-sm">
+        <View className="flex-row justify-between items-center mb-5">
+          <Text className="text-[22px] font-medium text-text-primary">
+            Thu 11 13, Thu
           </Text>
-        </View>
-
-        <View className="flex-[2.5] pl-2.5">
-          <Text className="text-lg text-text-secondary mb-1">
-            Today&apos;s Working Time
-          </Text>
-          <Text className="text-lg font-bold text-text-primary">
-            {formatTime(workingTimeInSeconds)}
-          </Text>
-        </View>
-      </View>
-
-      <View className="flex-row justify-between">
-        {shiftState === "OFF" ? (
-          <AppButton
-            title="Start Shift"
-            type="primary"
-            onPress={handleStartShift}
-            style={{ flex: 1 }}
+          <Switch
+            trackColor={{ false: "#767577", true: "#b399f9ff" }}
+            thumbColor={isEnabled ? "#602AF3" : "#f4f3f4"}
+            onValueChange={toggleSwitch}
+            value={isEnabled}
           />
-        ) : (
-          <>
-            <AppButton
-              title={shiftState === "BREAK" ? "On Break" : "Start a Break"}
-              type={shiftState === "BREAK" ? "primary" : "secondary"}
-              onPress={handleBreakToggle}
-              IconComponent={
-                shiftState === "BREAK" ? (
-                  <View className="w-2.5 h-3 border-l-[4px] border-r-[4px] border-text-surface mr-2" />
-                ) : (
-                  <View className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-text-primary mr-2" />
-                )
-              }
-              style={{ flex: 3, marginRight: 10 }}
-            />
+        </View>
 
+        <View className="flex-row mb-5">
+          <View className="flex-[3.5] pr-2.5">
+            <Text className="text-lg text-text-secondary mb-1">My Shift</Text>
+            <Text className="text-lg font-bold text-text-primary">
+              10:00 AM - 6:00 PM
+            </Text>
+          </View>
+
+          <View className="flex-[2.5] pl-2.5">
+            <Text className="text-lg text-text-secondary mb-1">
+              Today&apos;s Working Time
+            </Text>
+            <Text className="text-lg font-bold text-text-primary">
+              {formatTime(totalWorkingTimeToday)}
+            </Text>
+          </View>
+        </View>
+
+        <View className="flex-row justify-between">
+          {shiftState === "OFF" ? (
             <AppButton
-              title="End Shift"
-              type="danger"
-              onPress={handleEndShift}
-              IconComponent={
-                <View className="w-2.5 h-2.5 bg-text-surface rounded-sm mr-2" />
-              }
-              style={{ flex: 1, marginLeft: 10 }}
+              title="Start Shift"
+              type="primary"
+              onPress={handleStartShift}
+              style={{ flex: 1 }}
             />
-          </>
-        )}
+          ) : (
+            <>
+              <AppButton
+                title={shiftState === "BREAK" ? "On Break" : "Start a Break"}
+                type={shiftState === "BREAK" ? "primary" : "secondary"}
+                onPress={handleBreakToggle}
+                IconComponent={
+                  shiftState === "BREAK" ? (
+                    <View className="w-2.5 h-3 border-l-[4px] border-r-[4px] border-text-surface mr-2" />
+                  ) : (
+                    <View className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-text-primary mr-2" />
+                  )
+                }
+                style={{ flex: 3, marginRight: 10 }}
+              />
+
+              <AppButton
+                title="End Shift"
+                type="danger"
+                onPress={handleEndShiftClick}
+                IconComponent={
+                  <View className="w-2.5 h-2.5 bg-text-surface rounded-sm mr-2" />
+                }
+                style={{ flex: 1, marginLeft: 10 }}
+              />
+            </>
+          )}
+        </View>
       </View>
-    </View>
+
+      <EndShiftModal
+        visible={showEndShiftModal}
+        onClose={() => setShowEndShiftModal(false)}
+        onConfirm={handleEndShiftConfirm}
+      />
+    </>
   );
 };
 

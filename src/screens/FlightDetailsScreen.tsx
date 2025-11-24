@@ -5,8 +5,8 @@ import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
 
 import { PreparationsScreen } from "./details/Preparations";
-import { FoodOrderScreen } from "./details/FoodOrder";
-import { InvoiceScreen } from "./details/Invoice";
+// import { FoodOrderScreen } from "./details/FoodOrder";
+// import { InvoiceScreen } from "./details/Invoice";
 import DeliveriesScreen from "./details/Deliveries";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 
@@ -119,9 +119,9 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         }}
       >
         <Tab.Screen name="Preparations" component={PreparationsScreen} />
-        <Tab.Screen name="FoodOrder" component={FoodOrderScreen} />
+        {/* <Tab.Screen name="FoodOrder" component={FoodOrderScreen} /> */}
         <Tab.Screen name="Deliveries" component={DeliveriesScreen} />
-        <Tab.Screen name="Invoice" component={InvoiceScreen} />
+        {/* <Tab.Screen name="Invoice" component={InvoiceScreen} /> */}
       </Tab.Navigator>
     </View>
   );

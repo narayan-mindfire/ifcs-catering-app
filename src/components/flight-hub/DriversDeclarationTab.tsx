@@ -108,7 +108,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
         isOpen={showSignatureModal}
         onClose={() => setShowSignatureModal(false)}
         onSave={handleSaveSignature}
-        title="Driver's Declaration Signature"
+        title="Driver's Compliance Signature"
       />
     </ScrollView>
   );
