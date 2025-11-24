@@ -52,14 +52,12 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
-    // For Android, close picker after selection
     if (Platform.OS === "android") {
       setShowDatePicker(false);
       if (event.type === "set" && date) {
         setSelectedDate(date);
       }
     } else {
-      // For iOS, update date immediately
       if (date) {
         setSelectedDate(date);
       }
@@ -211,6 +209,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={onDateChange}
+              accentColor="#602AF3"
+              textColor="#602AF3"
               style={{
                 width: "100%",
                 height: Platform.OS === "ios" ? 350 : "auto",

@@ -67,12 +67,12 @@ export const FlightRow: React.FC<Props> = ({
         {AirlineIcon ? (
           <AirlineIcon width={50} height={50} />
         ) : (
-          <Text className="text-sm">N/A</Text>
+          <Text className="text-base">N/A</Text>
         )}
       </View>
 
       <View className="flex-[12] py-2.5 px-1 justify-center">
-        <Text className="text-base text-text-primary font-semibold">
+        <Text className="text-lg text-text-primary font-semibold">
           {getRouteDisplay()}
         </Text>
       </View>
@@ -85,40 +85,43 @@ export const FlightRow: React.FC<Props> = ({
       </View>
 
       <View className="flex-[3] py-2.5 px-1 justify-center">
-        <Text className="text-base text-text-primary">
+        <Text className="text-lg text-text-primary">
           {flight.flightTypeIataCode}
         </Text>
       </View>
 
       <View className="flex-[7] py-2.5 px-1 justify-center">
-        <Text className="text-base text-text-primary">
-          {formatDate(flight.scheduledDeparture)}
+        <Text className="text-lg text-text-primary">
+          {formatDate(flight.scheduledDeparture)
+            .split(" ")
+            .slice(0, 2)
+            .join(" ")}
         </Text>
       </View>
 
       <View className="flex-[7] py-2.5 px-1 justify-center">
-        <Text className="text-xs text-text-muted mb-0.5 uppercase">STD</Text>
+        <Text className="text-s text-text-muted mb-0.5 uppercase">STD</Text>
         <Text className="text-[17px] font-semibold text-black">
           {formatTime(flight.scheduledDeparture)}
         </Text>
-        <Text className="text-base font-semibold text-bg-button">
+        <Text className="text-lg font-semibold text-bg-button">
           {flight.departureDestination}
         </Text>
       </View>
 
       <View className="flex-[7] py-2.5 px-1 justify-center">
-        <Text className="text-xs text-text-muted mb-0.5 uppercase">STA</Text>
+        <Text className="text-s text-text-muted mb-0.5 uppercase">STA</Text>
         <Text className="text-[17px] font-semibold text-black">
           {formatTime(flight.scheduledArrival)}
         </Text>
-        <Text className="text-base font-semibold text-bg-button">
+        <Text className="text-lg font-semibold text-bg-button">
           {flight.arrivalDestination}
         </Text>
       </View>
 
       <View className="flex-[7] py-2.5 px-1 justify-center border-r border-border-secondary mr-1">
         <Text
-          className="text-base"
+          className="text-lg"
           style={{ color: flight.isCancelled ? "red" : "#333" }}
         >
           {flight.isCancelled ? "Cancelled" : flight.status}
@@ -126,10 +129,10 @@ export const FlightRow: React.FC<Props> = ({
       </View>
 
       <View className="flex-[10] py-2.5 px-1 justify-center border-r border-border-secondary mr-1">
-        <Text className="text-base text-text-primary text-center">
+        <Text className="text-lg text-text-primary text-center">
           {flight.aircraft?.type || "-"}
         </Text>
-        <Text className="text-sm text-text-secondary text-center">
+        <Text className="text-base text-text-secondary text-center">
           {flight.aircraft?.registration || "-"}
         </Text>
       </View>

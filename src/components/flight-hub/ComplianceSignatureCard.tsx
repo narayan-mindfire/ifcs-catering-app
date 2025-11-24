@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { Checkbox } from "./SharedComponents";
+import { formatDate } from "../../utils/dateFormatter";
 
 interface ComplianceSignatureCardProps {
   title: string;
@@ -49,7 +50,7 @@ export const ComplianceSignatureCard: React.FC<
             />
           </View>
           <Text className="text-right text-text-tertiary text-xs mt-1">
-            Signed: {signedAt ? new Date(signedAt).toLocaleDateString() : ""}
+            Signed: {signedAt ? formatDate(String(signedAt)) : ""}
           </Text>
         </View>
       ) : (

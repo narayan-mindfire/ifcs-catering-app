@@ -9,6 +9,7 @@ import { PreparationsScreen } from "./details/Preparations";
 // import { InvoiceScreen } from "./details/Invoice";
 import DeliveriesScreen from "./details/Deliveries";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { formatDate } from "../utils/dateFormatter";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -95,7 +96,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             ROUTE: {flightRoute}
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            DATE: {date.split("T")[0]}
+            DATE: {formatDate(date.split("T")[0])}
           </Text>
         </View>
       </View>

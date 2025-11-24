@@ -70,12 +70,15 @@ const EndShiftModal: React.FC<{
             <Text className="text-2xl font-bold text-text-primary">
               End Shift?
             </Text>
+
+            {/* --- FIXED BUTTON SECTION --- */}
             <TouchableOpacity onPress={onClose} className="p-1">
-              <View className="relative">
-                <View className="w-6 h-0.5 bg-text-secondary absolute rotate-45 top-1.5" />
-                <View className="w-6 h-0.5 bg-text-secondary absolute -rotate-45 top-1.5" />
+              <View className="w-6 h-6 relative justify-center items-center">
+                <View className="w-6 h-0.5 bg-text-secondary absolute rotate-45" />
+                <View className="w-6 h-0.5 bg-text-secondary absolute -rotate-45" />
               </View>
             </TouchableOpacity>
+            {/* ---------------------------- */}
           </View>
 
           <Text className="text-lg text-text-secondary mb-3">
