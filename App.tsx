@@ -21,6 +21,7 @@ export type RootStackParamList = {
   Documents: { flightId: string };
   FlightDetails: {
     flightId: string;
+    flightNumber: string;
     route: string;
     date: string;
   };

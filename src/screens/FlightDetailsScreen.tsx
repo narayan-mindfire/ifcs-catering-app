@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, Pressable } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
+import { useFlightStore } from "../store/useFlightStore";
 
 import { PreparationsScreen } from "./details/Preparations";
 // import { FoodOrderScreen } from "./details/FoodOrder";
@@ -66,7 +67,17 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 };
 
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId, route: flightRoute, date } = route.params;
+  const { flightId, route: flightRoute, date, flightNumber } = route.params;
+  const selectFlightById = useFlightStore((state) => state.selectFlightById);
+  const fetchPreparations = useFlightStore((state) => state.fetchPreparations);
+
+  useEffect(() => {
+    if (flightId) {
+      selectFlightById(flightId);
+      fetchPreparations(flightId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flightId]);
 
   const [currentTab, setCurrentTab] = React.useState("Preparations");
   const breadcrumbItems = [
@@ -90,7 +101,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View className="flex-row p-4">
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            FLIGHT: {flightId}
+            FLIGHT: {flightNumber}
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
             ROUTE: {flightRoute}

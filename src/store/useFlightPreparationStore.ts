@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import { FlightPreparation, UpdateFlagPayload } from "../types/preparations";
+import { Preparation, UpdateFlagPayload } from "../types/preparations";
 
 const BASE_URL = "https://your-api.com/api/v1";
 
 interface FlightPreparationState {
-  preparations: FlightPreparation[];
+  preparations: Preparation[];
   isLoading: boolean;
   error: string | null;
 

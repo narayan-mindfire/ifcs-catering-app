@@ -20,6 +20,7 @@ import { FlightRow } from "../components/flight-list/FlightRow";
 import { FlightListHeader } from "../components/flight-list/FlightListHeader";
 import { useFlightStore } from "../store/useFlightStore";
 import { Flight } from "../types/flight";
+import { formatDate } from "../utils/dateFormatter";
 
 type FlightsScreenRouteProp = RouteProp<RootStackParamList, "Flights">;
 type FlightsScreenNavigationProp = StackNavigationProp<
@@ -176,7 +177,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
                 selectedDate ? "text-text-primary" : "text-text-tertiary"
               }`}
             >
-              {selectedDate ? formatDateToISO(selectedDate) : "Date"}
+              {selectedDate ? formatDate(String(selectedDate)) : "Date"}
             </Text>
             {selectedDate && (
               <Pressable

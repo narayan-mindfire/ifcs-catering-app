@@ -1,6 +1,6 @@
 export type PreparationAction = "seal" | "assembly" | "load";
 
-export interface FlightPreparation {
+export interface Preparation {
   id: string;
   flightId: string;
   packingStandardId?: string;
@@ -47,6 +47,12 @@ export interface FlightPreparation {
 
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PreparationApiResponse {
+  success: boolean;
+  message: string;
+  data: Preparation[];
 }
 
 export interface UpdateFlagPayload {

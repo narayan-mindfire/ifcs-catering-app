@@ -29,7 +29,8 @@ export const FlightRow: React.FC<Props> = ({
 
   const handlePress = () => {
     navigation.navigate("FlightDetails", {
-      flightId: flight.flightNumber,
+      flightNumber: flight.flightNumber,
+      flightId: flight.id,
       route: flight.pairRoute,
       date: flight.scheduledDeparture,
     });
