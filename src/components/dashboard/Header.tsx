@@ -1,21 +1,16 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../../App";
-import { DropdownIcon, UserIcon } from "../../assets/icons";
 import { EmairatesIcon } from "../../assets/logos";
+import { UserIcon, DropdownIcon } from "../../assets/icons";
+type RootStackParamList = {
+  Dashboard: undefined;
+  Profile: undefined;
+};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type StackNavigationProp<T extends RootStackParamList> = any;
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
-
-const { width } = Dimensions.get("window");
 
 interface HeaderProps {
   userName: string;
@@ -26,8 +21,11 @@ export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
-    <View style={headerStyles.header}>
-      <View style={headerStyles.headerLeft}>
+    <View
+      className="flex flex-row items-center justify-between px-5 py-4 
+                 bg-bg-surface border-b border-border-muted relative z-10 mt-3"
+    >
+      <View className="flex-1">
         <TouchableOpacity
           onPress={() => {
             navigation.navigate("Dashboard");
@@ -36,31 +34,34 @@ export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
           <View>
             <Image
               source={require("../../assets/images/galleyx.png")}
-              style={headerStyles.logoImage}
+              className="h-[35px] w-[180px] md:h-10 md:w-[200px]"
               resizeMode="contain"
             />
           </View>
         </TouchableOpacity>
       </View>
 
-      <View style={headerStyles.headerRight}>
+      <View className="flex-1 flex flex-row items-center justify-end pr-[120px]">
         <View>
           <TouchableOpacity
-            style={headerStyles.userProfile}
+            className="flex flex-row items-center mr-5"
             onPress={onUserPress}
           >
-            <View style={headerStyles.profileImage}>
-              <Text style={headerStyles.profileImageText}>
+            <View className="w-[35px] h-[35px] rounded-full justify-center items-center mr-2">
+              <Text className="text-lg">
                 <UserIcon />
               </Text>
             </View>
-            <Text style={headerStyles.userName}>
+            <Text className="text-base md:text-lg font-semibold text-text-secondary mr-1.5">
               {userName} <DropdownIcon />
             </Text>
           </TouchableOpacity>
         </View>
-        <View style={headerStyles.airlineLogoWrapper}>
-          <View style={headerStyles.airlineLogo}>
+        <View className="absolute right-5 bottom-[-30px] z-10">
+          <View
+            className="bg-red-700 w-[65px] h-[60px] md:w-[60px] md:h-[65px] 
+                       rounded-lg justify-center items-center"
+          >
             <EmairatesIcon height={65} width={60} />
           </View>
         </View>
@@ -68,67 +69,3 @@ export const Header: React.FC<HeaderProps> = ({ userName, onUserPress }) => {
     </View>
   );
 };
-
-const headerStyles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e1e8ed",
-    elevation: 3,
-    position: "relative",
-    zIndex: 1,
-    marginTop: 10,
-  },
-  headerLeft: { flex: 1 },
-  logoImage: { height: width > 768 ? 40 : 35, width: width > 768 ? 200 : 180 },
-  headerRight: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    paddingEnd: 120,
-  },
-  userProfile: { flexDirection: "row", alignItems: "center", marginRight: 20 },
-  profileImage: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  profileImageText: { fontSize: 18 },
-  userName: {
-    fontSize: width > 768 ? 18 : 16,
-    fontWeight: "600",
-    color: "#374151",
-    marginRight: 5,
-  },
-
-  airlineLogoWrapper: {
-    position: "absolute",
-    right: 20,
-    bottom: -30,
-    zIndex: 10,
-  },
-
-  airlineLogo: {
-    backgroundColor: "#D71921",
-    width: width > 768 ? 60 : 65,
-    height: width > 768 ? 65 : 60,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-});

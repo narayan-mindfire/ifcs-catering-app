@@ -5,7 +5,7 @@ export interface StowageItem {
 }
 
 export const stowageData: StowageItem[] = [
-  { id: "1", stowage: "101T", carrier: "JC Headsets X1?" },
+  { id: "1", stowage: "101T", carrier: "JC Headsets X12" },
   { id: "2", stowage: "101B", carrier: "Ice" },
   { id: "3", stowage: "103F", carrier: "B737 Holloware ISC-MEA" },
   { id: "4", stowage: "104", carrier: "JC ISC - MEA NB Spare" },

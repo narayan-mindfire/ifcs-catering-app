@@ -1,17 +1,9 @@
 import React, { useRef } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  StyleSheet,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, Modal, Pressable, TouchableOpacity } from "react-native";
 import SignatureScreen, {
   SignatureViewRef,
 } from "react-native-signature-canvas";
 
-// --- Checkbox Component ---
 interface CheckboxProps {
   checked: boolean;
   onChange: (val: boolean) => void;
@@ -24,17 +16,24 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   label,
 }) => (
   <Pressable
-    style={styles.checkboxContainer}
+    className="flex-row items-center my-1.5"
     onPress={() => onChange(!checked)}
   >
-    <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-      {checked && <Text style={styles.checkmark}>✓</Text>}
+    <View
+      className={`w-6 h-6 border-2 rounded justify-center items-center mr-2.5 ${
+        checked
+          ? "bg-bg-button border-bg-button"
+          : "bg-bg-surface border-border-secondary"
+      }`}
+    >
+      {checked && (
+        <Text className="text-text-surface font-bold text-sm">✓</Text>
+      )}
     </View>
-    {label && <Text style={styles.checkboxLabel}>{label}</Text>}
+    {label && <Text className="text-lg text-text-secondary">{label}</Text>}
   </Pressable>
 );
 
-// --- Signature Modal Component ---
 interface SignatureModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -57,16 +56,18 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
 
   return (
     <Modal visible={isOpen} animationType="none" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{title}</Text>
+      <View className="flex-1 bg-black/50 justify-center items-center">
+        <View className="w-[80%] h-[70%] bg-bg-surface rounded-xl overflow-hidden">
+          <View className="flex-row justify-between p-4 border-b border-border-muted">
+            <Text className="text-lg font-semibold text-text-primary">
+              {title}
+            </Text>
             <Pressable onPress={onClose}>
-              <Text style={styles.closeText}>✕</Text>
+              <Text className="text-xl text-text-muted">✕</Text>
             </Pressable>
           </View>
 
-          <View style={styles.signatureContainer}>
+          <View className="flex-1 bg-red-500">
             <SignatureScreen
               ref={ref}
               onOK={handleSignature}
@@ -106,18 +107,20 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             />
           </View>
 
-          <View style={styles.modalFooter}>
+          <View className="flex-row p-4 border-t border-border-muted gap-2.5">
             <TouchableOpacity
-              style={styles.clearButton}
+              className="flex-1 p-3 items-center border border-red-500 rounded-lg"
               onPress={() => ref.current?.clearSignature()}
             >
-              <Text style={styles.clearButtonText}>Clear</Text>
+              <Text className="text-red-500 font-semibold text-lg">Clear</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.saveButton}
+              className="flex-1 p-3 items-center bg-bg-button rounded-lg"
               onPress={() => ref.current?.readSignature()}
             >
-              <Text style={styles.saveButtonText}>Save Signature</Text>
+              <Text className="text-text-surface font-semibold text-lg">
+                Save Signature
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -125,73 +128,3 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 5,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: "#ccc",
-    borderRadius: 4,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-    backgroundColor: "#fff",
-  },
-  checkboxChecked: { backgroundColor: "#602AF3", borderColor: "#602AF3" },
-  checkmark: { color: "#fff", fontWeight: "bold", fontSize: 14 },
-  checkboxLabel: { fontSize: 16, color: "#4F4B58" },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    width: "80%",
-    height: "70%",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EAE9EC",
-  },
-  modalTitle: { fontSize: 18, fontWeight: "600", color: "#27262C" },
-  closeText: { fontSize: 20, color: "#7A7A7A" },
-  signatureContainer: { flex: 1, backgroundColor: "#d12222ff" },
-  modalFooter: {
-    flexDirection: "row",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#EAE9EC",
-    gap: 10,
-  },
-  clearButton: {
-    flex: 1,
-    padding: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "red",
-    borderRadius: 8,
-  },
-  clearButtonText: { color: "red", fontWeight: "600" },
-  saveButton: {
-    flex: 1,
-    padding: 12,
-    alignItems: "center",
-    backgroundColor: "#602AF3",
-    borderRadius: 8,
-  },
-  saveButtonText: { color: "#fff", fontWeight: "600" },
-});

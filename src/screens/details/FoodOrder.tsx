@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { View, Text, FlatList } from "react-native";
 import { FoodOrderItem, foodOrderData } from "../../const/foodOrderData";
 
 export const FoodOrderScreen: React.FC = () => {
@@ -12,75 +12,80 @@ export const FoodOrderScreen: React.FC = () => {
     },
     { ordered: 0, distributed: 0, loaded: 0 },
   );
+
   const renderSummaryRow = () => (
-    <View style={[styles.tableRow, { backgroundColor: "#fff" }]}>
-      <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-      <Text style={[styles.tableCell, { flex: 2 }]}></Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}></Text>
-      <Text
-        style={[
-          styles.tableCell,
-          { flex: 3, textAlign: "right", paddingRight: 20, color: "#888" },
-        ]}
-      >
+    <View className="flex-row items-center px-4 py-2.5 border-b border-bg-tertiary bg-bg-surface">
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-[3] text-lg text-text-secondary"></Text>
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-1 text-lg text-text-secondary"></Text>
+      <Text className="flex-[3] text-lg text-text-muted text-right pr-5">
         Total
       </Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {totals.ordered}
       </Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {totals.distributed}
       </Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {totals.loaded}
       </Text>
     </View>
   );
 
   const renderItem = ({ item }: { item: FoodOrderItem }) => (
-    <View style={styles.tableRow}>
-      <Text style={[styles.tableCell, { flex: 1 }]}>{item.station}</Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}>{item.flightNumber}</Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}>{item.sku}</Text>
-      <Text style={[styles.tableCell, { flex: 1 }]}>{item.cabin}</Text>
-      <Text style={[styles.tableCell, { flex: 3 }]}>{item.mealName}</Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+    <View className="flex-row items-center px-4 py-2.5 border-b border-bg-tertiary">
+      <Text className="flex-1 text-lg text-text-secondary">{item.station}</Text>
+      <Text className="flex-1 text-lg text-text-secondary">
+        {item.flightNumber}
+      </Text>
+      <Text className="flex-1 text-lg text-text-secondary">{item.sku}</Text>
+      <Text className="flex-1 text-lg text-text-secondary">{item.cabin}</Text>
+      <Text className="flex-[3] text-lg text-text-secondary">
+        {item.mealName}
+      </Text>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {item.ordered}
       </Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {item.distributed}
       </Text>
-      <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>
+      <Text className="flex-1 text-lg text-text-secondary text-center">
         {item.loaded}
       </Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tableContainer}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Station</Text>
-          <Text style={[styles.tableHeaderText, { flex: 1 }]}>FLT #</Text>
-          <Text style={[styles.tableHeaderText, { flex: 1 }]}>SKU</Text>
-          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Cabin</Text>
-          <Text style={[styles.tableHeaderText, { flex: 3 }]}>Name Y</Text>
-          <Text
-            style={[styles.tableHeaderText, { flex: 1, textAlign: "center" }]}
-          >
+    <View className="flex-1 bg-bg-surface p-4">
+      <View className="flex-1 border border-border-secondary rounded-[10px] overflow-hidden">
+        <View className="flex-row bg-bg-tertiary py-3 px-4 border-b border-border-muted">
+          <Text className="flex-1 text-lg font-semibold text-text-secondary">
+            Station
+          </Text>
+          <Text className="flex-1 text-lg font-semibold text-text-secondary">
+            FLT #
+          </Text>
+          <Text className="flex-1 text-lg font-semibold text-text-secondary">
+            SKU
+          </Text>
+          <Text className="flex-1 text-lg font-semibold text-text-secondary">
+            Cabin
+          </Text>
+          <Text className="flex-[3] text-lg font-semibold text-text-secondary">
+            Name Y
+          </Text>
+          <Text className="flex-1 text-lg font-semibold text-text-secondary text-center">
             Ordered
           </Text>
-          <Text
-            style={[styles.tableHeaderText, { flex: 1, textAlign: "center" }]}
-          >
+          <Text className="flex-1 text-lg font-semibold text-text-secondary text-center">
             Distributed
           </Text>
-          <Text
-            style={[styles.tableHeaderText, { flex: 1, textAlign: "center" }]}
-          >
+          <Text className="flex-1 text-lg font-semibold text-text-secondary text-center">
             Loaded
           </Text>
         </View>
@@ -100,8 +105,10 @@ export const FoodOrderScreen: React.FC = () => {
           onLayout={() => {}}
           renderItem={renderItem}
           ListEmptyComponent={() => (
-            <View style={styles.tableBody}>
-              <Text style={styles.emptyText}>No food orders found.</Text>
+            <View className="p-4">
+              <Text className="text-center text-text-muted mt-6">
+                No food orders found.
+              </Text>
             </View>
           )}
         />
@@ -109,81 +116,3 @@ export const FoodOrderScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 16,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  leftButton: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-start",
-  },
-  rightButton: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  actionButtonText: {
-    fontSize: 18,
-    fontWeight: "400",
-    marginLeft: 8,
-    color: "#333",
-  },
-  tableContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#a09e9eff",
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#f2f2f2",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  tableHeaderText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#555",
-  },
-  tableBody: {
-    padding: 16,
-  },
-  tableRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  tableCell: {
-    fontSize: 18,
-    color: "#555",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#888",
-    marginTop: 24,
-  },
-});

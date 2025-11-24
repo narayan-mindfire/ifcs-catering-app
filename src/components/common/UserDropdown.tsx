@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 
 interface UserDropdownProps {
   visible: boolean;
@@ -14,52 +14,34 @@ export const UserDropdown: React.FC<UserDropdownProps> = ({
 }) => {
   return (
     <Modal
-      transparent={true}
+      transparent
       visible={visible}
       animationType="fade"
       onRequestClose={onClose}
     >
       <TouchableOpacity
-        style={dropdownStyles.dropdownOverlay}
+        className="flex-1"
         activeOpacity={1}
         onPressOut={onClose}
       >
-        <View style={dropdownStyles.dropdownContainer}>
+        <View
+          className="
+            absolute top-[70px] right-[80px]
+            bg-bg-surface rounded-lg p-2
+            shadow-lg min-w-[150px]
+          "
+        >
           <TouchableOpacity
-            style={dropdownStyles.dropdownItem}
+            className="py-2.5 px-4"
             onPress={() => {
               onLogout();
               onClose();
             }}
           >
-            <Text style={dropdownStyles.dropdownItemText}>Logout</Text>
+            <Text className="text-base text-text-primary">Logout</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
     </Modal>
   );
 };
-
-const dropdownStyles = StyleSheet.create({
-  dropdownOverlay: {
-    flex: 1,
-  },
-  dropdownContainer: {
-    position: "absolute",
-    top: 70,
-    right: 80,
-    backgroundColor: "white",
-    borderRadius: 8,
-    padding: 8,
-    elevation: 5,
-    minWidth: 150,
-  },
-  dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-  },
-  dropdownItemText: {
-    fontSize: 16,
-    color: "#333",
-  },
-});

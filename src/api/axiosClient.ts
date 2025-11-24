@@ -1,9 +1,10 @@
 import axios from "axios";
 const apiClient = axios.create({
-  baseURL: process.env.EXPO_BASE_URL,
+  baseURL: "https://worrisome-overmodestly-nisha.ngrok-free.dev/api/v1",
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "any-value",
     Accept: "application/json",
   },
 });

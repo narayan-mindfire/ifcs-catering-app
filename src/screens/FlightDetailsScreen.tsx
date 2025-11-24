@@ -1,14 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
 
 import { PreparationsScreen } from "./details/Preparations";
-import { FoodOrderScreen } from "./details/FoodOrder";
-import { InvoiceScreen } from "./details/Invoice";
+// import { FoodOrderScreen } from "./details/FoodOrder";
+// import { InvoiceScreen } from "./details/Invoice";
 import DeliveriesScreen from "./details/Deliveries";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { formatDate } from "../utils/dateFormatter";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -25,7 +26,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   const inactiveColor = "#8e8e93";
 
   return (
-    <View style={styles.tabBarContainer}>
+    <View className="flex-row px-3 pt-2.5 bg-bg-surface gap-2">
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const label = options.title || route.name;
@@ -47,16 +48,13 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
           <Pressable
             key={route.key}
             onPress={onPress}
-            style={[
-              styles.tabButton,
-              isFocused ? styles.tabButtonActive : styles.tabButtonInactive,
-            ]}
+            className={`flex-1 py-4 rounded-lg flex-row items-center justify-center ${
+              isFocused ? "bg-bg-button" : "bg-bg-tertiary"
+            }`}
           >
             <Text
-              style={[
-                styles.tabText,
-                { color: isFocused ? "#fff" : inactiveColor },
-              ]}
+              className="text-xl font-medium"
+              style={{ color: isFocused ? "#fff" : inactiveColor }}
             >
               {label}
             </Text>
@@ -86,14 +84,20 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View className="flex-1 bg-bg-surface">
+      <View className="bg-bg-surface border-b border-border-muted">
         <BreadCrumb items={breadcrumbItems} />
 
-        <View style={styles.flightInfo}>
-          <Text style={styles.infoText}>FLIGHT: {flightId}</Text>
-          <Text style={styles.infoText}>ROUTE: {flightRoute}</Text>
-          <Text style={styles.infoText}>DATE: {date.split("T")[0]}</Text>
+        <View className="flex-row p-4">
+          <Text className="text-2xl font-semibold text-text-primary mr-5">
+            FLIGHT: {flightId}
+          </Text>
+          <Text className="text-2xl font-semibold text-text-primary mr-5">
+            ROUTE: {flightRoute}
+          </Text>
+          <Text className="text-2xl font-semibold text-text-primary mr-5">
+            DATE: {formatDate(date.split("T")[0])}
+          </Text>
         </View>
       </View>
 
@@ -116,59 +120,12 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         }}
       >
         <Tab.Screen name="Preparations" component={PreparationsScreen} />
-        <Tab.Screen name="FoodOrder" component={FoodOrderScreen} />
+        {/* <Tab.Screen name="FoodOrder" component={FoodOrderScreen} /> */}
         <Tab.Screen name="Deliveries" component={DeliveriesScreen} />
-        <Tab.Screen name="Invoice" component={InvoiceScreen} />
+        {/* <Tab.Screen name="Invoice" component={InvoiceScreen} /> */}
       </Tab.Navigator>
     </View>
   );
 };
 
 export default FlightDetailsScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  flightInfo: {
-    flexDirection: "row",
-    padding: 16,
-  },
-  infoText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginRight: 20,
-  },
-  tabBarContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    backgroundColor: "#fff",
-    gap: 8,
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabButtonActive: {
-    backgroundColor: "#602AF3",
-  },
-  tabButtonInactive: {
-    backgroundColor: "#f0f0f0",
-  },
-  tabText: {
-    fontSize: 20,
-    fontWeight: "500",
-  },
-});

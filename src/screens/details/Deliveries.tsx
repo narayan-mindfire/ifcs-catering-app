@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Pressable,
   ScrollView,
   ActivityIndicator,
@@ -46,7 +45,7 @@ const DeliveriesScreen: React.FC = () => {
       deliveryNumber: deliveries.length + 1,
       contentPreparers: [],
       securityCompliance: null,
-      crewCompliance: null, // <--- ADDED INITIALIZATION
+      crewCompliance: null,
       driversDeclaration: null,
       securityDeclaration: null,
       createdAt: new Date(),
@@ -123,7 +122,7 @@ const DeliveriesScreen: React.FC = () => {
     setDeliveries(
       deliveries.map((d) =>
         d.id === selectedDeliveryId
-          ? { ...d, securityCompliance: compliance, updatedAt: new Date() } // <--- FIXED KEY (was tsaCompliance)
+          ? { ...d, securityCompliance: compliance, updatedAt: new Date() }
           : d,
       ),
     );
@@ -152,43 +151,42 @@ const DeliveriesScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Sidebar */}
-      <View style={styles.sidebar}>
-        <View style={styles.sidebarHeader}>
-          <Text style={styles.sidebarTitle}>
+    <View className="flex-1 flex-row bg-bg-surface">
+      <View className="w-[260px] border-r border-border-muted p-4 bg-bg-surface">
+        <View className="pb-4 border-b border-border-muted mb-4">
+          <Text className="text-lg font-semibold text-text-primary mb-3">
             Deliveries ({deliveries.length})
           </Text>
-          <Pressable onPress={handleAddNewDelivery} style={styles.addButton}>
+          <Pressable
+            onPress={handleAddNewDelivery}
+            className="flex-row items-center justify-center bg-bg-tertiary p-2.5 rounded-lg gap-2"
+          >
             {AddIcon ? (
               <AddIcon width={16} height={16} />
             ) : (
-              <Text style={{ fontSize: 16, color: "#27262C" }}>+</Text>
+              <Text className="text-lg text-text-primary">+</Text>
             )}
-            <Text style={styles.addButtonText}>Add New Delivery</Text>
+            <Text className="text-lg text-text-primary">Add New Delivery</Text>
           </Pressable>
         </View>
 
-        <ScrollView style={styles.deliveryList}>
+        <ScrollView className="flex-1">
           {deliveries.map((delivery) => (
             <Pressable
               key={delivery.id}
               onPress={() => setSelectedDeliveryId(delivery.id)}
-              style={[
-                styles.deliveryItem,
+              className={`p-3 rounded-lg mb-2 ${
                 selectedDeliveryId === delivery.id
-                  ? styles.deliveryItemSelected
-                  : null,
-              ]}
+                  ? "bg-bg-accent border border-bg-primary"
+                  : "bg-bg-tertiary"
+              }`}
             >
               <Text
-                style={[
-                  styles.deliveryItemText,
-                  selectedDeliveryId === delivery.id && {
-                    color: "#27262C",
-                    fontWeight: "600",
-                  },
-                ]}
+                className={`text-base ${
+                  selectedDeliveryId === delivery.id
+                    ? "text-text-primary font-semibold"
+                    : "text-text-primary"
+                }`}
               >
                 Delivery {delivery.deliveryNumber}
               </Text>
@@ -197,97 +195,105 @@ const DeliveriesScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      <View style={styles.mainContent}>
+      <View className="flex-1 flex-col">
         {isLoading ? (
-          <View style={styles.loadingContainer}>
+          <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#602AF3" />
           </View>
         ) : selectedDelivery ? (
           <>
             {/* Tabs */}
-            <View style={styles.tabContainer}>
+            <View className="p-4 pb-0 bg-bg-surface h-[60px] w-auto">
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.tabBarContent} // Use contentContainerStyle for inner layout
-                style={styles.tabBar} // Style for the ScrollView itself
+                contentContainerStyle={{
+                  flexDirection: "row",
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: 25,
+                  padding: 1,
+                  alignItems: "center",
+                  minWidth: "100%",
+                  justifyContent: "space-between",
+                }}
+                style={{ flexGrow: 0 }}
               >
                 <Pressable
                   onPress={() => setActiveTab("dispatcher")}
-                  style={[
-                    styles.tabButton,
-                    activeTab === "dispatcher" && styles.tabActive,
-                  ]}
+                  className={`py-2.5 px-5 rounded-[20px] ${
+                    activeTab === "dispatcher" ? "bg-bg-secondary" : ""
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "dispatcher" && styles.tabTextActive,
-                    ]}
+                    className={`text-lg ${
+                      activeTab === "dispatcher"
+                        ? "text-text-primary font-semibold"
+                        : "text-text-secondary"
+                    }`}
                   >
                     Dispatcher Comments
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setActiveTab("preparers")}
-                  style={[
-                    styles.tabButton,
-                    activeTab === "preparers" && styles.tabActive,
-                  ]}
+                  className={`py-2.5 px-5 rounded-[20px] ${
+                    activeTab === "preparers" ? "bg-bg-secondary" : ""
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "preparers" && styles.tabTextActive,
-                    ]}
+                    className={`text-lg ${
+                      activeTab === "preparers"
+                        ? "text-text-primary font-semibold"
+                        : "text-text-secondary"
+                    }`}
                   >
                     Content Preparers
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setActiveTab("tsa")}
-                  style={[
-                    styles.tabButton,
-                    activeTab === "tsa" && styles.tabActive,
-                  ]}
+                  className={`py-2.5 px-5 rounded-[20px] ${
+                    activeTab === "tsa" ? "bg-bg-secondary" : ""
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "tsa" && styles.tabTextActive,
-                    ]}
+                    className={`text-lg ${
+                      activeTab === "tsa"
+                        ? "text-text-primary font-semibold"
+                        : "text-text-secondary"
+                    }`}
                   >
                     Security Compliance
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setActiveTab("driver")}
-                  style={[
-                    styles.tabButton,
-                    activeTab === "driver" && styles.tabActive,
-                  ]}
+                  className={`py-2.5 px-5 rounded-[20px] ${
+                    activeTab === "driver" ? "bg-bg-secondary" : ""
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "driver" && styles.tabTextActive,
-                    ]}
+                    className={`text-lg ${
+                      activeTab === "driver"
+                        ? "text-text-primary font-semibold"
+                        : "text-text-secondary"
+                    }`}
                   >
-                    Driver&apos;s Declaration
+                    Driver&apos;s Compliance
                   </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setActiveTab("crew")}
-                  style={[
-                    styles.tabButton,
-                    activeTab === "crew" && styles.tabActive,
-                  ]}
+                  className={`py-2.5 px-5 rounded-[20px] ${
+                    activeTab === "crew" ? "bg-bg-secondary" : ""
+                  }`}
                 >
                   <Text
-                    style={[
-                      styles.tabText,
-                      activeTab === "crew" && styles.tabTextActive,
-                    ]}
+                    className={`text-lg ${
+                      activeTab === "crew"
+                        ? "text-text-primary font-semibold"
+                        : "text-text-secondary"
+                    }`}
                   >
                     Crew Compliance
                   </Text>
@@ -295,7 +301,7 @@ const DeliveriesScreen: React.FC = () => {
               </ScrollView>
             </View>
 
-            <View style={styles.contentArea}>
+            <View className="flex-1 p-4 bg-bg-surface">
               {activeTab === "dispatcher" && <DispatcherCommentsTab />}
               {activeTab === "preparers" && (
                 <ContentPreparersTab
@@ -327,9 +333,11 @@ const DeliveriesScreen: React.FC = () => {
             </View>
           </>
         ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No delivery selected</Text>
-            <Text style={styles.emptySub}>
+          <View className="flex-1 justify-center items-center">
+            <Text className="text-lg text-text-tertiary mb-2">
+              No delivery selected
+            </Text>
+            <Text className="text-3xl text-text-tertiary">
               Add a new delivery or select one from the sidebar
             </Text>
           </View>
@@ -338,96 +346,5 @@ const DeliveriesScreen: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-  },
-
-  sidebar: {
-    width: 260,
-    borderRightWidth: 1,
-    borderRightColor: "#EAE9EC",
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-  sidebarHeader: {
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EAE9EC",
-    marginBottom: 16,
-  },
-  sidebarTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#27262C",
-    marginBottom: 12,
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f0f0f0",
-    padding: 10,
-    borderRadius: 8,
-    gap: 8,
-  },
-  addButtonText: { fontSize: 18, color: "#27262C" },
-  deliveryList: { flex: 1 },
-  deliveryItem: {
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    marginBottom: 8,
-  },
-  deliveryItemSelected: {
-    backgroundColor: "#E2D8FD",
-    borderWidth: 1,
-    borderColor: "#B79EFA",
-  },
-  deliveryItemText: { fontSize: 16, color: "#27262C" },
-
-  mainContent: { flex: 1, flexDirection: "column" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-
-  tabContainer: {
-    padding: 16,
-    paddingBottom: 0,
-    backgroundColor: "#fff",
-    height: 60,
-    width: "auto",
-  },
-
-  tabBar: {
-    flexGrow: 0,
-  },
-
-  tabBarContent: {
-    flexDirection: "row",
-    backgroundColor: "#f0f0f0",
-    borderRadius: 25,
-    padding: 1,
-    alignItems: "center",
-    minWidth: "100%",
-    justifyContent: "space-between",
-  },
-
-  tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-  },
-  tabActive: { backgroundColor: "#dfdddd" },
-  tabText: { fontSize: 18, color: "#4F4B58" },
-  tabTextActive: { color: "#27262C", fontWeight: "600" },
-
-  contentArea: { flex: 1, padding: 16, backgroundColor: "#fff" },
-
-  emptyState: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyTitle: { fontSize: 18, color: "#A09CAB", marginBottom: 8 },
-  emptySub: { fontSize: 14, color: "#A09CAB" },
-});
 
 export default DeliveriesScreen;

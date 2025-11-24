@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-} from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { CrewCompliance } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
@@ -73,31 +66,36 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>
+    <ScrollView
+      contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
+    >
+      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <Text className="text-lg text-text-secondary mb-3 font-semibold">
           Additional Requirement for Flight to the USA
         </Text>
 
-        <Text style={styles.label}>Name</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">Name</Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={fullName}
           onChangeText={setFullName}
           placeholder="Enter Name"
         />
 
-        <Text style={styles.label}>RAIC #</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          RAIC #
+        </Text>
         <TextInput
-          style={styles.input}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={raicNumber}
           onChangeText={setRaicNumber}
           placeholder="RAIC #"
         />
 
-        <Text style={styles.label}>Note</Text>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">Note</Text>
         <TextInput
-          style={[styles.input, { height: 80, textAlignVertical: "top" }]}
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface h-20"
+          style={{ textAlignVertical: "top" }}
           value={note}
           onChangeText={setNote}
           placeholder="Enter note"
@@ -106,15 +104,14 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
 
         <Pressable
           onPress={handleAddPreparer}
-          style={[
-            styles.button,
+          className={`p-3 rounded-xl items-center mt-5 ${
             !fullName.trim() || !raicNumber.trim()
-              ? styles.buttonDisabled
-              : null,
-          ]}
+              ? "bg-bg-secondary"
+              : "bg-bg-button"
+          }`}
           disabled={!fullName.trim() || !raicNumber.trim()}
         >
-          <Text style={styles.buttonText}>Add</Text>
+          <Text className="text-text-surface font-semibold">Add</Text>
         </Pressable>
       </View>
 
@@ -137,102 +134,5 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flexDirection: "row", padding: 10, gap: 20 },
-  card: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    color: "#4F4B58",
-    marginBottom: 12,
-    fontWeight: "600",
-  },
-  radioGroup: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 16,
-    marginBottom: 16,
-    alignItems: "center",
-  },
-  label: { fontSize: 16, color: "#4F4B58", marginBottom: 6, marginTop: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-    color: "#27262C",
-    backgroundColor: "#fff",
-  },
-  button: {
-    backgroundColor: "#602AF3",
-    padding: 12,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonDisabled: { backgroundColor: "#dfdddd" },
-  buttonText: { color: "#fff", fontWeight: "600" },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EAE9EC",
-    paddingBottom: 10,
-  },
-  confirmationBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    marginBottom: 20,
-  },
-  checkboxMark: {
-    color: "#602AF3",
-    fontSize: 16,
-    marginRight: 10,
-    fontWeight: "bold",
-  },
-  confirmationText: { fontSize: 16, color: "#27262C", flex: 1 },
-
-  signatureDisplay: {
-    height: 150,
-    borderWidth: 1,
-    borderColor: "#EAE9EC",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-  },
-  signatureImage: { width: "100%", height: "100%" },
-  signaturePlaceholder: {
-    height: 150,
-    borderWidth: 2,
-    borderStyle: "dashed",
-    borderColor: "#c1c2c3",
-    borderRadius: 12,
-    backgroundColor: "#dfdddd",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: { color: "#A09CAB" },
-  timestamp: {
-    textAlign: "right",
-    color: "#A09CAB",
-    fontSize: 14,
-    marginTop: 4,
-  },
-});
 
 export default CrewComplianceTab;

@@ -1,13 +1,17 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
-  StyleSheet,
   FlatList,
   ActivityIndicator,
   View,
   Text,
   TextInput,
+  Pressable,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
@@ -24,71 +28,101 @@ type FlightsScreenNavigationProp = StackNavigationProp<
 >;
 
 interface Props {
-  route: FlightsScreenRouteProp;
   navigation: FlightsScreenNavigationProp;
+  route: FlightsScreenRouteProp;
 }
 
-const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
+const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   const { flightGroups, isLoading, error, fetchFlights } = useFlightStore();
 
-  // --- 1. FILTER STATE ---
-  const [dateFilter, setDateFilter] = useState("");
+  // --- State ---
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [flightNumFilter, setFlightNumFilter] = useState("");
+  const [airlineFilter] = useState("");
 
   useEffect(() => {
     fetchFlights();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- 2. DEDUPLICATION LOGIC (The Fix) ---
-  const cleanedFlightGroups = useMemo(() => {
-    // Step A: Find all Flight IDs that exist inside a "Paired" group (length > 1)
-    const idsInPairs = new Set<string>();
+  // --- Helpers ---
+  const formatDateToISO = (date: Date) => {
+    return date.toISOString().split("T")[0];
+  };
 
+  const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+      if (event.type === "set" && date) {
+        setSelectedDate(date);
+      }
+    } else {
+      if (date) {
+        setSelectedDate(date);
+      }
+    }
+  };
+
+  const clearDate = () => {
+    setSelectedDate(null);
+    setShowDatePicker(false);
+  };
+
+  const confirmDateIOS = () => {
+    setShowDatePicker(false);
+  };
+
+  // --- Filter Logic ---
+  const cleanedFlightGroups = useMemo(() => {
+    const idsInPairs = new Set<string>();
     flightGroups.forEach((group) => {
       if (group.length > 1) {
         group.forEach((flight) => idsInPairs.add(flight.id));
       }
     });
-
-    // Step B: Filter the groups
     return flightGroups.filter((group) => {
-      // Always keep pairs
       if (group.length > 1) return true;
-
-      // For single flights, only keep them if their ID is NOT in the paired list
       const singleFlightId = group[0].id;
       return !idsInPairs.has(singleFlightId);
     });
   }, [flightGroups]);
 
-  // --- 3. FILTER LOGIC (Applied to cleanedFlightGroups) ---
   const filteredData = useMemo(() => {
-    if (!dateFilter && !flightNumFilter) return cleanedFlightGroups;
+    if (!selectedDate && !flightNumFilter && !airlineFilter)
+      return cleanedFlightGroups;
+
+    const dateString = selectedDate ? formatDateToISO(selectedDate) : "";
 
     return cleanedFlightGroups.filter((group) => {
       return group.some((flight) => {
-        // Flight Number Check
         const fullFlightNum = `${flight.airline?.code || "WY"}${flight.flightNumber}`;
         const matchesNum = flightNumFilter
           ? fullFlightNum.toLowerCase().includes(flightNumFilter.toLowerCase())
           : true;
 
-        // Date Check
-        const matchesDate = dateFilter
-          ? flight.scheduledDeparture.startsWith(dateFilter)
+        const matchesDate = selectedDate
+          ? flight.scheduledDeparture.startsWith(dateString)
           : true;
 
-        return matchesNum && matchesDate;
+        const matchesAirline = airlineFilter
+          ? flight.airline?.name
+              ?.toLowerCase()
+              .includes(airlineFilter.toLowerCase()) ||
+            flight.airline?.code
+              ?.toLowerCase()
+              .includes(airlineFilter.toLowerCase())
+          : true;
+
+        return matchesNum && matchesDate && matchesAirline;
       });
     });
-  }, [cleanedFlightGroups, dateFilter, flightNumFilter]);
+  }, [cleanedFlightGroups, selectedDate, flightNumFilter, airlineFilter]);
 
   const renderFlightGroup = ({ item: group }: { item: Flight[] }) => {
     const isPaired = group.length > 1;
-
     return (
-      <View style={styles.groupContainer}>
+      <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
         {group.map((flight, index) => (
           <FlightRow
             key={flight.id}
@@ -110,7 +144,7 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (isLoading && flightGroups.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
+      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
         <ActivityIndicator size="large" color="#00529b" />
       </SafeAreaView>
     );
@@ -118,38 +152,93 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (error && flightGroups.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
-        <Text style={{ color: "red" }}>{error}</Text>
+      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
+        <Text className="text-red-500 text-base">{error}</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView className="flex-1 bg-bg-tertiary">
       <BreadCrumb items={breadcrumbItems} />
 
-      {/* --- FILTER UI SECTION --- */}
-      <View style={styles.filterContainer}>
-        <View style={styles.filterInputWrapper}>
-          <TextInput
-            style={styles.filterInput}
-            placeholder="date"
-            placeholderTextColor="#999"
-            value={dateFilter}
-            onChangeText={setDateFilter}
-          />
+      <View className="flex-row justify-between items-end px-4 py-3 bg-bg-tertiary">
+        <View>
+          <Text className="font-extrabold text-4xl text-text-primary">YUL</Text>
         </View>
+        <View className="flex-row gap-2.5">
+          <Pressable
+            className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center"
+            onPress={() => setShowDatePicker(!showDatePicker)}
+          >
+            <Text
+              className={`px-2.5 text-base flex-1 ${
+                selectedDate ? "text-text-primary" : "text-text-tertiary"
+              }`}
+            >
+              {selectedDate ? formatDateToISO(selectedDate) : "Date"}
+            </Text>
+            {selectedDate && (
+              <Pressable
+                onPress={clearDate}
+                className="px-2.5 h-full justify-center"
+              >
+                <Text className="text-sm text-text-tertiary font-bold">✕</Text>
+              </Pressable>
+            )}
+          </Pressable>
 
-        <View style={styles.filterInputWrapper}>
-          <TextInput
-            style={styles.filterInput}
-            placeholder="Flight"
-            placeholderTextColor="#999"
-            value={flightNumFilter}
-            onChangeText={setFlightNumFilter}
-          />
+          <View className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center">
+            <TextInput
+              className="px-2.5 text-base text-text-primary h-full flex-1"
+              placeholder="Flight #"
+              placeholderTextColor="#999"
+              value={flightNumFilter}
+              onChangeText={setFlightNumFilter}
+            />
+          </View>
         </View>
       </View>
+
+      {showDatePicker && (
+        <View className="bg-black/50 absolute top-0 left-0 right-0 bottom-0 z-[1000] justify-center items-center">
+          <View className="bg-bg-surface rounded-xl p-4 shadow-lg min-w-[300px]">
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={selectedDate || new Date()}
+              mode="date"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              onChange={onDateChange}
+              accentColor="#602AF3"
+              textColor="#602AF3"
+              style={{
+                width: "100%",
+                height: Platform.OS === "ios" ? 350 : "auto",
+              }}
+            />
+            {Platform.OS === "ios" && (
+              <View className="flex-row justify-between mt-4 gap-3">
+                <Pressable
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-tertiary"
+                  onPress={clearDate}
+                >
+                  <Text className="text-text-primary text-base font-semibold">
+                    Clear
+                  </Text>
+                </Pressable>
+                <Pressable
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-button"
+                  onPress={confirmDateIOS}
+                >
+                  <Text className="text-text-surface text-base font-semibold">
+                    Done
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
 
       <FlatList
         style={{ flex: 1 }}
@@ -163,8 +252,8 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
         contentContainerStyle={{ paddingBottom: 20 }}
         ListEmptyComponent={
           !isLoading ? (
-            <View style={styles.center}>
-              <Text style={{ marginTop: 20, color: "#888" }}>
+            <View className="justify-center items-center">
+              <Text className="mt-5 text-text-muted text-base">
                 No flights found matching filters.
               </Text>
             </View>
@@ -176,49 +265,3 @@ const FlightsScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 export default FlightsScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  center: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  groupContainer: {
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#7b7979ff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  // --- FILTER STYLES ---
-  filterContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 10,
-    backgroundColor: "#f5f5f5",
-  },
-  filterInputWrapper: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d1d1",
-    width: 150,
-    height: 40,
-    justifyContent: "center",
-  },
-  filterInput: {
-    paddingHorizontal: 10,
-    fontSize: 14,
-    color: "#333",
-    height: "100%",
-  },
-});
