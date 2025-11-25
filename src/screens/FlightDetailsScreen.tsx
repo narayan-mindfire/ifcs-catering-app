@@ -101,13 +101,16 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View className="flex-row p-4">
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            FLIGHT: {flightNumber}
+            FLIGHT: <Text className="text-text-secondary">{flightNumber}</Text>
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            ROUTE: {flightRoute}
+            ROUTE: <Text className="text-text-secondary">{flightRoute}</Text>
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            DATE: {formatDate(date.split("T")[0])}
+            DATE:{" "}
+            <Text className="text-text-secondary">
+              {formatDate(date.split("T")[0])}
+            </Text>
           </Text>
         </View>
       </View>
