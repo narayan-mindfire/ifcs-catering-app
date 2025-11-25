@@ -3,7 +3,7 @@ import { Flight, FlightApiResponse } from "../types/flight";
 // import { Flight } from "../types/flight";
 import { Preparation, PreparationApiResponse } from "../types/preparations";
 import apiClient from "../api/axiosClient";
-import { flights } from "../const/mocks/mockFlightResponse";
+// import { flights } from "../const/mocks/mockFlightResponse";
 import { mockPreparations } from "../const/PreparationData";
 
 interface FlightStore {
