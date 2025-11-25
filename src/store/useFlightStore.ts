@@ -1,9 +1,9 @@
 import { create } from "zustand";
-// import { Flight, FlightApiResponse } from "../types/flight";
-import { Flight } from "../types/flight";
+import { Flight, FlightApiResponse } from "../types/flight";
+// import { Flight } from "../types/flight";
 import { Preparation, PreparationApiResponse } from "../types/preparations";
-// import apiClient from "../api/axiosClient";
-import { flights } from "../const/mocks/mockFlightResponse";
+import apiClient from "../api/axiosClient";
+// import { flights } from "../const/mocks/mockFlightResponse";
 import { mockPreparations } from "../const/PreparationData";
 
 interface FlightStore {
@@ -26,30 +26,30 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   preparations: [],
   isPrepLoading: false,
 
-  // fetchFlights: async () => {
-  //   set({ isLoading: true, error: null });
-  //   try {
-  //     const response = await apiClient.get<FlightApiResponse>("/flights");
-  //     set({ flightGroups: response.data.data, isLoading: false });
-  //   } catch (err: any) {
-  //     console.error(err);
-  //     set({ error: "Failed to fetch flights", isLoading: false });
-  //   }
-  // },
   fetchFlights: async () => {
     set({ isLoading: true, error: null });
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      set({
-        flightGroups: flights.data as unknown as Flight[][],
-        isLoading: false,
-      });
+      const response = await apiClient.get<FlightApiResponse>("/flights");
+      set({ flightGroups: response.data.data, isLoading: false });
     } catch (err: any) {
       console.error(err);
       set({ error: "Failed to fetch flights", isLoading: false });
     }
   },
+  // fetchFlights: async () => {
+  //   set({ isLoading: true, error: null });
+
+  //   try {
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
+  //     set({
+  //       flightGroups: flights.data as unknown as Flight[][],
+  //       isLoading: false,
+  //     });
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     set({ error: "Failed to fetch flights", isLoading: false });
+  //   }
+  // },
 
   selectFlightById: (id) => {
     const { flightGroups } = get();
