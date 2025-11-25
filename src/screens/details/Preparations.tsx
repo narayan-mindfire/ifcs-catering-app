@@ -1,24 +1,29 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import {
   View,
   Text,
   Pressable,
-  FlatList,
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  SectionList,
+  FlatList,
 } from "react-native";
 import {
   BoxIcon,
-  CheckIcon,
+  StringIcon,
   DeliveryIcon,
-  InfoIcon,
+  CheckIcon,
   LockOpenIcon,
+  BoxInactiveIcon,
+  StringInactiveIcon,
+  DeliveryInactiveIcon,
+  InfoIcon,
   PrintIcon,
   QrIcon,
   ScanIcon,
   SeatIcon,
-  StringIcon,
+  FilterIcon,
 } from "../../assets/icons";
 
 import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
@@ -28,24 +33,207 @@ import { Preparation } from "../../types/preparations";
 
 const SAMPLE_PDF = require("../../assets/sample.pdf");
 
+// --- Constants ---
+const PREPARED_BY_OPTIONS = [
+  "Bond Stores",
+  "Dry Stores",
+  "Laundry",
+  "Loading Bay",
+  "Spare",
+  "Tray Set Up",
+];
+
+// --- Components ---
+
+const ValidationModal = ({
+  visible,
+  message,
+  onClose,
+}: {
+  visible: boolean;
+  message: string;
+  onClose: () => void;
+}) => (
+  <Modal transparent visible={visible} animationType="fade">
+    <View className="flex-1 bg-black/50 justify-center items-center">
+      <View className="bg-bg-surface w-[300px] p-5 rounded-xl shadow-lg border border-border-secondary items-center">
+        <View className="h-12 w-12 rounded-full bg-bg-button/10 items-center justify-center mb-3">
+          <InfoIcon width={24} height={24} color="#602AF3" />
+        </View>
+        <Text className="text-lg font-bold text-text-primary mb-2 text-center">
+          Sequence Required
+        </Text>
+        <Text className="text-base text-text-secondary text-center mb-5">
+          {message}
+        </Text>
+        <TouchableOpacity
+          onPress={onClose}
+          className="bg-bg-button w-full py-3 rounded-lg"
+        >
+          <Text className="text-white font-semibold text-center">OK</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  </Modal>
+);
+
+// --- Custom Multi-Select Dropdown (Background Highlight Style) ---
+const MultiSelectFilter = ({
+  selectedOptions,
+  onToggleOption,
+}: {
+  selectedOptions: string[];
+  onToggleOption: (option: string) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<View>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const toggleDropdown = () => {
+    if (!isOpen) {
+      dropdownRef.current?.measure((fx, fy, width, height, px, py) => {
+        setPos({ top: py + height + 5, left: px, width: 250 });
+        setIsOpen(true);
+      });
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  const displayText =
+    selectedOptions.length === 0
+      ? "Filter (All)"
+      : selectedOptions.length === PREPARED_BY_OPTIONS.length
+        ? "Filter (All)"
+        : `Filter (${selectedOptions.length})`;
+
+  return (
+    <View>
+      <TouchableOpacity
+        ref={dropdownRef}
+        onPress={toggleDropdown}
+        className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
+      >
+        <FilterIcon width={25} height={25} />
+        <Text className="text-xl font-normal m-0.5 text-text-primary ml-2">
+          {displayText}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal transparent visible={isOpen} animationType="fade">
+        <TouchableOpacity
+          className="flex-1 bg-transparent"
+          activeOpacity={1}
+          onPress={() => setIsOpen(false)}
+        >
+          <View
+            className="absolute bg-bg-surface border border-border-muted rounded-lg shadow-lg max-h-[300px]"
+            style={{
+              top: pos.top,
+              left: pos.left,
+              width: pos.width,
+            }}
+          >
+            <FlatList
+              data={PREPARED_BY_OPTIONS}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => {
+                const isSelected = selectedOptions.includes(item);
+                return (
+                  <TouchableOpacity
+                    onPress={() => onToggleOption(item)}
+                    className={`flex-row items-center px-4 py-3 border-b border-bg-tertiary ${
+                      isSelected
+                        ? "bg-bg-accent border-border-accent"
+                        : "bg-bg-surface"
+                    }`}
+                  >
+                    <Text
+                      className={`text-base ${
+                        isSelected
+                          ? "text-text-primary font-semibold"
+                          : "text-text-primary font-normal"
+                      }`}
+                    >
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+};
+
+// --- Main Screen ---
 export const PreparationsScreen: React.FC = () => {
+  // Modals
   const [paxModalVisible, setPaxModalVisible] = useState(false);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<Preparation | null>(null);
   const [pdfVisible, setPdfVisible] = useState(false);
+
+  // Validation
+  const [validationMsg, setValidationMsg] = useState("");
+  const [showValidation, setShowValidation] = useState(false);
+
+  // Filter State
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
+
+  const [selectedItem, setSelectedItem] = useState<Preparation | null>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<View>(null);
 
-  // Split selectors to avoid infinite loops
   const selectedFlight = useFlightStore((state) => state.selectedFlight);
   const preparations = useFlightStore((state) => state.preparations);
   const isPrepLoading = useFlightStore((state) => state.isPrepLoading);
 
+  // --- Filter Logic ---
+  const handleToggleFilter = (option: string) => {
+    setSelectedFilters((prev) => {
+      if (prev.includes(option)) {
+        return prev.filter((item) => item !== option);
+      } else {
+        return [...prev, option];
+      }
+    });
+  };
+
+  const sectionedData = useMemo(() => {
+    let filtered = preparations;
+
+    if (selectedFilters.length > 0) {
+      filtered = preparations.filter((p) =>
+        selectedFilters.includes(p.preparedBy || ""),
+      );
+    }
+
+    const grouped: Record<string, Preparation[]> = {};
+
+    filtered.forEach((item) => {
+      const key = item.preparedBy || "Unassigned";
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(item);
+    });
+
+    const sections = Object.keys(grouped)
+      .sort()
+      .map((key) => ({
+        title: key,
+        data: grouped[key],
+      }));
+
+    return sections;
+  }, [preparations, selectedFilters]);
+
+  // --- Helper Data ---
   const dynamicPaxData = React.useMemo(() => {
     if (!selectedFlight) return [];
-
     const p = selectedFlight.passengers || {};
-
     return [
       {
         label: "Business Studio",
@@ -59,19 +247,13 @@ export const PreparationsScreen: React.FC = () => {
         label: "Economy",
         value: p.economyCount ? String(p.economyCount) : "0",
       },
-      {
-        label: "Crew",
-        value: p.crewCount ? String(p.crewCount) : "0",
-      },
+      { label: "Crew", value: p.crewCount ? String(p.crewCount) : "0" },
     ];
   }, [selectedFlight]);
 
   const handleOpenPaxModal = () => {
     buttonRef.current?.measure((fx, fy, width, height, px, py) => {
-      setDropdownPos({
-        top: py + height + 5,
-        left: px,
-      });
+      setDropdownPos({ top: py + height + 5, left: px });
       setPaxModalVisible(true);
     });
   };
@@ -81,44 +263,110 @@ export const PreparationsScreen: React.FC = () => {
     setDetailModalVisible(true);
   };
 
-  const handleOpenPdf = () => {
-    setPdfVisible(true);
+  const handleSequenceCheck = (
+    stepName: "prepared" | "sealed" | "locked" | "verify" | "delivery",
+    item: Preparation,
+  ) => {
+    const isPrepared = !!item.isContentPrepared;
+    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+    const isLocked =
+      item.assemblyProcessFlag === "inprogress" ||
+      item.assemblyProcessFlag === "completed";
+    const isVerified = item.assemblyProcessFlag === "completed";
+
+    let error = "";
+
+    switch (stepName) {
+      case "prepared":
+        break;
+      case "sealed":
+        if (!isPrepared) error = "Please complete Preparation first.";
+        break;
+      case "locked":
+        if (!isSealed) error = "Please complete Sealing first.";
+        break;
+      case "verify":
+        if (!isLocked) error = "Please complete Locking first.";
+        break;
+      case "delivery":
+        if (!isVerified) error = "Please complete Verification first.";
+        break;
+    }
+
+    if (error) {
+      setValidationMsg(error);
+      setShowValidation(true);
+    } else {
+      console.log(`Step ${stepName} clicked successfully.`);
+    }
   };
 
-  // --- RENDER ITEM ---
-  const renderItem = ({ item }: { item: Preparation }) => (
-    <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary">
-      {/* Column 1: Stowage (Double Width) */}
-      <View className="flex-[2] justify-center">
-        <Text className="text-lg text-text-primary font-semibold">
-          {item.name}
-        </Text>
-      </View>
-
-      {/* Column 2: Carrier */}
-      <View className="flex-[3] justify-center">
-        <Text className="text-lg text-text-primary">
-          {item.equipment || "N/A"}
-        </Text>
-      </View>
-
-      {/* Column 3: Action Icons */}
-      <View className="flex-[4] flex-row justify-end items-center gap-5">
-        <TouchableOpacity onPress={handleOpenPdf}>
-          <QrIcon height={30} width={30} />
-        </TouchableOpacity>
-        <BoxIcon height={30} width={30} />
-        <StringIcon height={30} width={30} />
-        <LockOpenIcon height={30} width={30} />
-        <CheckIcon height={30} width={30} />
-        <DeliveryIcon height={30} width={30} />
-
-        <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
-          <InfoIcon height={30} width={30} />
-        </TouchableOpacity>
-      </View>
+  // --- Renderers ---
+  const renderSectionHeader = ({
+    section: { title },
+  }: {
+    section: { title: string };
+  }) => (
+    <View className="bg-bg-tertiary px-4 py-2 border-b border-border-secondary">
+      <Text className="text-sm font-bold text-text-secondary uppercase">
+        {title}
+      </Text>
     </View>
   );
+
+  const renderItem = ({ item }: { item: Preparation }) => {
+    const isPrepared = !!item.isContentPrepared;
+    const isSealed = !!item.sealTagNumber;
+    const isDelivered = item.loadedTruckFlag === "loaded";
+
+    const RenderBoxIcon = isPrepared ? BoxIcon : BoxInactiveIcon;
+    const RenderStringIcon = isSealed ? StringIcon : StringInactiveIcon;
+    const RenderDeliveryIcon = isDelivered
+      ? DeliveryIcon
+      : DeliveryInactiveIcon;
+
+    return (
+      <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary bg-bg-surface">
+        <View className="flex-[2] justify-center">
+          <Text className="text-lg text-text-primary font-semibold">
+            {item.position}
+          </Text>
+        </View>
+        <View className="flex-[3] justify-center">
+          <Text className="text-lg text-text-primary">
+            {item.nameDisplay || "N/A"}
+          </Text>
+        </View>
+        <View className="flex-[4] flex-row justify-end items-center gap-5">
+          <TouchableOpacity onPress={() => setPdfVisible(true)}>
+            <QrIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleSequenceCheck("prepared", item)}
+          >
+            <RenderBoxIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSequenceCheck("sealed", item)}>
+            <RenderStringIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSequenceCheck("locked", item)}>
+            <LockOpenIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleSequenceCheck("verify", item)}>
+            <CheckIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleSequenceCheck("delivery", item)}
+          >
+            <RenderDeliveryIcon height={30} width={30} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
+            <InfoIcon height={30} width={30} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View className="flex-1 bg-bg-surface p-4">
@@ -128,7 +376,12 @@ export const PreparationsScreen: React.FC = () => {
         source={SAMPLE_PDF}
       />
 
-      {/* Pax Modal */}
+      <ValidationModal
+        visible={showValidation}
+        message={validationMsg}
+        onClose={() => setShowValidation(false)}
+      />
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -142,22 +395,16 @@ export const PreparationsScreen: React.FC = () => {
         >
           <View
             className="absolute w-[250px] bg-bg-surface rounded-lg p-4 shadow-lg border border-border-muted"
-            style={{
-              top: dropdownPos.top,
-              left: dropdownPos.left,
-            }}
+            style={{ top: dropdownPos.top, left: dropdownPos.left }}
           >
             <Text className="text-xl font-bold text-text-primary mb-2.5">
               Passenger Count
             </Text>
-
             <Text className="text-xs text-text-secondary mb-2">
               Flight:{" "}
               {selectedFlight?.flightNumber || selectedFlight?.id || "N/A"}
             </Text>
-
             <View className="h-px bg-border-muted mb-2.5" />
-
             {dynamicPaxData.map((item, index) => (
               <View
                 key={index}
@@ -184,6 +431,7 @@ export const PreparationsScreen: React.FC = () => {
 
       {/* Buttons Row */}
       <View className="flex-row mb-5 z-10">
+        {/* Left Side: Scan Actions */}
         <View className="flex-1 flex-row justify-start">
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
@@ -211,7 +459,15 @@ export const PreparationsScreen: React.FC = () => {
           </Pressable>
         </View>
 
+        {/* Right Side: Filters, PAX, Print */}
         <View className="flex-1 flex-row justify-end">
+          {/* 1. FILTER DROPDOWN */}
+          <MultiSelectFilter
+            selectedOptions={selectedFilters}
+            onToggleOption={handleToggleFilter}
+          />
+
+          {/* 2. PAX COUNT */}
           <View ref={buttonRef} collapsable={false}>
             <Pressable
               className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
@@ -224,6 +480,7 @@ export const PreparationsScreen: React.FC = () => {
             </Pressable>
           </View>
 
+          {/* 3. PRINT */}
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <PrintIcon />
             <Text className="text-xl font-normal m-0.5 text-text-primary">
@@ -233,25 +490,19 @@ export const PreparationsScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* --- TABLE HEADER AND LIST --- */}
-      <View className="flex-1 border border-border-secondary rounded-[10px]">
-        {/* Header */}
-        <View className="flex-row bg-bg-quaternary p-4 border-b border-border-muted rounded-t-[10px]">
-          {/* Col 1 */}
+      {/* --- TABLE --- */}
+      <View className="flex-1 border border-border-secondary rounded-[10px] overflow-hidden">
+        <View className="flex-row bg-bg-quaternary p-4 border-b border-border-muted">
           <View className="flex-[2]">
             <Text className="text-lg font-semibold text-text-secondary">
               Stowage
             </Text>
           </View>
-
-          {/* Col 2 */}
           <View className="flex-[3]">
             <Text className="text-lg font-semibold text-text-secondary">
               Carrier
             </Text>
           </View>
-
-          {/* Col 3 - Aligned to End to match Icons */}
           <View className="flex-[4] items-end">
             <Text className="text-lg font-semibold text-text-secondary">
               Action
@@ -264,16 +515,17 @@ export const PreparationsScreen: React.FC = () => {
             <ActivityIndicator size="large" color="#B79EFA" />
           </View>
         ) : (
-          <FlatList
+          <SectionList
             style={{ flex: 1 }}
-            data={preparations}
-            removeClippedSubviews={false}
-            renderItem={renderItem}
+            sections={sectionedData}
             keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            renderSectionHeader={renderSectionHeader}
+            stickySectionHeadersEnabled={true}
             ListEmptyComponent={() => (
               <View className="p-4">
-                <Text className="text-center text-text-muted mt-6">
-                  No preparations found for this flight.
+                <Text className="text-center text-lg text-text-muted mt-6">
+                  No preparations found for selected filters.
                 </Text>
               </View>
             )}

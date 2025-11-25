@@ -59,6 +59,11 @@ import StatusIcon from "./status.svg";
 import TimerIcon from "./timer.svg";
 import UtensilIcon from "./utensil.svg";
 import LockIcon from "./lock.svg";
+import CheckInactiveIcon from "./checkInactive.svg";
+import LockInactiveIcon from "./locked.svg";
+import BoxInactiveIcon from "./packageInactive.svg";
+import StringInactiveIcon from "./signature.svg";
+import DeliveryInactiveIcon from "./deliveryInactive.svg";
 
 // --- Export all icons together ---
 export {
@@ -85,6 +90,11 @@ export {
   PrintIcon,
   ThreeDotsIcon,
   RotateRightIcon,
+  CheckInactiveIcon,
+  LockInactiveIcon,
+  BoxInactiveIcon,
+  StringInactiveIcon,
+  DeliveryInactiveIcon,
 
   // New
   AddIcon,
