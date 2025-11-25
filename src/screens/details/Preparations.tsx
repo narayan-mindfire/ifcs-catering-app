@@ -77,7 +77,7 @@ const ValidationModal = ({
   </Modal>
 );
 
-// --- Custom Multi-Select Dropdown (Restyled to match Buttons) ---
+// --- Custom Multi-Select Dropdown (Background Highlight Style) ---
 const MultiSelectFilter = ({
   selectedOptions,
   onToggleOption,
@@ -92,7 +92,6 @@ const MultiSelectFilter = ({
   const toggleDropdown = () => {
     if (!isOpen) {
       dropdownRef.current?.measure((fx, fy, width, height, px, py) => {
-        // We set a fixed width for the dropdown menu (250), not the button width
         setPos({ top: py + height + 5, left: px, width: 250 });
         setIsOpen(true);
       });
@@ -143,20 +142,21 @@ const MultiSelectFilter = ({
                 return (
                   <TouchableOpacity
                     onPress={() => onToggleOption(item)}
-                    className="flex-row items-center px-4 py-3 border-b border-bg-tertiary"
+                    className={`flex-row items-center px-4 py-3 border-b border-bg-tertiary ${
+                      isSelected
+                        ? "bg-bg-accent border-border-accent"
+                        : "bg-bg-surface"
+                    }`}
                   >
-                    <View
-                      className={`w-5 h-5 border rounded mr-3 justify-center items-center ${
+                    <Text
+                      className={`text-base ${
                         isSelected
-                          ? "bg-bg-button border-bg-button"
-                          : "border-text-muted bg-white"
+                          ? "text-text-primary font-semibold"
+                          : "text-text-primary font-normal"
                       }`}
                     >
-                      {isSelected && (
-                        <Text className="text-white text-xs font-bold">✓</Text>
-                      )}
-                    </View>
-                    <Text className="text-text-primary">{item}</Text>
+                      {item}
+                    </Text>
                   </TouchableOpacity>
                 );
               }}
@@ -179,7 +179,7 @@ export const PreparationsScreen: React.FC = () => {
   const [validationMsg, setValidationMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  // Filter State: Array of strings. Empty array implies "All"
+  // Filter State
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
   const [selectedItem, setSelectedItem] = useState<Preparation | null>(null);
@@ -204,7 +204,6 @@ export const PreparationsScreen: React.FC = () => {
   const sectionedData = useMemo(() => {
     let filtered = preparations;
 
-    // If filters are selected, apply them. If empty, show all.
     if (selectedFilters.length > 0) {
       filtered = preparations.filter((p) =>
         selectedFilters.includes(p.preparedBy || ""),
@@ -462,7 +461,7 @@ export const PreparationsScreen: React.FC = () => {
 
         {/* Right Side: Filters, PAX, Print */}
         <View className="flex-1 flex-row justify-end">
-          {/* 1. FILTER DROPDOWN MOVED HERE */}
+          {/* 1. FILTER DROPDOWN */}
           <MultiSelectFilter
             selectedOptions={selectedFilters}
             onToggleOption={handleToggleFilter}
