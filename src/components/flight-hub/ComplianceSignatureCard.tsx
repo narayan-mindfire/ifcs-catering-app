@@ -43,10 +43,11 @@ export const ComplianceSignatureCard: React.FC<
       {signature ? (
         <View>
           <View className="h-[250px] border border-border-muted rounded-xl bg-bg-surface overflow-hidden">
+            {/* base64 signatures work automatically with uri */}
             <Image
               source={{ uri: signature }}
               className="w-full h-full"
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
           <Text className="text-right text-text-tertiary text-xs mt-1">

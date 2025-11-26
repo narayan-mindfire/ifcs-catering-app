@@ -78,14 +78,14 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                       resizeMode="contain"
                     />
                     {preparer.signedAt && (
-                      <Text className="text-base text-text-tertiary mt-0.5">
+                      <Text className="text-xs text-text-tertiary mt-0.5">
                         {new Date(preparer.signedAt).toLocaleDateString()}
                       </Text>
                     )}
                   </View>
                 ) : (
                   <Pressable onPress={() => handleSignClick(preparer.id)}>
-                    <Text className="text-text-tertiary underline">
+                    <Text className="text-bg-button underline">
                       Click here to sign
                     </Text>
                   </Pressable>
@@ -106,7 +106,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
         ) : (
           <View className="p-5 items-center">
             <Text className="text-text-tertiary">
-              No Content Preparers found
+              No Content Preparers found (TSA/Security)
             </Text>
           </View>
         )}

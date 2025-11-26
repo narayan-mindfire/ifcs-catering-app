@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { DriversDeclaration } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
@@ -13,20 +20,71 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   driversDeclaration,
   onUpdateDeclaration,
 }) => {
-  const [driverName, setDriverName] = useState(
-    driversDeclaration?.driverName ?? "",
-  );
-  const [raicNumber, setRaicNumber] = useState(
-    driversDeclaration?.raicNumber ?? "",
-  );
-  const [truckSeal, setTruckSeal] = useState(
-    driversDeclaration?.truckSeal ?? "",
-  );
-  const [company, setCompany] = useState(driversDeclaration?.company ?? "");
-  const [sealIntact, setSealIntact] = useState(
-    driversDeclaration?.sealIntact ?? false,
-  );
+  // Local state for inputs
+  const [driverName, setDriverName] = useState("");
+  const [raicNumber, setRaicNumber] = useState("");
+  const [truckSeal, setTruckSeal] = useState("");
+  const [company, setCompany] = useState("");
+  const [sealIntact, setSealIntact] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // SYNC: Update local state when the selected delivery changes from the parent
+  useEffect(() => {
+    if (driversDeclaration) {
+      setDriverName(driversDeclaration.driverName || "");
+      setRaicNumber(driversDeclaration.raicNumber || "");
+      setTruckSeal(driversDeclaration.truckSeal || "");
+      setCompany(driversDeclaration.company || "");
+      setSealIntact(driversDeclaration.sealIntact || false);
+    } else {
+      setDriverName("");
+      setRaicNumber("");
+      setTruckSeal("");
+      setCompany("");
+      setSealIntact(false);
+    }
+    setHasChanges(false);
+  }, [driversDeclaration]);
+
+  // Detect changes (Including Seal Intact checkbox)
+  useEffect(() => {
+    const changed =
+      driverName !== (driversDeclaration?.driverName || "") ||
+      raicNumber !== (driversDeclaration?.raicNumber || "") ||
+      truckSeal !== (driversDeclaration?.truckSeal || "") ||
+      company !== (driversDeclaration?.company || "") ||
+      sealIntact !== (driversDeclaration?.sealIntact || false);
+
+    setHasChanges(changed);
+  }, [
+    driverName,
+    raicNumber,
+    truckSeal,
+    company,
+    sealIntact,
+    driversDeclaration,
+  ]);
+
+  // Save all fields via PUT request
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    await onUpdateDeclaration({
+      driverName,
+      raicNumber,
+      truckSeal,
+      company,
+      sealIntact,
+      confirmationText: "I (the driver) confirm the SEAL is intact",
+      signature: driversDeclaration?.signature || null,
+      signedAt: driversDeclaration?.signedAt || null,
+    });
+
+    setHasChanges(false);
+    setIsSaving(false);
+  };
 
   const handleSaveSignature = (signature: string) => {
     onUpdateDeclaration({
@@ -43,8 +101,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
 
   const handleToggleSealIntact = (value: boolean) => {
     setSealIntact(value);
-    if (driversDeclaration)
-      onUpdateDeclaration({ ...driversDeclaration, sealIntact: value });
+    // REMOVED immediate onUpdateDeclaration here.
+    // Now it waits for the Save button.
   };
 
   return (
@@ -53,14 +111,19 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     >
       {/* Form Section */}
       <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <Text className="text-xl font-semibold text-text-primary mb-4">
+          Driver Information
+        </Text>
+
         <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Driver*
+          Driver Name*
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={driverName}
           onChangeText={setDriverName}
-          placeholder="Driver"
+          placeholder="Enter driver name"
+          placeholderTextColor="#A09CAB"
         />
 
         <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
@@ -70,7 +133,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={raicNumber}
           onChangeText={setRaicNumber}
-          placeholder="RAIC #"
+          placeholder="Enter RAIC number"
+          placeholderTextColor="#A09CAB"
         />
 
         <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
@@ -80,7 +144,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={truckSeal}
           onChangeText={setTruckSeal}
-          placeholder="Truck Seal"
+          placeholder="Enter truck seal ID"
+          placeholderTextColor="#A09CAB"
         />
 
         <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
@@ -90,10 +155,45 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
           value={company}
           onChangeText={setCompany}
-          placeholder="Company"
+          placeholder="Enter company name"
+          placeholderTextColor="#A09CAB"
         />
+
+        {/* Save Button - Always visible but disabled if no changes */}
+        <Pressable
+          onPress={handleSave}
+          disabled={!hasChanges || isSaving}
+          className={`mt-6 py-3 rounded-xl items-center ${
+            !hasChanges || isSaving
+              ? "bg-bg-tertiary opacity-50"
+              : "bg-bg-button"
+          }`}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              className={`font-semibold text-lg ${
+                !hasChanges || isSaving
+                  ? "text-text-tertiary"
+                  : "text-text-surface"
+              }`}
+            >
+              {hasChanges ? "Save Changes" : "No Changes to Save"}
+            </Text>
+          )}
+        </Pressable>
+
+        {!hasChanges && driversDeclaration?.driverName && (
+          <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
+            <Text className="text-sm text-text-primary text-center font-medium">
+              ✓ Information Synced
+            </Text>
+          </View>
+        )}
       </View>
 
+      {/* Signature Section */}
       <ComplianceSignatureCard
         title="Security Seal is Intact"
         isCompliant={sealIntact}

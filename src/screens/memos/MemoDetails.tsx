@@ -1,9 +1,17 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../App";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import { useMemoStore } from "../../store/useMemosStore";
 
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<
@@ -16,52 +24,55 @@ interface Props {
   navigation: MemoDetailScreenNavigationProp;
 }
 
+const formatDateDetail = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};
+
 const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { memoId, flightId } = route.params;
-  const memoData = {
-    id: memoId,
-    subject: "Flight Safety Protocol Update",
-    sender: "Shitanshu",
-    date: "Nov 24, 2025",
-    time: "10:30 AM",
-    priority: "High",
-    status: "Unread",
-    content: `Dear Team,
+  const { memoId } = route.params;
+  const {
+    activeMemo,
+    isLoading,
+    fetchMemoById,
+    acknowledgeMemo,
+    toggleImportant,
+  } = useMemoStore();
 
-This memo is to inform you about the updated safety protocols that will be effective from December 1st, 2025.
-
-Key Changes:
-1. Enhanced pre-flight checklist procedures
-2. New communication protocols during emergencies
-3. Updated weather assessment guidelines
-4. Additional crew training requirements
-
-Please review the attached documents and acknowledge receipt of this memo by November 30th, 2025.
-
-If you have any questions or concerns, please don't hesitate to reach out.
-
-Best regards,
-Shitanshu
-Flight Operations Manager`,
-    attachments: [
-      { id: "1", name: "Safety_Protocol_Update.pdf", size: "2.4 MB" },
-      { id: "2", name: "Training_Schedule.xlsx", size: "156 KB" },
-    ],
-  };
+  useEffect(() => {
+    fetchMemoById(memoId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoId]);
 
   const breadcrumbItems = [
-    {
-      label: "Dashboard",
-      onPress: () => navigation.navigate("Dashboard"),
-    },
+    { label: "Dashboard", onPress: () => navigation.navigate("Dashboard") },
     {
       label: "Memos",
-      onPress: () => navigation.navigate("Memos", { flightId }),
+      onPress: () => navigation.navigate("Memos"),
     },
-    {
-      label: "Memo Details",
-    },
+    { label: "Memo Details" },
   ];
+
+  const handleAcknowledge = async () => {
+    if (activeMemo?.isAcknowledged) return;
+    await acknowledgeMemo(memoId);
+    Alert.alert("Success", "Memo acknowledged successfully.");
+  };
+
+  if (isLoading || !activeMemo) {
+    return (
+      <View className="flex-1 bg-bg-quaternary justify-center items-center">
+        <ActivityIndicator size="large" color="#602AF3" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-bg-quaternary">
@@ -69,28 +80,59 @@ Flight Operations Manager`,
 
       <ScrollView className="flex-1">
         <View className="p-5">
+          {/* Header Card */}
           <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted">
             <View className="flex-row items-start justify-between mb-4">
               <View className="flex-1">
                 <Text className="text-2xl font-bold text-text-primary mb-2">
-                  {memoData.subject}
+                  {activeMemo.subject}
                 </Text>
                 <View className="flex-row items-center gap-2 flex-wrap">
-                  <View className="bg-bg-accent px-3 py-1 rounded-full">
-                    <Text className="text-sm font-medium text-bg-button">
-                      {memoData.priority} Priority
+                  <View
+                    className={`px-3 py-1 rounded-full ${
+                      activeMemo.priority === "High"
+                        ? "bg-red-100"
+                        : activeMemo.priority === "Medium"
+                          ? "bg-orange-100"
+                          : "bg-blue-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-medium ${
+                        activeMemo.priority === "High"
+                          ? "text-red-700"
+                          : activeMemo.priority === "Medium"
+                            ? "text-orange-700"
+                            : "text-blue-700"
+                      }`}
+                    >
+                      {activeMemo.priority} Priority
                     </Text>
                   </View>
                   <View className="bg-bg-tertiary px-3 py-1 rounded-full">
                     <Text className="text-sm text-text-secondary">
-                      {memoData.status}
+                      {activeMemo.isRead ? "Read" : "Unread"}
                     </Text>
                   </View>
+                  {activeMemo.isAcknowledged && (
+                    <View className="bg-green-100 px-3 py-1 rounded-full">
+                      <Text className="text-sm text-green-700 font-medium">
+                        Acknowledged
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
-              <TouchableOpacity className="ml-4">
-                <Text className="text-2xl">⭐</Text>
+              <TouchableOpacity
+                className="ml-4"
+                onPress={() => toggleImportant(activeMemo.id)}
+              >
+                <Text
+                  className={`text-2xl ${activeMemo.isImportant ? "opacity-100" : "opacity-30 grayscale"}`}
+                >
+                  ⭐
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -100,7 +142,10 @@ Flight Operations Manager`,
                   From:
                 </Text>
                 <Text className="text-text-primary text-base font-semibold">
-                  {memoData.sender}
+                  {activeMemo.sender.name}{" "}
+                  <Text className="text-text-tertiary font-normal">
+                    ({activeMemo.sender.role})
+                  </Text>
                 </Text>
               </View>
               <View className="flex-row items-center">
@@ -108,17 +153,26 @@ Flight Operations Manager`,
                   Date:
                 </Text>
                 <Text className="text-text-secondary text-base">
-                  {memoData.date} at {memoData.time}
+                  {formatDateDetail(activeMemo.createdAt)}
                 </Text>
               </View>
             </View>
 
             <View className="flex-row gap-3">
-              <TouchableOpacity className="flex-1 bg-bg-button py-3 rounded-lg items-center">
-                <Text className="text-text-surface font-semibold text-base">
-                  Acknowledge
-                </Text>
-              </TouchableOpacity>
+              {activeMemo.requiresAcknowledgement && (
+                <TouchableOpacity
+                  onPress={handleAcknowledge}
+                  disabled={activeMemo.isAcknowledged}
+                  className={`flex-1 py-3 rounded-lg items-center ${activeMemo.isAcknowledged ? "bg-bg-tertiary opacity-50" : "bg-bg-button"}`}
+                >
+                  <Text
+                    className={`${activeMemo.isAcknowledged ? "text-text-tertiary" : "text-text-surface"} font-semibold text-base`}
+                  >
+                    {activeMemo.isAcknowledged ? "Acknowledged" : "Acknowledge"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity className="flex-1 border border-border-secondary py-3 rounded-lg items-center">
                 <Text className="text-text-secondary font-semibold text-base">
                   Reply
@@ -132,28 +186,36 @@ Flight Operations Manager`,
             </View>
           </View>
 
-          <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted">
+          {/* Content Card */}
+          <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted min-h-[200px]">
             <Text className="text-lg font-bold text-text-primary mb-4">
               Message Content
             </Text>
             <Text className="text-base text-text-secondary leading-6">
-              {memoData.content}
+              {activeMemo.content}
             </Text>
           </View>
 
-          {memoData.attachments.length > 0 && (
+          {/* Attachments Card */}
+          {activeMemo.attachments.length > 0 && (
             <View className="bg-bg-surface rounded-lg p-5 border border-border-muted">
               <Text className="text-lg font-bold text-text-primary mb-4">
-                Attachments ({memoData.attachments.length})
+                Attachments ({activeMemo.attachments.length})
               </Text>
-              {memoData.attachments.map((attachment) => (
+              {activeMemo.attachments.map((attachment) => (
                 <TouchableOpacity
                   key={attachment.id}
                   className="flex-row items-center justify-between p-3 mb-2 bg-bg-tertiary rounded-lg border border-border-muted"
                 >
                   <View className="flex-row items-center flex-1">
                     <View className="w-10 h-10 bg-bg-accent rounded items-center justify-center mr-3">
-                      <Text className="text-lg">📎</Text>
+                      <Text className="text-lg">
+                        {attachment.type === "pdf"
+                          ? "📄"
+                          : attachment.type === "excel"
+                            ? "📊"
+                            : "📎"}
+                      </Text>
                     </View>
                     <View className="flex-1">
                       <Text
