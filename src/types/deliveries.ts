@@ -53,7 +53,7 @@ export interface ContentPreparer {
   // Update: added 'Driver' and 'Crew'
   type:
     | "Worker"
-    | "Airline Representative"
+    | "Security Personnel"
     | "Third Party Security Guard"
     | "Driver"
     | "Crew";

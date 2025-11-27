@@ -43,7 +43,6 @@ export const ComplianceSignatureCard: React.FC<
       {signature ? (
         <View>
           <View className="h-[250px] border border-border-muted rounded-xl bg-bg-surface overflow-hidden">
-            {/* base64 signatures work automatically with uri */}
             <Image
               source={{ uri: signature }}
               className="w-full h-full"
@@ -56,10 +55,19 @@ export const ComplianceSignatureCard: React.FC<
         </View>
       ) : (
         <Pressable
-          className="h-[250px] border-2 border-dashed border-border-secondary rounded-xl bg-bg-tertiary justify-center items-center"
+          className={`h-[250px] border-2 border-dashed rounded-xl justify-center items-center ${
+            isCompliant
+              ? "border-border-secondary bg-bg-tertiary"
+              : "border-border-muted bg-bg-surface opacity-50"
+          }`}
           onPress={onSign}
+          disabled={!isCompliant}
         >
-          <Text className="text-text-tertiary">Click here to sign</Text>
+          <Text className="text-text-tertiary">
+            {isCompliant
+              ? "Click here to sign"
+              : "Check compliance box to enable signature"}
+          </Text>
         </Pressable>
       )}
     </View>

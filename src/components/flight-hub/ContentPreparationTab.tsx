@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { ContentPreparer } from "../../types/deliveries";
 import { DeleteIcon } from "../../assets/icons";
+import { formatDate } from "../../utils/dateFormatter";
 
 interface ContentPreparersTabProps {
   preparers: ContentPreparer[];
@@ -79,7 +80,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                     />
                     {preparer.signedAt && (
                       <Text className="text-xs text-text-tertiary mt-0.5">
-                        {new Date(preparer.signedAt).toLocaleDateString()}
+                        {formatDate(String(preparer.signedAt))}
                       </Text>
                     )}
                   </View>

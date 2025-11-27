@@ -24,6 +24,7 @@ import {
 import { useFlightStore } from "../../store/useFlightStore";
 
 type TabType = "dispatcher" | "preparers" | "security" | "driver" | "crew";
+// type TabType = "preparers" | "security" | "driver" | "crew";
 
 const DeliveriesScreen: React.FC = () => {
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
@@ -41,7 +42,7 @@ const DeliveriesScreen: React.FC = () => {
     deleteDelivery,
   } = useDeliveryStore();
 
-  const [activeTab, setActiveTab] = useState<TabType>("dispatcher");
+  const [activeTab, setActiveTab] = useState<TabType>("preparers");
 
   useEffect(() => {
     if (flightId) {
@@ -83,7 +84,7 @@ const DeliveriesScreen: React.FC = () => {
         id: `${d.id}-sec`,
         fieldPrefix: "security",
         fullName: d.securityName || "",
-        type: "Airline Representative",
+        type: "Security Personnel",
         raicNumber: d.securityRacNumber || "",
         signature: d.securitySignature || null,
         signedAt: d.securitySignatureTimestampDisplay
@@ -204,8 +205,6 @@ const DeliveriesScreen: React.FC = () => {
 
     updateDelivery(flightId!, selectedDeliveryId, payload);
   };
-
-  // ✅ UPDATED: Handles signatures for Driver and Crew from the list
   const handleUpdatePreparerSignature = (
     preparerId: string,
     signature: string,
@@ -344,11 +343,11 @@ const DeliveriesScreen: React.FC = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <TabButton
+                {/* <TabButton
                   title="Dispatcher Comments"
                   active={activeTab === "dispatcher"}
                   onPress={() => setActiveTab("dispatcher")}
-                />
+                /> */}
                 <TabButton
                   title="Content Preparers"
                   active={activeTab === "preparers"}

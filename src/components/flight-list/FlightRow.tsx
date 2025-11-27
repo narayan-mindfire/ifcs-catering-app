@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
@@ -97,10 +97,13 @@ export const FlightRow: React.FC<Props> = ({
       }`}
     >
       <View className="flex-[6] py-2.5 px-1 justify-center items-start">
-        {AirlineIcon ? (
-          <AirlineIcon width={50} height={50} />
+        {flight?.airline?.logo ? (
+          <Image
+            source={{ uri: flight.airline.logo }}
+            style={{ width: 40, height: 40, resizeMode: "contain" }}
+          />
         ) : (
-          <Text className="text-base">N/A</Text>
+          <AirlineIcon width={50} height={50} />
         )}
       </View>
 

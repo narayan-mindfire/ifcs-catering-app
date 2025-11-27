@@ -109,88 +109,91 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      {/* Form Section */}
-      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
-        <Text className="text-xl font-semibold text-text-primary mb-4">
-          Driver Information
-        </Text>
+      <View className="flex-1 flex-col justify-between bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <View>
+          <Text className="text-xl font-semibold text-text-primary mb-4">
+            Driver Information
+          </Text>
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Driver Name*
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={driverName}
-          onChangeText={setDriverName}
-          placeholder="Enter driver name"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            Driver Name*
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={driverName}
+            onChangeText={setDriverName}
+            placeholder="Enter driver name"
+            placeholderTextColor="#A09CAB"
+          />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          RAIC #*
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={raicNumber}
-          onChangeText={setRaicNumber}
-          placeholder="Enter RAIC number"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            RAIC #*
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={raicNumber}
+            onChangeText={setRaicNumber}
+            placeholder="Enter RAIC number"
+            placeholderTextColor="#A09CAB"
+          />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Truck Seal*
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={truckSeal}
-          onChangeText={setTruckSeal}
-          placeholder="Enter truck seal ID"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            Truck Seal*
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={truckSeal}
+            onChangeText={setTruckSeal}
+            placeholder="Enter truck seal ID"
+            placeholderTextColor="#A09CAB"
+          />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Company*
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={company}
-          onChangeText={setCompany}
-          placeholder="Enter company name"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            Company*
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={company}
+            onChangeText={setCompany}
+            placeholder="Enter company name"
+            placeholderTextColor="#A09CAB"
+          />
+        </View>
 
-        {/* Save Button - Always visible but disabled if no changes */}
-        <Pressable
-          onPress={handleSave}
-          disabled={!hasChanges || isSaving}
-          className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving
-              ? "bg-bg-tertiary opacity-50"
-              : "bg-bg-button"
-          }`}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text
-              className={`font-semibold text-lg ${
-                !hasChanges || isSaving
-                  ? "text-text-tertiary"
-                  : "text-text-surface"
-              }`}
-            >
-              {hasChanges ? "Save Changes" : "No Changes to Save"}
-            </Text>
+        <View>
+          {/* Save Button */}
+          <Pressable
+            onPress={handleSave}
+            disabled={!hasChanges || isSaving}
+            className={`mt-6 py-3 rounded-xl items-center ${
+              !hasChanges || isSaving
+                ? "bg-bg-tertiary opacity-50"
+                : "bg-bg-button"
+            }`}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text
+                className={`font-semibold text-lg ${
+                  !hasChanges || isSaving
+                    ? "text-text-tertiary"
+                    : "text-text-surface"
+                }`}
+              >
+                {hasChanges ? "Save Changes" : "No Changes to Save"}
+              </Text>
+            )}
+          </Pressable>
+
+          {!hasChanges && driversDeclaration?.driverName && (
+            <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
+              <Text className="text-sm text-text-primary text-center font-medium">
+                ✓ Information Synced
+              </Text>
+            </View>
           )}
-        </Pressable>
-
-        {!hasChanges && driversDeclaration?.driverName && (
-          <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
-            <Text className="text-sm text-text-primary text-center font-medium">
-              ✓ Information Synced
-            </Text>
-          </View>
-        )}
+        </View>
       </View>
 
       {/* Signature Section */}

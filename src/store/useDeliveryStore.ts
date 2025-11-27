@@ -156,6 +156,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         url,
         requestPayload,
       );
+      console.log("RESPONSE DATA =================", response.data.data);
 
       const updatedDelivery = response.data.data;
       set((state) => ({

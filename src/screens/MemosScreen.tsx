@@ -16,10 +16,8 @@ import { RootStackParamList } from "../../App";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { DropdownIcon } from "../assets/icons";
 import { useMemoStore } from "../store/useMemosStore";
-// 1. Import the Memo interface here
 import { Memo, MemoTab } from "../types/memo";
 
-// --- Date Formatter ---
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {

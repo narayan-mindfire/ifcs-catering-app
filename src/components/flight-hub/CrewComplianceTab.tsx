@@ -66,7 +66,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     ...overrides,
   });
 
-  // Save via PUT request
   const handleSave = async () => {
     setIsSaving(true);
     await onUpdateCompliance(getUpdatedObject());
@@ -76,11 +75,9 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
 
   const handleToggleCompliance = (value: boolean) => {
     setIsCompliant(value);
-    // REMOVED immediate save. Now waits for button press.
   };
 
   const handleSaveSignature = (signature: string) => {
-    // Signatures still save immediately
     onUpdateCompliance(getUpdatedObject({ signature, signedAt: new Date() }));
   };
 
@@ -88,58 +85,59 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      {/* Form Section */}
-      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
-        <Text className="text-xl font-semibold text-text-primary mb-4">
-          Crew Member Details
-        </Text>
+      <View className="flex-1 flex-col justify-between bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <View>
+          <Text className="text-xl font-semibold text-text-primary mb-4">
+            Crew Member Details
+          </Text>
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Crew Member Name
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Enter crew member name"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            Crew Member Name
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Enter crew member name"
+            placeholderTextColor="#A09CAB"
+          />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          RAIC #
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={raicNumber}
-          onChangeText={setRaicNumber}
-          placeholder="Enter RAIC number"
-          placeholderTextColor="#A09CAB"
-        />
-
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          disabled={!hasChanges || isSaving}
-          className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving
-              ? "bg-bg-tertiary opacity-50"
-              : "bg-bg-button"
-          }`}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text
-              className={`font-semibold text-lg ${
-                !hasChanges || isSaving
-                  ? "text-text-tertiary"
-                  : "text-text-surface"
-              }`}
-            >
-              {hasChanges ? "Save Changes" : "No Changes to Save"}
-            </Text>
-          )}
-        </Pressable>
+          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+            RAIC #
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={raicNumber}
+            onChangeText={setRaicNumber}
+            placeholder="Enter RAIC number"
+            placeholderTextColor="#A09CAB"
+          />
+        </View>
+        <View>
+          <Pressable
+            onPress={handleSave}
+            disabled={!hasChanges || isSaving}
+            className={`mt-6 py-3 rounded-xl items-center ${
+              !hasChanges || isSaving
+                ? "bg-bg-tertiary opacity-50"
+                : "bg-bg-button"
+            }`}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text
+                className={`font-semibold text-lg ${
+                  !hasChanges || isSaving
+                    ? "text-text-tertiary"
+                    : "text-text-surface"
+                }`}
+              >
+                {hasChanges ? "Save Changes" : "No Changes to Save"}
+              </Text>
+            )}
+          </Pressable>
+        </View>
 
         {!hasChanges && fullName && (
           <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
@@ -150,7 +148,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         )}
       </View>
 
-      {/* Signature Section */}
       <ComplianceSignatureCard
         title="CREW Catering Security Measures Compliance"
         isCompliant={isCompliant}

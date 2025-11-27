@@ -25,46 +25,51 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [fullName, setFullName] = useState("");
   const [raicNumber, setRaicNumber] = useState("");
+  const [tempSignature, setTempSignature] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Sync with props
   useEffect(() => {
     if (securityCompliance) {
-      setIsCompliant(securityCompliance.isCompliant);
+      const hasData = securityCompliance.name || securityCompliance.raicNumber;
+      setIsCompliant(hasData ? true : securityCompliance.isCompliant);
       setFullName(securityCompliance.name || "");
       setRaicNumber(securityCompliance.raicNumber || "");
+      setTempSignature(securityCompliance.signature || null);
     } else {
       setIsCompliant(false);
       setFullName("");
       setRaicNumber("");
+      setTempSignature(null);
     }
     setHasChanges(false);
   }, [securityCompliance]);
 
-  // Detect changes
+  // Detect changes (including signature changes)
   useEffect(() => {
     const changed =
       fullName !== (securityCompliance?.name || "") ||
       raicNumber !== (securityCompliance?.raicNumber || "") ||
-      isCompliant !== (securityCompliance?.isCompliant || false);
+      isCompliant !== (securityCompliance?.isCompliant || false) ||
+      tempSignature !== (securityCompliance?.signature || null);
 
     setHasChanges(changed);
-  }, [fullName, raicNumber, isCompliant, securityCompliance]);
+  }, [fullName, raicNumber, isCompliant, tempSignature, securityCompliance]);
 
-  const getUpdatedObject = (
-    overrides: Partial<SecurityCompliance> = {},
-  ): SecurityCompliance => ({
+  const getUpdatedObject = (): SecurityCompliance => ({
     isCompliant,
     confirmationText: "I confirm that all security measures are compliant",
-    signature: securityCompliance?.signature || null,
-    signedAt: securityCompliance?.signedAt || null,
+    signature: tempSignature,
+    signedAt:
+      tempSignature && tempSignature !== securityCompliance?.signature
+        ? new Date()
+        : securityCompliance?.signedAt || null,
     name: fullName,
     raicNumber: raicNumber,
-    ...overrides,
   });
 
-  // Save via PUT request
+  // Save via PUT request - includes signature
   const handleSave = async () => {
     setIsSaving(true);
     await onUpdateCompliance(getUpdatedObject());
@@ -74,19 +79,25 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
 
   const handleToggleCompliance = (value: boolean) => {
     setIsCompliant(value);
-    // REMOVED immediate save. Now waits for button press.
   };
 
   const handleSaveSignature = (signature: string) => {
-    // Signatures still save immediately as they are a distinct modal action
-    onUpdateCompliance(getUpdatedObject({ signature, signedAt: new Date() }));
+    // Store signature temporarily without making API call
+    setTempSignature(signature);
+  };
+
+  const handleOpenSignatureModal = () => {
+    if (!isCompliant) {
+      // Could show an alert here
+      return;
+    }
+    setShowSignatureModal(true);
   };
 
   return (
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      {/* Form Section */}
       <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
         <Text className="text-xl font-semibold text-text-primary mb-4">
           Security Representative Details
@@ -148,15 +159,14 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         )}
       </View>
 
-      {/* Signature Section */}
       <ComplianceSignatureCard
         title="Security Measures Compliance"
         isCompliant={isCompliant}
         onToggleCompliance={handleToggleCompliance}
         confirmationText="I confirm that all security measures are compliant"
-        signature={securityCompliance?.signature ?? null}
+        signature={tempSignature}
         signedAt={securityCompliance?.signedAt ?? null}
-        onSign={() => setShowSignatureModal(true)}
+        onSign={handleOpenSignatureModal}
       />
 
       <SignatureModal
