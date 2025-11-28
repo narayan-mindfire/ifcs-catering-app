@@ -13,24 +13,24 @@ import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 
 interface DriversDeclarationTabProps {
   driversDeclaration: DriversDeclaration | null;
-  onUpdateDeclaration: (declaration: DriversDeclaration) => void;
+  onUpdateDeclaration: (declaration: DriversDeclaration) => Promise<void>;
 }
 
 const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   driversDeclaration,
   onUpdateDeclaration,
 }) => {
-  // Local state for inputs
   const [driverName, setDriverName] = useState("");
   const [raicNumber, setRaicNumber] = useState("");
   const [truckSeal, setTruckSeal] = useState("");
   const [company, setCompany] = useState("");
   const [sealIntact, setSealIntact] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+
+  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
+
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  // SYNC: Update local state when the selected delivery changes from the parent
   useEffect(() => {
     if (driversDeclaration) {
       setDriverName(driversDeclaration.driverName || "");
@@ -38,24 +38,28 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
       setTruckSeal(driversDeclaration.truckSeal || "");
       setCompany(driversDeclaration.company || "");
       setSealIntact(driversDeclaration.sealIntact || false);
+      setPendingSignature(driversDeclaration.signature || null);
     } else {
       setDriverName("");
       setRaicNumber("");
       setTruckSeal("");
       setCompany("");
       setSealIntact(false);
+      setPendingSignature(null);
     }
     setHasChanges(false);
   }, [driversDeclaration]);
 
-  // Detect changes (Including Seal Intact checkbox)
   useEffect(() => {
+    const originalSig = driversDeclaration?.signature || null;
+
     const changed =
       driverName !== (driversDeclaration?.driverName || "") ||
       raicNumber !== (driversDeclaration?.raicNumber || "") ||
       truckSeal !== (driversDeclaration?.truckSeal || "") ||
       company !== (driversDeclaration?.company || "") ||
-      sealIntact !== (driversDeclaration?.sealIntact || false);
+      sealIntact !== (driversDeclaration?.sealIntact || false) ||
+      pendingSignature !== originalSig;
 
     setHasChanges(changed);
   }, [
@@ -64,10 +68,10 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     truckSeal,
     company,
     sealIntact,
+    pendingSignature,
     driversDeclaration,
   ]);
 
-  // Save all fields via PUT request
   const handleSave = async () => {
     setIsSaving(true);
 
@@ -78,8 +82,10 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
       company,
       sealIntact,
       confirmationText: "I (the driver) confirm the SEAL is intact",
-      signature: driversDeclaration?.signature || null,
-      signedAt: driversDeclaration?.signedAt || null,
+      signature: pendingSignature,
+      signedAt: pendingSignature
+        ? new Date()
+        : driversDeclaration?.signedAt || null,
     });
 
     setHasChanges(false);
@@ -87,22 +93,12 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   };
 
   const handleSaveSignature = (signature: string) => {
-    onUpdateDeclaration({
-      driverName,
-      raicNumber,
-      truckSeal,
-      company,
-      sealIntact,
-      confirmationText: "I (the driver) confirm the SEAL is intact",
-      signature,
-      signedAt: new Date(),
-    });
+    setPendingSignature(signature);
+    setShowSignatureModal(false);
   };
 
   const handleToggleSealIntact = (value: boolean) => {
     setSealIntact(value);
-    // REMOVED immediate onUpdateDeclaration here.
-    // Now it waits for the Save button.
   };
 
   return (
@@ -195,14 +191,12 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           )}
         </View>
       </View>
-
-      {/* Signature Section */}
       <ComplianceSignatureCard
         title="Security Seal is Intact"
         isCompliant={sealIntact}
         onToggleCompliance={handleToggleSealIntact}
         confirmationText="I (the driver) confirm the SEAL is intact"
-        signature={driversDeclaration?.signature ?? null}
+        signature={pendingSignature ?? null}
         signedAt={driversDeclaration?.signedAt ?? null}
         onSign={() => setShowSignatureModal(true)}
       />

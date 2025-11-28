@@ -13,7 +13,7 @@ import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 
 interface CrewComplianceTabProps {
   crewCompliance: CrewCompliance | null;
-  onUpdateCompliance: (compliance: CrewCompliance) => void;
+  onUpdateCompliance: (compliance: CrewCompliance) => Promise<void>;
   onAddPreparer: (data: any) => void;
 }
 
@@ -25,42 +25,51 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [fullName, setFullName] = useState("");
   const [raicNumber, setRaicNumber] = useState("");
+
+  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
+
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // SYNC: Update state when props change
   useEffect(() => {
     if (crewCompliance) {
       setIsCompliant(crewCompliance.isCompliant);
       setFullName(crewCompliance.name || "");
       setRaicNumber(crewCompliance.raicNumber || "");
+      setPendingSignature(crewCompliance.signature || null);
     } else {
       setIsCompliant(false);
       setFullName("");
       setRaicNumber("");
+      setPendingSignature(null);
     }
     setHasChanges(false);
   }, [crewCompliance]);
 
-  // Detect changes
   useEffect(() => {
-    const changed =
-      fullName !== (crewCompliance?.name || "") ||
-      raicNumber !== (crewCompliance?.raicNumber || "") ||
-      isCompliant !== (crewCompliance?.isCompliant || false);
+    const originalName = crewCompliance?.name || "";
+    const originalRaic = crewCompliance?.raicNumber || "";
+    const originalSig = crewCompliance?.signature || null;
+    const originalCompliant = crewCompliance?.isCompliant || false;
 
-    setHasChanges(changed);
-  }, [fullName, raicNumber, isCompliant, crewCompliance]);
+    const hasTextChanges =
+      fullName !== originalName ||
+      raicNumber !== originalRaic ||
+      isCompliant !== originalCompliant;
 
-  // Helper to construct the full object for updates
+    const hasSignatureChanges = pendingSignature !== originalSig;
+
+    setHasChanges(hasTextChanges || hasSignatureChanges);
+  }, [fullName, raicNumber, isCompliant, pendingSignature, crewCompliance]);
+
   const getUpdatedObject = (
     overrides: Partial<CrewCompliance> = {},
   ): CrewCompliance => ({
     isCompliant,
     confirmationText:
       "I confirm that all CREW catering security measures are compliant",
-    signature: crewCompliance?.signature || null,
-    signedAt: crewCompliance?.signedAt || null,
+    signature: pendingSignature,
+    signedAt: pendingSignature ? new Date() : crewCompliance?.signedAt || null,
     name: fullName,
     raicNumber: raicNumber,
     ...overrides,
@@ -78,7 +87,8 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   };
 
   const handleSaveSignature = (signature: string) => {
-    onUpdateCompliance(getUpdatedObject({ signature, signedAt: new Date() }));
+    setPendingSignature(signature);
+    setShowSignatureModal(false);
   };
 
   return (
@@ -153,7 +163,7 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         isCompliant={isCompliant}
         onToggleCompliance={handleToggleCompliance}
         confirmationText="I confirm that all CREW catering security measures are compliant"
-        signature={crewCompliance?.signature ?? null}
+        signature={pendingSignature ?? null}
         signedAt={crewCompliance?.signedAt ?? null}
         onSign={() => setShowSignatureModal(true)}
       />

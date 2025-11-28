@@ -13,7 +13,7 @@ import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 
 interface SecurityComplianceTabProps {
   securityCompliance: SecurityCompliance | null;
-  onUpdateCompliance: (compliance: SecurityCompliance) => void;
+  onUpdateCompliance: (compliance: SecurityCompliance) => Promise<void>;
   onAddPreparer: (data: any) => void;
 }
 
@@ -25,55 +25,57 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [fullName, setFullName] = useState("");
   const [raicNumber, setRaicNumber] = useState("");
-  const [tempSignature, setTempSignature] = useState<string | null>(null);
+
+  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
+
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Sync with props
   useEffect(() => {
     if (securityCompliance) {
-      const hasData = securityCompliance.name || securityCompliance.raicNumber;
-      setIsCompliant(hasData ? true : securityCompliance.isCompliant);
+      setIsCompliant(securityCompliance.isCompliant);
       setFullName(securityCompliance.name || "");
       setRaicNumber(securityCompliance.raicNumber || "");
-      setTempSignature(securityCompliance.signature || null);
+      setPendingSignature(securityCompliance.signature || null);
     } else {
       setIsCompliant(false);
       setFullName("");
       setRaicNumber("");
-      setTempSignature(null);
+      setPendingSignature(null);
     }
     setHasChanges(false);
   }, [securityCompliance]);
 
-  // Detect changes (including signature changes)
   useEffect(() => {
-    const changed =
-      fullName !== (securityCompliance?.name || "") ||
-      raicNumber !== (securityCompliance?.raicNumber || "") ||
-      isCompliant !== (securityCompliance?.isCompliant || false) ||
-      tempSignature !== (securityCompliance?.signature || null);
+    const originalName = securityCompliance?.name || "";
+    const originalRaic = securityCompliance?.raicNumber || "";
+    const originalSig = securityCompliance?.signature || null;
+    const originalCompliant = securityCompliance?.isCompliant || false;
 
-    setHasChanges(changed);
-  }, [fullName, raicNumber, isCompliant, tempSignature, securityCompliance]);
+    const hasTextChanges =
+      fullName !== originalName ||
+      raicNumber !== originalRaic ||
+      isCompliant !== originalCompliant;
+
+    const hasSignatureChanges = pendingSignature !== originalSig;
+
+    setHasChanges(hasTextChanges || hasSignatureChanges);
+  }, [fullName, raicNumber, isCompliant, pendingSignature, securityCompliance]);
 
   const getUpdatedObject = (): SecurityCompliance => ({
     isCompliant,
     confirmationText: "I confirm that all security measures are compliant",
-    signature: tempSignature,
-    signedAt:
-      tempSignature && tempSignature !== securityCompliance?.signature
-        ? new Date()
-        : securityCompliance?.signedAt || null,
+    signature: pendingSignature,
+    signedAt: pendingSignature
+      ? new Date()
+      : securityCompliance?.signedAt || null,
     name: fullName,
     raicNumber: raicNumber,
   });
 
-  // Save via PUT request - includes signature
   const handleSave = async () => {
     setIsSaving(true);
     await onUpdateCompliance(getUpdatedObject());
-    setHasChanges(false);
     setIsSaving(false);
   };
 
@@ -82,83 +84,64 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
   };
 
   const handleSaveSignature = (signature: string) => {
-    // Store signature temporarily without making API call
-    setTempSignature(signature);
-  };
-
-  const handleOpenSignatureModal = () => {
-    if (!isCompliant) {
-      // Could show an alert here
-      return;
-    }
-    setShowSignatureModal(true);
+    setPendingSignature(signature);
+    setShowSignatureModal(false);
   };
 
   return (
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      <View className="flex-1 flex-col justify-between bg-bg-surface rounded-2xl border border-border-muted p-4">
-        <View>
-          <Text className="text-xl font-semibold text-text-primary mb-4">
-            Security Representative Details
-          </Text>
+      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <Text className="text-xl font-semibold text-text-primary mb-4">
+          Security Representative Details
+        </Text>
 
-          <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-            Name
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Enter name"
-            placeholderTextColor="#A09CAB"
-          />
+        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+          Name
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Enter name"
+          placeholderTextColor="#A09CAB"
+        />
 
-          <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-            RAIC #
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-            value={raicNumber}
-            onChangeText={setRaicNumber}
-            placeholder="Enter RAIC number"
-            placeholderTextColor="#A09CAB"
-          />
-        </View>
-        <View>
-          <Pressable
-            onPress={handleSave}
-            disabled={!hasChanges || isSaving}
-            className={`mt-6 py-3 rounded-xl items-center ${
-              !hasChanges || isSaving
-                ? "bg-bg-tertiary opacity-50"
-                : "bg-bg-button"
-            }`}
-          >
-            {isSaving ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text
-                className={`font-semibold text-lg ${
-                  !hasChanges || isSaving
-                    ? "text-text-tertiary"
-                    : "text-text-surface"
-                }`}
-              >
-                {hasChanges ? "Save Changes" : "No Changes to Save"}
-              </Text>
-            )}
-          </Pressable>
+        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+          RAIC #
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+          value={raicNumber}
+          onChangeText={setRaicNumber}
+          placeholder="Enter RAIC number"
+          placeholderTextColor="#A09CAB"
+        />
 
-          {!hasChanges && fullName && (
-            <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
-              <Text className="text-sm text-text-primary text-center font-medium">
-                ✓ Information Synced
-              </Text>
-            </View>
+        <Pressable
+          onPress={handleSave}
+          disabled={!hasChanges || isSaving}
+          className={`mt-6 py-3 rounded-xl items-center ${
+            !hasChanges || isSaving
+              ? "bg-bg-tertiary opacity-50"
+              : "bg-bg-button"
+          }`}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              className={`font-semibold text-lg ${
+                !hasChanges || isSaving
+                  ? "text-text-tertiary"
+                  : "text-text-surface"
+              }`}
+            >
+              {hasChanges ? "Save Changes" : "No Changes to Save"}
+            </Text>
           )}
-        </View>
+        </Pressable>
       </View>
 
       <ComplianceSignatureCard
@@ -166,9 +149,9 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         isCompliant={isCompliant}
         onToggleCompliance={handleToggleCompliance}
         confirmationText="I confirm that all security measures are compliant"
-        signature={tempSignature}
+        signature={pendingSignature ?? null}
         signedAt={securityCompliance?.signedAt ?? null}
-        onSign={handleOpenSignatureModal}
+        onSign={() => setShowSignatureModal(true)}
       />
 
       <SignatureModal

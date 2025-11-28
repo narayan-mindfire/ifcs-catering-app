@@ -66,7 +66,7 @@ export const ComplianceSignatureCard: React.FC<
           <Text className="text-text-tertiary">
             {isCompliant
               ? "Click here to sign"
-              : "Check compliance box to enable signature"}
+              : "please check above to enable signing"}
           </Text>
         </Pressable>
       )}

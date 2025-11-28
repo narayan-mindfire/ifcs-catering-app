@@ -1,34 +1,27 @@
-// src/types/deliveries.ts
-
-// --- API Response Structure ---
 export interface Delivery {
   id: string;
   flightId: string;
   fmId?: string;
-  deliveryName: string; // This maps to "Delivery X" in UI
+  deliveryName: string;
 
-  // TSA Section
   tsaName?: string;
   tsaRacNumber?: string;
   tsaComment?: string;
   tsaSignature?: string;
   tsaSignatureTimestampDisplay?: string;
 
-  // Crew Section
   crewName?: string;
   crewRacNumber?: string;
   crewComment?: string;
   crewSignature?: string;
   crewSignatureTimestampDisplay?: string;
 
-  // Security Section
   securityName?: string;
   securityRacNumber?: string;
   securityComment?: string;
   securitySignature?: string;
   securitySignatureTimestampDisplay?: string;
 
-  // Driver Section
   driverName?: string;
   driverRacNumber?: string;
   driverCompany?: string;
@@ -38,19 +31,14 @@ export interface Delivery {
   fullName?: string;
   signDate?: string;
 
-  // Metadata
   createdAt: string;
   updatedAt: string;
 }
 
-// --- UI Helper Interfaces (For Tabs) ---
-
 export interface ContentPreparer {
   id: string;
-  // Update: added 'driver' and 'crew'
-  fieldPrefix: "tsa" | "security" | "driver" | "crew";
+  fieldPrefix: "security" | "driver" | "crew";
   fullName: string;
-  // Update: added 'Driver' and 'Crew'
   type:
     | "Worker"
     | "Security Personnel"
