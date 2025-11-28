@@ -21,7 +21,7 @@ export type RootStackParamList = {
   Flights: { flightId: string };
   Memos: undefined;
   MemoDetail: { memoId: string };
-  Documents: { flightId: string };
+  Documents: undefined;
   CreateMemo: undefined;
   FlightDetails: {
     flightId: string;

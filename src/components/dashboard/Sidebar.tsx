@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ImageBackground, Alert } from "react-native";
+import { View, Text, StyleSheet, ImageBackground } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -29,16 +29,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
   const { selectedFlight } = useFlightData();
 
   const handleNavigate = (screen: SidebarScreenName) => {
-    if (screen === "Documents") {
+    if (screen === "SpotCheck" || screen === "Flights") {
       navigation.navigate(screen, { flightId: selectedFlight?.id });
-    } else if (selectedFlight) {
-      navigation.navigate(screen, { flightId: selectedFlight.id });
-    } else {
-      Alert.alert(
-        "No Flight Selected",
-        // eslint-disable-next-line prettier/prettier
-        "Please select a flight first to view its details."
-      );
+    } else if (screen === "Memos" || screen === "Documents") {
+      navigation.navigate(screen);
     }
   };
 
@@ -73,13 +67,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
           <NavigationCard
             title="Memos"
             IconComponent={MemosIcon}
-            count="15"
             onPress={() => handleNavigate("Memos")}
           />
           <NavigationCard
             title="Documents"
             IconComponent={DocsIcon}
-            count="08"
             onPress={() => handleNavigate("Documents")}
           />
         </View>
