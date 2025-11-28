@@ -107,7 +107,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
         ) : (
           <View className="p-5 items-center">
             <Text className="text-text-tertiary">
-              No Content Preparers found (TSA/Security)
+              No Content Preparers yet.
             </Text>
           </View>
         )}

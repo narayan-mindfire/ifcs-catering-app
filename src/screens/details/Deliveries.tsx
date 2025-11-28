@@ -497,7 +497,7 @@ const TabButton = ({
 }) => (
   <Pressable
     onPress={onPress}
-    className={`py-2.5 px-5 rounded-[20px] ${active ? "bg-bg-secondary" : ""}`}
+    className={`py-2.5 px-5 rounded-[20px] ${active ? "bg-bg-accent border-1 border-bg-button" : ""}`}
   >
     <Text
       className={`text-lg ${

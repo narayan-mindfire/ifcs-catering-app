@@ -98,65 +98,67 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
-        <Text className="text-xl font-semibold text-text-primary mb-4">
-          Security Representative Details
-        </Text>
+      <View className="flex-1 flex-col justify-between bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <View>
+          <Text className="text-xl font-semibold text-text-primary mb-4">
+            Security Representative Details
+          </Text>
 
-        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Name
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Enter name"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+            Name
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Enter name"
+            placeholderTextColor="#A09CAB"
+          />
 
-        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          RAIC #
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-          value={raicNumber}
-          onChangeText={setRaicNumber}
-          placeholder="Enter RAIC number"
-          placeholderTextColor="#A09CAB"
-        />
+          <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+            RAIC #
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+            value={raicNumber}
+            onChangeText={setRaicNumber}
+            placeholder="Enter RAIC number"
+            placeholderTextColor="#A09CAB"
+          />
+        </View>
+        <View>
+          <Pressable
+            onPress={handleSave}
+            disabled={!hasChanges || isSaving}
+            className={`mt-6 py-3 rounded-xl items-center ${
+              !hasChanges || isSaving
+                ? "bg-bg-tertiary opacity-50"
+                : "bg-bg-button"
+            }`}
+          >
+            {isSaving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text
+                className={`font-semibold text-lg ${
+                  !hasChanges || isSaving
+                    ? "text-text-tertiary"
+                    : "text-text-surface"
+                }`}
+              >
+                {hasChanges ? "Save Changes" : "No Changes to Save"}
+              </Text>
+            )}
+          </Pressable>
 
-        {/* Save Button */}
-        <Pressable
-          onPress={handleSave}
-          disabled={!hasChanges || isSaving}
-          className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving
-              ? "bg-bg-tertiary opacity-50"
-              : "bg-bg-button"
-          }`}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text
-              className={`font-semibold text-lg ${
-                !hasChanges || isSaving
-                  ? "text-text-tertiary"
-                  : "text-text-surface"
-              }`}
-            >
-              {hasChanges ? "Save Changes" : "No Changes to Save"}
-            </Text>
+          {!hasChanges && fullName && (
+            <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
+              <Text className="text-sm text-text-primary text-center font-medium">
+                ✓ Information Synced
+              </Text>
+            </View>
           )}
-        </Pressable>
-
-        {!hasChanges && fullName && (
-          <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
-            <Text className="text-sm text-text-primary text-center font-medium">
-              ✓ Information Synced
-            </Text>
-          </View>
-        )}
+        </View>
       </View>
 
       <ComplianceSignatureCard
