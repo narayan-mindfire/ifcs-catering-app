@@ -7,32 +7,35 @@ import {
   TextInput,
   Modal,
   FlatList,
+  Alert,
 } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../App";
+import { useMemoStore } from "../../store/useMemosStore";
+import { Memo } from "../../types/memo";
 
 type Props = StackScreenProps<RootStackParamList, "CreateMemo">;
 
+// Mock Users available for selection
 const AVAILABLE_USERS = [
   { id: "1", name: "Captain Sarah Jenkins", role: "Pilot" },
   { id: "2", name: "Mike Ross", role: "Co-Pilot" },
   { id: "3", name: "Rachel Zane", role: "Cabin Crew" },
   { id: "4", name: "Harvey Specter", role: "Ground Staff" },
   { id: "5", name: "Louis Litt", role: "Maintenance" },
-  { id: "6", name: "Donna Paulsen", role: "Admin" },
 ];
 
 const CreateMemoScreen = ({ route, navigation }: Props) => {
+  const { addMemo } = useMemoStore();
+
   const [flight, setFlight] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isPriority, setIsPriority] = useState(false);
 
-  // 3. New State for Modal and Selection
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
-  // Helper to get comma-separated names for the text input
   const displaySelectedUsers = useMemo(() => {
     return AVAILABLE_USERS.filter((user) => selectedUserIds.includes(user.id))
       .map((user) => user.name)
@@ -40,54 +43,66 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
   }, [selectedUserIds]);
 
   const toggleUserSelection = (id: string) => {
-    setSelectedUserIds((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((userId) => userId !== id); // Remove
-      } else {
-        return [...prev, id]; // Add
-      }
-    });
+    setSelectedUserIds((prev) =>
+      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id],
+    );
   };
 
   const handleSubmit = () => {
-    console.log("Submitting memo:", {
-      flight,
-      subject,
-      message,
-      assignedUsers: selectedUserIds, // Sending IDs usually better for backend
-      isPriority,
+    if (!subject || !message) {
+      Alert.alert("Error", "Please enter subject and message");
+      return;
+    }
+
+    const newId = Date.now().toString();
+    const selectedUsers = AVAILABLE_USERS.filter((u) =>
+      selectedUserIds.includes(u.id),
+    );
+
+    // Construct the new Memo Object
+    const newMemo: Memo = {
+      id: newId,
+      sender: { id: "me", name: "Shitanshu", role: "Engineer" }, // Current User
+      recipients: selectedUsers,
+      flightNumber: flight || undefined,
+      subject: subject,
+      content: message,
+      priority: isPriority ? "High" : "Medium",
+      isRead: true, // You read your own memo
+      isImportant: false,
+      isDraft: false,
+      isAcknowledged: false,
+      requiresAcknowledgement: true,
+      createdAt: new Date().toISOString(),
+      attachments: [],
+    };
+
+    // Save to store
+    addMemo(newMemo);
+
+    // Navigate to Details to show what we created
+    navigation.replace("MemoDetail", {
+      memoId: newId,
     });
-    navigation.goBack();
-  };
-
-  const handleSaveDraft = () => {
-    console.log("Saving as draft");
-    navigation.goBack();
-  };
-
-  const handleCancel = () => {
-    navigation.goBack();
   };
 
   return (
     <View className="flex-1 bg-bg-quaternary">
       {/* Header */}
       <View className="bg-bg-surface px-5 py-4 border-b border-border-muted">
-        <TouchableOpacity onPress={handleCancel} className="mb-4">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="mb-4">
           <Text className="text-2xl text-text-secondary">←</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView className="flex-1">
         <View className="bg-bg-surface m-4 rounded-lg border border-border-muted p-5">
-          {/* Title */}
           <View className="bg-bg-accent py-3 px-4 rounded-lg mb-6 -mx-5 -mt-5">
             <Text className="text-xl font-semibold text-text-primary text-center">
               Add Memo
             </Text>
           </View>
 
-          {/* Flight (Optional) */}
           <View className="mb-5">
             <Text className="text-text-primary font-semibold mb-2">
               Flight (Optional)
@@ -95,13 +110,12 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             <TextInput
               value={flight}
               onChangeText={setFlight}
-              placeholder=""
+              placeholder="e.g. AI-302"
               placeholderTextColor="#A09CAB"
               className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-text-primary"
             />
           </View>
 
-          {/* Subject */}
           <View className="mb-5">
             <Text className="text-text-primary font-semibold mb-2">
               Subject
@@ -115,7 +129,6 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             />
           </View>
 
-          {/* Message */}
           <View className="mb-5">
             <Text className="text-text-primary font-semibold mb-2">
               Message
@@ -132,42 +145,31 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             />
           </View>
 
-          {/* Users Assigned This Memo */}
           <View className="mb-5">
             <Text className="text-text-primary font-semibold mb-2">
-              Users Assigned This Memo
+              Users Assigned
             </Text>
-            <View className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 min-h-[80px]">
+            <TouchableOpacity
+              onPress={() => setIsModalVisible(true)}
+              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 min-h-[50px] justify-center"
+            >
               <Text
                 className={
                   displaySelectedUsers ? "text-text-primary" : "text-[#A09CAB]"
                 }
               >
-                {displaySelectedUsers || "No users assigned yet"}
-              </Text>
-            </View>
-            <TouchableOpacity
-              className="mt-3"
-              onPress={() => setIsModalVisible(true)}
-            >
-              <Text className="text-bg-button font-medium text-base">
-                Assign Users
+                {displaySelectedUsers || "Select users..."}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Set as Priority */}
           <View className="mb-5">
             <TouchableOpacity
               onPress={() => setIsPriority(!isPriority)}
               className="flex-row items-center"
             >
               <View
-                className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${
-                  isPriority
-                    ? "bg-bg-button border-bg-button"
-                    : "border-border-secondary"
-                }`}
+                className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${isPriority ? "bg-bg-button border-bg-button" : "border-border-secondary"}`}
               >
                 {isPriority && (
                   <Text className="text-text-surface text-xs font-bold">✓</Text>
@@ -179,49 +181,18 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Attachments */}
-          <View className="mb-6">
-            <Text className="text-text-primary font-semibold mb-2">
-              Attachments
+          <TouchableOpacity
+            onPress={handleSubmit}
+            className="bg-bg-button rounded-lg py-3 items-center mt-2"
+          >
+            <Text className="text-text-surface font-semibold text-base">
+              Submit
             </Text>
-            <TouchableOpacity className="bg-bg-secondary border border-border-muted rounded-lg px-4 py-3">
-              <Text className="text-text-tertiary text-base">Choose File</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Action Buttons */}
-          <View className="flex-row gap-3 mt-2">
-            <TouchableOpacity
-              onPress={handleSubmit}
-              className="flex-1 bg-bg-button rounded-lg py-3 items-center"
-            >
-              <Text className="text-text-surface font-semibold text-base">
-                Submit
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleSaveDraft}
-              className="flex-1 bg-text-tertiary rounded-lg py-3 items-center"
-            >
-              <Text className="text-text-surface font-semibold text-base">
-                Save as Draft
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleCancel}
-              className="flex-1 bg-bg-accent rounded-lg py-3 items-center"
-            >
-              <Text className="text-text-primary font-semibold text-base">
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* ================= USER SELECTION MODAL ================= */}
+      {/* Modal Code remains same as previous steps... */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -233,7 +204,6 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             <Text className="text-xl font-bold text-text-primary mb-4 text-center">
               Select Users
             </Text>
-
             <FlatList
               data={AVAILABLE_USERS}
               keyExtractor={(item) => item.id}
@@ -243,43 +213,21 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
                 return (
                   <TouchableOpacity
                     onPress={() => toggleUserSelection(item.id)}
-                    className={`flex-row items-center justify-between p-3 mb-2 rounded-lg border ${
-                      isSelected
-                        ? "bg-bg-tertiary border-bg-button"
-                        : "bg-bg-surface border-border-muted"
-                    }`}
+                    className={`flex-row items-center justify-between p-3 mb-2 rounded-lg border ${isSelected ? "bg-bg-tertiary border-bg-button" : "bg-bg-surface border-border-muted"}`}
                   >
-                    <View>
-                      <Text className="text-text-primary font-medium text-base">
-                        {item.name}
-                      </Text>
-                      <Text className="text-text-tertiary text-xs">
-                        {item.role}
-                      </Text>
-                    </View>
-                    <View
-                      className={`w-5 h-5 rounded-full border items-center justify-center ${
-                        isSelected
-                          ? "bg-bg-button border-bg-button"
-                          : "border-text-tertiary"
-                      }`}
-                    >
-                      {isSelected && (
-                        <Text className="text-white text-xs">✓</Text>
-                      )}
-                    </View>
+                    <Text className="text-text-primary font-medium">
+                      {item.name}
+                    </Text>
+                    {isSelected && <Text className="text-bg-button">✓</Text>}
                   </TouchableOpacity>
                 );
               }}
             />
-
             <TouchableOpacity
               onPress={() => setIsModalVisible(false)}
               className="bg-bg-button py-3 rounded-lg items-center"
             >
-              <Text className="text-text-surface font-bold text-base">
-                Done
-              </Text>
+              <Text className="text-text-surface font-bold">Done</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -287,5 +235,4 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
     </View>
   );
 };
-
 export default CreateMemoScreen;
