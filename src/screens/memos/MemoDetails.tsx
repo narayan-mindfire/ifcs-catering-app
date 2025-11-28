@@ -12,6 +12,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../../App";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { useMemoStore } from "../../store/useMemosStore";
+import { StarIcon } from "../../assets/icons";
 
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<
@@ -131,7 +132,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <Text
                   className={`text-2xl ${activeMemo.isImportant ? "opacity-100" : "opacity-30 grayscale"}`}
                 >
-                  ⭐
+                  <StarIcon />
                 </Text>
               </TouchableOpacity>
             </View>
@@ -173,7 +174,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 </TouchableOpacity>
               )}
 
-              <TouchableOpacity className="flex-1 border border-border-secondary py-3 rounded-lg items-center">
+              {/* <TouchableOpacity className="flex-1 border border-border-secondary py-3 rounded-lg items-center">
                 <Text className="text-text-secondary font-semibold text-base">
                   Reply
                 </Text>
@@ -182,7 +183,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 <Text className="text-text-secondary font-semibold text-base">
                   Forward
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
 

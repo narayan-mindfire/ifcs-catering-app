@@ -64,6 +64,7 @@ import LockInactiveIcon from "./locked.svg";
 import BoxInactiveIcon from "./packageInactive.svg";
 import StringInactiveIcon from "./signature.svg";
 import DeliveryInactiveIcon from "./deliveryInactive.svg";
+import StarIcon from "./star.svg";
 
 // --- Export all icons together ---
 export {
@@ -135,4 +136,5 @@ export {
   StringIcon,
   DeliveryIcon,
   LockIcon,
+  StarIcon,
 };

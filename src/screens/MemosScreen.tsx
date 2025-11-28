@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,105 +6,150 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { RouteProp } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { StackScreenProps } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { useMemoStore } from "../store/useMemosStore";
+import { MemoTab } from "../types/memo";
+import { ArrowIcon, StarIcon } from "../assets/icons";
 
-type MemosScreenRouteProp = RouteProp<RootStackParamList, "Memos">;
-type MemosScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "Memos"
->;
+type Props = StackScreenProps<RootStackParamList, "Memos">;
+type FilterType = "All" | "Unread" | "Read";
 
-interface Props {
-  route: MemosScreenRouteProp;
-  navigation: MemosScreenNavigationProp;
-}
-
-type TabType = "Inbox" | "Draft" | "Acknowledged By Me" | "Sent";
-
-interface Memo {
-  id: string;
-  sender: string;
-  date: string;
-  isImportant: boolean;
-  isRead: boolean;
-  subject?: string;
-}
-
-const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
-  const [activeTab, setActiveTab] = useState<TabType>("Inbox");
+const MemosScreen: React.FC<Props> = ({ navigation }) => {
+  const { memos, fetchMemos } = useMemoStore();
+  const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const mockMemos: Record<TabType, Memo[]> = {
-    Inbox: [
-      {
-        id: "1",
-        sender: "Shitanshu",
-        date: "Nov 24, 2025",
-        isImportant: true,
-        isRead: false,
-        subject: "Flight Safety Protocol Update",
-      },
-      {
-        id: "2",
-        sender: "John Doe",
-        date: "Nov 23, 2025",
-        isImportant: false,
-        isRead: true,
-        subject: "Weekly Maintenance Report",
-      },
-    ],
-    Draft: [],
-    "Acknowledged By Me": [],
-    Sent: [],
-  };
+  const [filterStatus, setFilterStatus] = useState<FilterType>("All");
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
-  const breadcrumbItems = [
-    {
-      label: "Dashboard",
-      onPress: () => navigation.navigate("Dashboard"),
-    },
-    {
-      label: "Memos",
-    },
-  ];
+  useEffect(() => {
+    fetchMemos();
+  }, [fetchMemos]);
 
-  const currentMemos = mockMemos[activeTab];
-  const unreadFilter = "Unread";
+  const currentMemos = useMemo(() => {
+    let data = memos;
+    const currentUserId = "me";
 
-  const handleMemoPress = (memoId: string) => {
-    navigation.navigate("MemoDetail", { memoId });
-  };
+    // 1. Filter by Tab
+    switch (activeTab) {
+      case "Inbox":
+        data = data.filter((m) => m.sender.id !== currentUserId && !m.isDraft);
+        break;
+      case "Draft":
+        data = data.filter((m) => m.sender.id === currentUserId && m.isDraft);
+        break;
+      case "Sent":
+        data = data.filter((m) => m.sender.id === currentUserId && !m.isDraft);
+        break;
+      case "Acknowledged By Me":
+        data = data.filter(
+          (m) =>
+            m.sender.id !== currentUserId &&
+            !m.isDraft &&
+            m.isAcknowledged === true,
+        );
+        break;
+    }
 
-  const handleAddMemo = () => {
-    navigation.navigate("CreateMemo");
-  };
+    // 2. Filter by Search
+    if (searchQuery) {
+      const lowerQuery = searchQuery.toLowerCase();
+      data = data.filter(
+        (m) =>
+          m.sender.name.toLowerCase().includes(lowerQuery) ||
+          m.subject.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    // 3. Filter by Read/Unread (Inbox Only)
+    if (activeTab === "Inbox" && filterStatus !== "All") {
+      if (filterStatus === "Unread") data = data.filter((m) => !m.isRead);
+      if (filterStatus === "Read") data = data.filter((m) => m.isRead);
+    }
+
+    return data;
+  }, [activeTab, searchQuery, filterStatus, memos]);
 
   return (
-    <View className="flex-1 bg-bg-quaternary">
-      <BreadCrumb items={breadcrumbItems} />
+    <View className="flex-1 bg-bg-quaternary z-0">
+      <BreadCrumb
+        items={[
+          {
+            label: "Dashboard",
+            onPress: () => navigation.navigate("Dashboard"),
+          },
+          { label: "Memos" },
+        ]}
+      />
 
-      <View className="px-5 py-4 bg-bg-surface">
+      {/* Header Container */}
+      <View className="px-5 py-4 bg-bg-surface z-10">
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-2xl font-bold text-text-primary">Memos</Text>
           <TouchableOpacity
-            onPress={handleAddMemo}
+            onPress={() => navigation.navigate("CreateMemo")}
             className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center"
           >
-            <Text className="text-base text-text-surface font-semibold mr-1">
-              +
-            </Text>
             <Text className="text-base text-text-surface font-semibold">
-              Add Memo
+              + Add Memo
             </Text>
           </TouchableOpacity>
         </View>
+
         <View className="flex-row items-center gap-3">
-          <TouchableOpacity className="border border-border-secondary rounded-lg px-4 py-2">
-            <Text className="text-text-secondary">{unreadFilter} ▼</Text>
-          </TouchableOpacity>
+          {activeTab === "Inbox" && (
+            <View className="relative z-50">
+              <TouchableOpacity
+                onPress={() => setIsDropdownVisible(!isDropdownVisible)}
+                className={`border rounded-lg px-4 py-2 min-w-[100px] items-center ${
+                  filterStatus !== "All"
+                    ? "bg-bg-tertiary border-bg-button"
+                    : "border-border-secondary"
+                }`}
+              >
+                <Text
+                  className={
+                    filterStatus !== "All"
+                      ? "text-bg-button font-medium"
+                      : "text-text-secondary"
+                  }
+                >
+                  {filterStatus} ▼
+                </Text>
+              </TouchableOpacity>
+
+              {isDropdownVisible && (
+                <View className="absolute top-12 left-0 w-[120px] bg-bg-surface border border-border-muted rounded-lg shadow-lg z-50">
+                  {(["All", "Unread", "Read"] as FilterType[]).map(
+                    (opt, index) => (
+                      <TouchableOpacity
+                        key={opt}
+                        onPress={() => {
+                          setFilterStatus(opt);
+                          setIsDropdownVisible(false);
+                        }}
+                        className={`p-3 ${
+                          index !== 2 ? "border-b border-border-muted" : ""
+                        }`}
+                      >
+                        <Text
+                          className={`font-medium ${
+                            filterStatus === opt
+                              ? "text-bg-button"
+                              : "text-text-primary"
+                          }`}
+                        >
+                          {opt}
+                        </Text>
+                      </TouchableOpacity>
+                    ),
+                  )}
+                </View>
+              )}
+            </View>
+          )}
 
           <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-2">
             <TextInput
@@ -115,25 +160,26 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
               placeholderTextColor="#A09CAB"
             />
           </View>
-
-          <TouchableOpacity className="bg-bg-button px-6 py-2 rounded-lg">
-            <Text className="text-text-surface font-semibold">Search</Text>
-          </TouchableOpacity>
         </View>
       </View>
-      <View className="bg-bg-surface border-b border-border-muted">
+
+      {/* Tabs Row with Record Counter */}
+      <View className="flex-row items-center bg-bg-surface border-b border-border-muted z-0">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="px-5"
+          className="flex-1"
+          contentContainerStyle={{ paddingHorizontal: 20 }}
         >
-          <View className="flex-row items-center gap-2">
-            {(
-              ["Inbox", "Draft", "Acknowledged By Me", "Sent"] as TabType[]
-            ).map((tab) => (
+          {(["Inbox", "Draft", "Acknowledged By Me", "Sent"] as MemoTab[]).map(
+            (tab) => (
               <TouchableOpacity
                 key={tab}
-                onPress={() => setActiveTab(tab)}
+                onPress={() => {
+                  setActiveTab(tab);
+                  setFilterStatus("All");
+                  setIsDropdownVisible(false);
+                }}
                 className={`px-6 py-3 rounded-t-lg ${
                   activeTab === tab ? "bg-bg-secondary" : "bg-transparent"
                 }`}
@@ -148,105 +194,75 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
                   {tab}
                 </Text>
               </TouchableOpacity>
-            ))}
-            <View className="ml-auto bg-bg-button px-4 py-2 rounded-full">
-              <Text className="text-text-surface text-sm font-medium">
-                Showing {currentMemos.length} records
-              </Text>
-            </View>
-          </View>
+            ),
+          )}
         </ScrollView>
-      </View>
 
-      <ScrollView className="flex-1">
-        {currentMemos.length === 0 ? (
-          <View className="flex-1 items-center justify-center py-20">
-            <Text className="text-text-tertiary text-base">
-              No memos in {activeTab}
+        {/* Record Counter - Fixed to Right */}
+        <View className="pr-5 pl-2">
+          <View className="bg-bg-button/10 px-3 py-1 rounded-full border border-bg-button/20">
+            <Text className="text-bg-button text-xs font-semibold">
+              {currentMemos.length} records
             </Text>
           </View>
-        ) : (
-          <View className="bg-bg-surface m-4 rounded-lg border border-border-muted overflow-hidden">
-            {/* Table Header */}
-            <View className="flex-row bg-bg-secondary px-4 py-3 border-b border-border-muted">
-              <View className="w-12"></View>
-              <View className="flex-1">
-                <Text className="text-text-secondary font-semibold text-sm">
-                  Sender
-                </Text>
-              </View>
-              <View className="flex-1">
-                <Text className="text-text-secondary font-semibold text-sm">
-                  Date
-                </Text>
-              </View>
-              <View className="w-20">
-                <Text className="text-text-secondary font-semibold text-sm">
-                  Actions
-                </Text>
-              </View>
-            </View>
+        </View>
+      </View>
 
-            {/* Table Rows */}
-            {currentMemos.map((memo, index) => (
-              <TouchableOpacity
-                key={memo.id}
-                onPress={() => handleMemoPress(memo.id)}
-                className={`flex-row items-center px-4 py-4 ${
-                  index !== currentMemos.length - 1
-                    ? "border-b border-border-muted"
-                    : ""
-                } ${!memo.isRead ? "bg-bg-quaternary" : "bg-bg-surface"}`}
-              >
-                {/* Status Indicator */}
-                <View className="w-12 items-center">
-                  <View
-                    className={`w-3 h-3 rounded-full ${
-                      !memo.isRead
-                        ? "bg-red-500"
-                        : "bg-transparent border border-border-muted"
-                    }`}
-                  />
-                </View>
-
-                {/* Sender */}
-                <View className="flex-1">
-                  <Text
-                    className={`text-base ${
-                      !memo.isRead
-                        ? "font-bold text-text-primary"
-                        : "text-text-secondary"
-                    }`}
-                  >
-                    {memo.sender}
-                  </Text>
-                  {memo.subject && (
-                    <Text
-                      className="text-sm text-text-tertiary mt-1"
-                      numberOfLines={1}
-                    >
-                      {memo.subject}
-                    </Text>
-                  )}
-                </View>
-
-                <View className="flex-1">
-                  <Text className="text-text-tertiary text-sm">
-                    {memo.date}
-                  </Text>
-                </View>
-
-                <View className="w-20 flex-row items-center gap-2">
-                  {memo.isImportant && <Text className="text-lg">⭐</Text>}
-                  <Text className="text-lg text-bg-button">›</Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+      <ScrollView className="flex-1 z-0">
+        {currentMemos.length === 0 ? (
+          <View className="p-10 items-center">
+            <Text className="text-text-tertiary">No Memos Found</Text>
           </View>
+        ) : (
+          currentMemos.map((memo) => (
+            <TouchableOpacity
+              key={memo.id}
+              onPress={() =>
+                navigation.navigate("MemoDetail", {
+                  memoId: memo.id,
+                })
+              }
+              className={`flex-row items-center px-4 py-4 border-b border-border-muted ${
+                !memo.isRead ? "bg-bg-quaternary" : "bg-bg-surface"
+              }`}
+            >
+              <View className="w-12 items-center">
+                <View
+                  className={`w-3 h-3 rounded-full ${
+                    !memo.isRead
+                      ? "bg-red-500"
+                      : "bg-transparent border border-border-muted"
+                  }`}
+                />
+              </View>
+              <View className="flex-1">
+                <Text
+                  className={`text-base ${
+                    !memo.isRead ? "font-bold" : "text-text-secondary"
+                  }`}
+                >
+                  {memo.sender.name}
+                </Text>
+                <Text
+                  className="text-sm text-text-tertiary mt-1"
+                  numberOfLines={1}
+                >
+                  {memo.subject}
+                </Text>
+              </View>
+              {memo.priority === "High" && (
+                <View className="mr-2">
+                  <StarIcon />
+                </View>
+              )}
+              <View className="w-8">
+                <ArrowIcon />
+              </View>
+            </TouchableOpacity>
+          ))
         )}
       </ScrollView>
     </View>
   );
 };
-
 export default MemosScreen;

@@ -9,8 +9,9 @@ interface MemoState {
   error: string | null;
 
   // Actions
-  fetchMemos: () => Promise<void>; // Removed flightId param
+  fetchMemos: () => Promise<void>;
   fetchMemoById: (id: string) => Promise<void>;
+  addMemo: (memo: Memo) => void; // <--- NEW ACTION
   markAsRead: (id: string) => Promise<void>;
   toggleImportant: (id: string) => Promise<void>;
   acknowledgeMemo: (id: string) => Promise<void>;
@@ -27,13 +28,15 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
   fetchMemos: async () => {
     set({ isLoading: true, error: null });
-
-    // Simulate API Call for User's Memos
     return new Promise((resolve) => {
       setTimeout(() => {
-        // In a real app, you'd pass userId here.
-        // For now, we return ALL mock data assuming it belongs to the logged-in user.
-        set({ memos: MOCK_MEMOS, isLoading: false });
+        // If memos are already loaded in state, don't overwrite with mock defaults if we added new ones
+        const currentMemos = get().memos;
+        if (currentMemos.length === 0) {
+          set({ memos: MOCK_MEMOS, isLoading: false });
+        } else {
+          set({ isLoading: false });
+        }
         resolve();
       }, 800);
     });
@@ -41,13 +44,11 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
   fetchMemoById: async (id: string) => {
     set({ isLoading: true, error: null, activeMemo: null });
-
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Check local state first, then fallback to mock data
-        const memo =
-          get().memos.find((m) => m.id === id) ||
-          MOCK_MEMOS.find((m) => m.id === id);
+        // Search in current state first (to find newly added memos)
+        const allMemos = get().memos.length > 0 ? get().memos : MOCK_MEMOS;
+        const memo = allMemos.find((m) => m.id === id);
 
         if (memo) {
           if (!memo.isRead) {
@@ -63,6 +64,12 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         resolve();
       }, 500);
     });
+  },
+
+  addMemo: (newMemo: Memo) => {
+    set((state) => ({
+      memos: [newMemo, ...state.memos],
+    }));
   },
 
   markAsRead: async (id: string) => {
@@ -104,19 +111,9 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
   getMemosByTab: (tab: MemoTab) => {
     const { memos } = get();
-    const currentUserId = "user-123";
-
-    switch (tab) {
-      case "Inbox":
-        return memos.filter((m) => !m.isDraft && m.sender.id !== currentUserId);
-      case "Draft":
-        return memos.filter((m) => m.isDraft && m.sender.id === currentUserId);
-      case "Sent":
-        return memos.filter((m) => !m.isDraft && m.sender.id === currentUserId);
-      case "Acknowledged By Me":
-        return memos.filter((m) => m.isAcknowledged);
-      default:
-        return [];
-    }
+    // Logic: In a real app, 'Sent' logic would be based on senderID.
+    // For this demo, we will just return all memos for Inbox to see the one we created.
+    if (tab === "Inbox") return memos;
+    return [];
   },
 }));
