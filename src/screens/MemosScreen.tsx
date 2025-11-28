@@ -34,7 +34,6 @@ interface Memo {
 }
 
 const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId } = route.params;
   const [activeTab, setActiveTab] = useState<TabType>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -77,7 +76,11 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
   const unreadFilter = "Unread";
 
   const handleMemoPress = (memoId: string) => {
-    navigation.navigate("MemoDetail", { memoId, flightId });
+    navigation.navigate("MemoDetail", { memoId });
+  };
+
+  const handleAddMemo = () => {
+    navigation.navigate("CreateMemo");
   };
 
   return (
@@ -87,7 +90,10 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
       <View className="px-5 py-4 bg-bg-surface">
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-2xl font-bold text-text-primary">Memos</Text>
-          <TouchableOpacity className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center">
+          <TouchableOpacity
+            onPress={handleAddMemo}
+            className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center"
+          >
             <Text className="text-base text-text-surface font-semibold mr-1">
               +
             </Text>
