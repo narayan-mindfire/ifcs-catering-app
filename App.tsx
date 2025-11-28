@@ -13,6 +13,7 @@ import FlightDetailsScreen from "./src/screens/FlightDetailsScreen";
 import { Header } from "./src/components/dashboard/Header";
 import { ActivityIndicator } from "react-native";
 import MemoDetailScreen from "./src/screens/memos/MemoDetails";
+import CreateMemoScreen from "./src/screens/memos/CreateMemo";
 
 export type RootStackParamList = {
   Dashboard: undefined;
@@ -21,6 +22,7 @@ export type RootStackParamList = {
   Memos: undefined;
   MemoDetail: { memoId: string };
   Documents: { flightId: string };
+  CreateMemo: undefined;
   FlightDetails: {
     flightId: string;
     flightNumber: string;
@@ -56,6 +58,7 @@ export default function App() {
         }}
       >
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        <Stack.Screen name="CreateMemo" component={CreateMemoScreen} />
         <Stack.Screen name="Flights" component={FlightsScreen} />
         <Stack.Screen name="SpotCheck" component={SpotCheckScreen} />
         <Stack.Screen name="Memos" component={MemosScreen} />

@@ -41,9 +41,8 @@ interface Props {
 type FilterType = "All" | "Unread" | "Read";
 
 const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
-  // Store Hooks
-  const { fetchMemos, getMemosByTab, isLoading, toggleImportant } =
-    useMemoStore();
+  const [activeTab, setActiveTab] = useState<TabType>("Inbox");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Local State
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
@@ -75,6 +74,10 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
     navigation.navigate("MemoDetail", { memoId });
   };
 
+  const handleAddMemo = () => {
+    navigation.navigate("CreateMemo");
+  };
+
   const breadcrumbItems = [
     { label: "Dashboard", onPress: () => navigation.navigate("Dashboard") },
     { label: "Memos" },
@@ -88,7 +91,10 @@ const MemosScreen: React.FC<Props> = ({ route, navigation }) => {
       <View className="px-5 py-4 bg-bg-surface z-10">
         <View className="flex-row items-center justify-between mb-4">
           <Text className="text-2xl font-bold text-text-primary">Memos</Text>
-          <TouchableOpacity className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center">
+          <TouchableOpacity
+            onPress={handleAddMemo}
+            className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center"
+          >
             <Text className="text-base text-text-surface font-semibold mr-1">
               +
             </Text>
