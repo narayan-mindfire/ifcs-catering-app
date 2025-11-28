@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
 import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
@@ -31,30 +31,62 @@ export const FlightRow: React.FC<Props> = ({
     navigation.navigate("FlightDetails", {
       flightNumber: flight.flightNumber,
       flightId: flight.id,
-      route: flight.pairRoute,
+      route: flight.pairRoute ?? "",
       date: flight.scheduledDeparture,
     });
   };
 
   const getRouteDisplay = () => {
-    if (isPaired && isFirstInGroup && flightGroup.length === 2) {
-      // Build complete route from both flights
-      const flight1 = flightGroup[0]; // First leg
-      const flight2 = flightGroup[1]; // Return leg
-
-      // Extract routes: SIN-DXB and DXB-SIN becomes SIN-DXB-SIN
-      return `${flight1.departureDestination}-${flight1.arrivalDestination}-${flight2.arrivalDestination}`;
+    if (isPaired && flightGroup.length > 1) {
+      if (isFirstInGroup) {
+        const firstLeg = flightGroup[0];
+        const secondLeg = flightGroup[1];
+        return `${firstLeg.departureDestination}-${firstLeg.arrivalDestination}-${secondLeg.arrivalDestination}`;
+      } else {
+        return "";
+      }
     }
-
-    if (isPaired && !isFirstInGroup) {
-      return "";
-    }
-
     return (
       flight.pairRoute ||
       `${flight.departureDestination}-${flight.arrivalDestination}`
     );
   };
+
+  const routeText = getRouteDisplay();
+
+  const getTimeDisplay = (
+    scheduled: string,
+    estimated: string | null,
+    actual: string | null,
+  ) => {
+    if (actual) {
+      return { label: "Actual", time: actual, colorClass: "text-green-600" };
+    }
+    if (estimated) {
+      return {
+        label: "Estimated",
+        time: estimated,
+        colorClass: "text-orange-500",
+      };
+    }
+    return {
+      label: "Scheduled",
+      time: scheduled,
+      colorClass: "text-text-muted",
+    };
+  };
+
+  const departureData = getTimeDisplay(
+    flight.scheduledDepartureUtc,
+    flight.estimatedDepartureUtc,
+    flight.actualDepartureUtc,
+  );
+
+  const arrivalData = getTimeDisplay(
+    flight.scheduledArrivalUtc,
+    flight.estimatedArrivalUtc,
+    flight.actualArrivalUtc,
+  );
 
   return (
     <View
@@ -65,22 +97,29 @@ export const FlightRow: React.FC<Props> = ({
       }`}
     >
       <View className="flex-[6] py-2.5 px-1 justify-center items-start">
-        {AirlineIcon ? (
-          <AirlineIcon width={50} height={50} />
+        {flight?.airline?.logo ? (
+          <Image
+            source={{ uri: flight.airline.logo }}
+            style={{ width: 40, height: 40, resizeMode: "contain" }}
+          />
         ) : (
-          <Text className="text-base">N/A</Text>
+          <AirlineIcon width={50} height={50} />
         )}
       </View>
 
       <View className="flex-[12] py-2.5 px-1 justify-center">
-        <Text className="text-lg text-text-primary font-semibold">
-          {getRouteDisplay()}
-        </Text>
+        {routeText ? (
+          <Text className="text-lg text-text-primary font-semibold">
+            {routeText}
+          </Text>
+        ) : null}
       </View>
 
       <View className="flex-[8] py-2.5 px-1 justify-center">
         <Text className="text-[17px] font-semibold text-black">
-          {flight.airline?.designator}
+          {flight.airline?.designator === "" || null
+            ? "WY"
+            : flight.airline?.designator}
           {flight.flightNumber}
         </Text>
       </View>
@@ -100,20 +139,28 @@ export const FlightRow: React.FC<Props> = ({
         </Text>
       </View>
 
+      {/* --- Departure Time Column --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
-        <Text className="text-s text-text-muted mb-0.5 uppercase">STD</Text>
+        <Text
+          className={`text-xs mb-0.5 uppercase ${departureData.colorClass}`}
+        >
+          {departureData.label}
+        </Text>
         <Text className="text-[17px] font-semibold text-black">
-          {formatTime(flight.scheduledDeparture)}
+          {formatTime(departureData.time)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
           {flight.departureDestination}
         </Text>
       </View>
 
+      {/* --- Arrival Time Column --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
-        <Text className="text-s text-text-muted mb-0.5 uppercase">STA</Text>
+        <Text className={`text-xs mb-0.5 uppercase ${arrivalData.colorClass}`}>
+          {arrivalData.label}
+        </Text>
         <Text className="text-[17px] font-semibold text-black">
-          {formatTime(flight.scheduledArrival)}
+          {formatTime(arrivalData.time)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
           {flight.arrivalDestination}

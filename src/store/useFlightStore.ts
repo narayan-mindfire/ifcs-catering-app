@@ -36,6 +36,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       set({ error: "Failed to fetch flights", isLoading: false });
     }
   },
+
   // fetchFlights: async () => {
   //   set({ isLoading: true, error: null });
 
@@ -97,24 +98,3 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     }
   },
 }));
-
-// export const useFlightStore = create<FlightStore>((set) => ({
-//   flightGroups: [],
-//   isLoading: false,
-//   error: null,
-
-// fetchFlights: async () => {
-//   set({ isLoading: true, error: null });
-
-//   try {
-//     await new Promise((resolve) => setTimeout(resolve, 500));
-//     set({
-//       flightGroups: flights.data as unknown as Flight[][],
-//       isLoading: false,
-//     });
-//   } catch (err: any) {
-//     console.error(err);
-//     set({ error: "Failed to fetch flights", isLoading: false });
-//   }
-// },
-// }));

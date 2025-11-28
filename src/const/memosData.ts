@@ -41,6 +41,7 @@ export const MOCK_MEMOS: Memo[] = [
       },
     ],
   },
+  // --- INBOX (Medium, Read) ---
   {
     id: "m-2",
     flightId: "fl-101",

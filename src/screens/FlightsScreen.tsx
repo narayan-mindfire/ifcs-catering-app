@@ -132,6 +132,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
             isLastInGroup={index === group.length - 1}
             isFirstInGroup={index === 0}
             isPaired={isPaired}
+            flightGroup={group}
           />
         ))}
       </View>

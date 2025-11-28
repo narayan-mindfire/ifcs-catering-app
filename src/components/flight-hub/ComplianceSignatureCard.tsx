@@ -46,7 +46,7 @@ export const ComplianceSignatureCard: React.FC<
             <Image
               source={{ uri: signature }}
               className="w-full h-full"
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
           <Text className="text-right text-text-tertiary text-xs mt-1">
@@ -55,10 +55,19 @@ export const ComplianceSignatureCard: React.FC<
         </View>
       ) : (
         <Pressable
-          className="h-[250px] border-2 border-dashed border-border-secondary rounded-xl bg-bg-tertiary justify-center items-center"
+          className={`h-[250px] border-2 border-dashed rounded-xl justify-center items-center ${
+            isCompliant
+              ? "border-border-secondary bg-bg-tertiary"
+              : "border-border-muted bg-bg-surface opacity-50"
+          }`}
           onPress={onSign}
+          disabled={!isCompliant}
         >
-          <Text className="text-text-tertiary">Click here to sign</Text>
+          <Text className="text-text-tertiary">
+            {isCompliant
+              ? "Click here to sign"
+              : "Check compliance box to enable signature"}
+          </Text>
         </Pressable>
       )}
     </View>

@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { ContentPreparer } from "../../types/deliveries";
 import { DeleteIcon } from "../../assets/icons";
+import { formatDate } from "../../utils/dateFormatter";
 
 interface ContentPreparersTabProps {
   preparers: ContentPreparer[];
@@ -78,14 +79,14 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                       resizeMode="contain"
                     />
                     {preparer.signedAt && (
-                      <Text className="text-base text-text-tertiary mt-0.5">
-                        {new Date(preparer.signedAt).toLocaleDateString()}
+                      <Text className="text-xs text-text-tertiary mt-0.5">
+                        {formatDate(String(preparer.signedAt))}
                       </Text>
                     )}
                   </View>
                 ) : (
                   <Pressable onPress={() => handleSignClick(preparer.id)}>
-                    <Text className="text-text-tertiary underline">
+                    <Text className="text-bg-button underline">
                       Click here to sign
                     </Text>
                   </Pressable>
@@ -106,7 +107,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
         ) : (
           <View className="p-5 items-center">
             <Text className="text-text-tertiary">
-              No Content Preparers found
+              No Content Preparers found (TSA/Security)
             </Text>
           </View>
         )}
