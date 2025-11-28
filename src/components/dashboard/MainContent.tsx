@@ -258,7 +258,6 @@ const TasksCard: React.FC = () => {
         </Text>
       </View>
 
-      {/* List */}
       <ScrollView className="flex-1">
         {mockTasks.map((task) => (
           <View

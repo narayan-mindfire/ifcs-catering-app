@@ -4,6 +4,7 @@ import SignatureScreen, {
   SignatureViewRef,
 } from "react-native-signature-canvas";
 
+// --- Checkbox Component ---
 interface CheckboxProps {
   checked: boolean;
   onChange: (val: boolean) => void;
@@ -34,6 +35,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   </Pressable>
 );
 
+// --- Signature Modal Component ---
 interface SignatureModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -50,6 +52,7 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
   const ref = useRef<SignatureViewRef>(null);
 
   const handleSignature = (signature: string) => {
+    // signature is the base64 string
     onSave(signature);
     onClose();
   };
@@ -67,10 +70,14 @@ export const SignatureModal: React.FC<SignatureModalProps> = ({
             </Pressable>
           </View>
 
-          <View className="flex-1 bg-red-500">
+          <View className="flex-1 bg-white">
             <SignatureScreen
               ref={ref}
               onOK={handleSignature}
+              // 👇 ADD THIS: Trims empty space, creating a much smaller base64 string
+              trimWhitespace={true}
+              // 👇 ADD THIS: Ensures output is PNG (transparent)
+              imageType="image/png"
               webStyle={`
                 .m-signature-pad--footer {
                   display: none;

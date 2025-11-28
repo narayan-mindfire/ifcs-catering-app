@@ -18,8 +18,8 @@ export type RootStackParamList = {
   Dashboard: undefined;
   SpotCheck: { flightId: string };
   Flights: { flightId: string };
-  Memos: { flightId: string };
-  MemoDetail: { memoId: string; flightId: string };
+  Memos: undefined;
+  MemoDetail: { memoId: string };
   Documents: { flightId: string };
   FlightDetails: {
     flightId: string;

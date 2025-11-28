@@ -1,23 +1,65 @@
+// src/types/deliveries.ts
+
+// --- API Response Structure ---
 export interface Delivery {
   id: string;
-  deliveryNumber: number;
-  contentPreparers: ContentPreparer[];
-  securityCompliance: SecurityCompliance | null;
-  crewCompliance: CrewCompliance | null;
-  driversDeclaration: DriversDeclaration | null;
-  securityDeclaration: SecurityDeclaration | null;
-  createdAt: Date;
-  updatedAt: Date;
+  flightId: string;
+  fmId?: string;
+  deliveryName: string; // This maps to "Delivery X" in UI
+
+  // TSA Section
+  tsaName?: string;
+  tsaRacNumber?: string;
+  tsaComment?: string;
+  tsaSignature?: string;
+  tsaSignatureTimestampDisplay?: string;
+
+  // Crew Section
+  crewName?: string;
+  crewRacNumber?: string;
+  crewComment?: string;
+  crewSignature?: string;
+  crewSignatureTimestampDisplay?: string;
+
+  // Security Section
+  securityName?: string;
+  securityRacNumber?: string;
+  securityComment?: string;
+  securitySignature?: string;
+  securitySignatureTimestampDisplay?: string;
+
+  // Driver Section
+  driverName?: string;
+  driverRacNumber?: string;
+  driverCompany?: string;
+  driverSignature?: string;
+  truckSeal?: string;
+  dispatcherComment?: string;
+  fullName?: string;
+  signDate?: string;
+
+  // Metadata
+  createdAt: string;
+  updatedAt: string;
 }
+
+// --- UI Helper Interfaces (For Tabs) ---
 
 export interface ContentPreparer {
   id: string;
+  // Update: added 'driver' and 'crew'
+  fieldPrefix: "tsa" | "security" | "driver" | "crew";
   fullName: string;
-  type: "Worker" | "Airline Representative" | "Third Party Security Guard";
+  // Update: added 'Driver' and 'Crew'
+  type:
+    | "Worker"
+    | "Security Personnel"
+    | "Third Party Security Guard"
+    | "Driver"
+    | "Crew";
   raicNumber: string;
   signature: string | null;
   signedAt: Date | null;
-  additionalRequirement?: string;
   note?: string;
 }
 
@@ -26,6 +68,8 @@ export interface SecurityCompliance {
   confirmationText: string;
   signature: string | null;
   signedAt: Date | null;
+  name?: string;
+  raicNumber?: string;
 }
 
 export interface CrewCompliance {
@@ -33,6 +77,8 @@ export interface CrewCompliance {
   confirmationText: string;
   signature: string | null;
   signedAt: Date | null;
+  name?: string;
+  raicNumber?: string;
 }
 
 export interface DriversDeclaration {
@@ -42,21 +88,6 @@ export interface DriversDeclaration {
   company: string;
   sealIntact: boolean;
   confirmationText: string;
-  signature: string | null;
-  signedAt: Date | null;
-}
-
-export interface SecurityDeclaration {
-  section: "Single" | "Double";
-  provider: SecurityPerson | null;
-  handler: SecurityPerson | null;
-}
-
-export interface SecurityPerson {
-  name: string;
-  staffName: string;
-  staffNumber: string;
-  position: string;
   signature: string | null;
   signedAt: Date | null;
 }
