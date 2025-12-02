@@ -24,26 +24,29 @@ import {
   ScanIcon,
   SeatIcon,
   FilterIcon,
+  DresserIcon,
+  ArchiveIcon,
+  BracketIcon,
+  TrayIcon,
+  WashingMachineIcon,
 } from "../../assets/icons";
 
 import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
 import { useFlightStore } from "../../store/useFlightStore";
 import { Preparation } from "../../types/preparations";
+import { Alert } from "react-native/Libraries/Alert/Alert";
 
 const SAMPLE_PDF = require("../../assets/sample.pdf");
 
-// --- Constants ---
 const PREPARED_BY_OPTIONS = [
-  "Bond Stores",
-  "Dry Stores",
-  "Laundry",
-  "Loading Bay",
-  "Spare",
-  "Tray Set Up",
+  { label: "Bond Stores", icon: <ArchiveIcon /> },
+  { label: "Dry Stores", icon: <BracketIcon /> },
+  { label: "Laundry", icon: <WashingMachineIcon /> },
+  { label: "Loading Bay", icon: <DresserIcon /> },
+  { label: "Spare", icon: <DresserIcon /> },
+  { label: "Tray Set Up", icon: <TrayIcon /> },
 ];
-
-// --- Components ---
 
 const ValidationModal = ({
   visible,
@@ -77,7 +80,6 @@ const ValidationModal = ({
   </Modal>
 );
 
-// --- Custom Multi-Select Dropdown (Background Highlight Style) ---
 const MultiSelectFilter = ({
   selectedOptions,
   onToggleOption,
@@ -136,18 +138,19 @@ const MultiSelectFilter = ({
           >
             <FlatList
               data={PREPARED_BY_OPTIONS}
-              keyExtractor={(item) => item}
+              keyExtractor={(item) => item.label}
               renderItem={({ item }) => {
-                const isSelected = selectedOptions.includes(item);
+                const isSelected = selectedOptions.includes(item.label);
                 return (
                   <TouchableOpacity
-                    onPress={() => onToggleOption(item)}
+                    onPress={() => onToggleOption(item.label)}
                     className={`flex-row items-center px-4 py-3 border-b border-bg-tertiary ${
                       isSelected
                         ? "bg-bg-accent border-border-accent"
                         : "bg-bg-surface"
                     }`}
                   >
+                    <View className="mr-3">{item.icon}</View>
                     <Text
                       className={`text-base ${
                         isSelected
@@ -155,7 +158,7 @@ const MultiSelectFilter = ({
                           : "text-text-primary font-normal"
                       }`}
                     >
-                      {item}
+                      {item.label}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -168,18 +171,14 @@ const MultiSelectFilter = ({
   );
 };
 
-// --- Main Screen ---
 export const PreparationsScreen: React.FC = () => {
-  // Modals
   const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [pdfVisible, setPdfVisible] = useState(false);
 
-  // Validation
   const [validationMsg, setValidationMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  // Filter State
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
   const [selectedItem, setSelectedItem] = useState<Preparation | null>(null);
@@ -190,7 +189,6 @@ export const PreparationsScreen: React.FC = () => {
   const preparations = useFlightStore((state) => state.preparations);
   const isPrepLoading = useFlightStore((state) => state.isPrepLoading);
 
-  // --- Filter Logic ---
   const handleToggleFilter = (option: string) => {
     setSelectedFilters((prev) => {
       if (prev.includes(option)) {
@@ -199,6 +197,33 @@ export const PreparationsScreen: React.FC = () => {
         return [...prev, option];
       }
     });
+  };
+
+  const handlePrint = async () => {
+    try {
+      // Get filtered preparations (respecting current filters)
+      let dataToPrint = preparations;
+
+      if (selectedFilters.length > 0) {
+        dataToPrint = preparations.filter((p) =>
+          selectedFilters.includes(p.preparedBy || ""),
+        );
+      }
+
+      if (dataToPrint.length === 0) {
+        Alert.alert(
+          "No Data",
+          "There are no preparations to print with the current filters.",
+        );
+        return;
+      }
+    } catch (error) {
+      console.error("Print error:", error);
+      Alert.alert(
+        "Print Error",
+        "An error occurred while preparing the print document.",
+      );
+    }
   };
 
   const sectionedData = useMemo(() => {
@@ -230,7 +255,6 @@ export const PreparationsScreen: React.FC = () => {
     return sections;
   }, [preparations, selectedFilters]);
 
-  // --- Helper Data ---
   const dynamicPaxData = React.useMemo(() => {
     if (!selectedFlight) return [];
     const p = selectedFlight.passengers || {};
@@ -301,7 +325,6 @@ export const PreparationsScreen: React.FC = () => {
     }
   };
 
-  // --- Renderers ---
   const renderSectionHeader = ({
     section: { title },
   }: {
@@ -358,8 +381,32 @@ export const PreparationsScreen: React.FC = () => {
           <TouchableOpacity
             onPress={() => handleSequenceCheck("delivery", item)}
           >
-            <RenderDeliveryIcon height={30} width={30} />
+            <View style={{ position: "relative" }}>
+              <RenderDeliveryIcon height={30} width={30} />
+
+              <View
+                style={{
+                  position: "absolute",
+                  top: -6,
+                  right: -6,
+                  backgroundColor: "#602AF3",
+                  borderRadius: 10,
+                  height: 18,
+                  minWidth: 18,
+                  paddingHorizontal: 3,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{ color: "white", fontSize: 10, fontWeight: "bold" }}
+                >
+                  {Math.floor(Math.random() * 3) + 1}
+                </Text>
+              </View>
+            </View>
           </TouchableOpacity>
+
           <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
             <InfoIcon height={30} width={30} />
           </TouchableOpacity>
@@ -429,9 +476,7 @@ export const PreparationsScreen: React.FC = () => {
         carrier={selectedItem?.equipment}
       />
 
-      {/* Buttons Row */}
       <View className="flex-row mb-5 z-10">
-        {/* Left Side: Scan Actions */}
         <View className="flex-1 flex-row justify-start">
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
@@ -459,15 +504,12 @@ export const PreparationsScreen: React.FC = () => {
           </Pressable>
         </View>
 
-        {/* Right Side: Filters, PAX, Print */}
         <View className="flex-1 flex-row justify-end">
-          {/* 1. FILTER DROPDOWN */}
           <MultiSelectFilter
             selectedOptions={selectedFilters}
             onToggleOption={handleToggleFilter}
           />
 
-          {/* 2. PAX COUNT */}
           <View ref={buttonRef} collapsable={false}>
             <Pressable
               className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
@@ -480,8 +522,10 @@ export const PreparationsScreen: React.FC = () => {
             </Pressable>
           </View>
 
-          {/* 3. PRINT */}
-          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
+          <Pressable
+            className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
+            onPress={handlePrint}
+          >
             <PrintIcon />
             <Text className="text-xl font-normal m-0.5 text-text-primary">
               Print
@@ -490,7 +534,6 @@ export const PreparationsScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* --- TABLE --- */}
       <View className="flex-1 border border-border-secondary rounded-[10px] overflow-hidden">
         <View className="flex-row bg-bg-quaternary p-4 border-b border-border-muted">
           <View className="flex-[2]">

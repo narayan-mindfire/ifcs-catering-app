@@ -43,7 +43,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
           Type
         </Text>
         <Text className="flex-1 font-semibold text-text-secondary text-lg">
-          RAIC #
+          Staff #
         </Text>
         <Text className="flex-[2] font-semibold text-text-secondary text-lg">
           Signature
@@ -67,7 +67,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                 {preparer.type}
               </Text>
               <Text className="flex-1 text-text-primary text-lg">
-                {preparer.raicNumber}
+                {preparer.staffNumber || preparer.raicNumber || "-"}
               </Text>
 
               <View className="flex-[2]">
@@ -79,7 +79,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                       resizeMode="contain"
                     />
                     {preparer.signedAt && (
-                      <Text className="text-xs text-text-tertiary mt-0.5">
+                      <Text className="text-xs text-right text-text-tertiary mt-0.5">
                         {formatDate(String(preparer.signedAt))}
                       </Text>
                     )}

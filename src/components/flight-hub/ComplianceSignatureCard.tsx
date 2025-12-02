@@ -2,10 +2,12 @@ import React from "react";
 import { View, Text, Pressable, Image } from "react-native";
 import { Checkbox } from "./SharedComponents";
 import { formatDate } from "../../utils/dateFormatter";
+import { PrintIcon } from "../../assets/icons";
 
 interface ComplianceSignatureCardProps {
   title: string;
   isCompliant: boolean;
+  toPrint?: boolean;
   onToggleCompliance: (value: boolean) => void;
   confirmationText: string;
   signature: string | null;
@@ -18,6 +20,7 @@ export const ComplianceSignatureCard: React.FC<
 > = ({
   title,
   isCompliant,
+  toPrint,
   onToggleCompliance,
   confirmationText,
   signature,
@@ -33,10 +36,17 @@ export const ComplianceSignatureCard: React.FC<
         <Checkbox checked={isCompliant} onChange={onToggleCompliance} />
       </View>
 
-      <View className="flex-row items-center mb-5">
-        <Text className="text-base text-text-muted flex-1">
-          {confirmationText}
-        </Text>
+      <View className="flex-row mb-5">
+        <View className="flex-1">
+          <Text className="text-sm text-text-muted">{confirmationText}</Text>
+        </View>
+
+        {toPrint && (
+          <View className="flex-row items-center ml-2">
+            <PrintIcon />
+            <Text className="text-xl text-text-primary">Print</Text>
+          </View>
+        )}
       </View>
 
       <Text className="text-base text-text-secondary mb-1.5">Signature</Text>

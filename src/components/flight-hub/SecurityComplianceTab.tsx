@@ -14,7 +14,6 @@ import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 interface SecurityComplianceTabProps {
   securityCompliance: SecurityCompliance | null;
   onUpdateCompliance: (compliance: SecurityCompliance) => Promise<void>;
-  onAddPreparer: (data: any) => void;
 }
 
 const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
@@ -23,8 +22,11 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
 }) => {
   const [isCompliant, setIsCompliant] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [raicNumber, setRaicNumber] = useState("");
+
+  const [provider, setProvider] = useState("");
+  const [name, setName] = useState("");
+  const [staffNumber, setStaffNumber] = useState("");
+  const [position, setPosition] = useState("");
 
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
 
@@ -33,44 +35,62 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
 
   useEffect(() => {
     if (securityCompliance) {
-      setIsCompliant(securityCompliance.isCompliant);
-      setFullName(securityCompliance.name || "");
-      setRaicNumber(securityCompliance.raicNumber || "");
+      setIsCompliant(securityCompliance.isCompliant || false);
+      setProvider(securityCompliance.provider || "");
+      setName(securityCompliance.name || "");
+      setStaffNumber(securityCompliance.staffNumber || "");
+      setPosition(securityCompliance.position || "");
       setPendingSignature(securityCompliance.signature || null);
     } else {
       setIsCompliant(false);
-      setFullName("");
-      setRaicNumber("");
+      setProvider("");
+      setName("");
+      setStaffNumber("");
+      setPosition("");
       setPendingSignature(null);
     }
     setHasChanges(false);
   }, [securityCompliance]);
 
   useEffect(() => {
+    const originalProvider = securityCompliance?.provider || "";
     const originalName = securityCompliance?.name || "";
-    const originalRaic = securityCompliance?.raicNumber || "";
+    const originalStaffNumber = securityCompliance?.staffNumber || "";
+    const originalPosition = securityCompliance?.position || "";
     const originalSig = securityCompliance?.signature || null;
     const originalCompliant = securityCompliance?.isCompliant || false;
 
     const hasTextChanges =
-      fullName !== originalName ||
-      raicNumber !== originalRaic ||
+      provider !== originalProvider ||
+      name !== originalName ||
+      staffNumber !== originalStaffNumber ||
+      position !== originalPosition ||
       isCompliant !== originalCompliant;
 
     const hasSignatureChanges = pendingSignature !== originalSig;
 
     setHasChanges(hasTextChanges || hasSignatureChanges);
-  }, [fullName, raicNumber, isCompliant, pendingSignature, securityCompliance]);
+  }, [
+    provider,
+    name,
+    staffNumber,
+    position,
+    isCompliant,
+    pendingSignature,
+    securityCompliance,
+  ]);
 
   const getUpdatedObject = (): SecurityCompliance => ({
     isCompliant,
+    provider,
+    name,
+    staffNumber,
+    position,
     confirmationText: "I confirm that all security measures are compliant",
     signature: pendingSignature,
     signedAt: pendingSignature
       ? new Date()
       : securityCompliance?.signedAt || null,
-    name: fullName,
-    raicNumber: raicNumber,
   });
 
   const handleSave = async () => {
@@ -98,24 +118,46 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         </Text>
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Name
+          Provider:
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Enter name"
+          value={provider}
+          onChangeText={setProvider}
+          placeholder="Enter provider"
           placeholderTextColor="#A09CAB"
         />
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          RAIC #
+          Security Name:
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
-          value={raicNumber}
-          onChangeText={setRaicNumber}
-          placeholder="Enter RAIC number"
+          value={name}
+          onChangeText={setName}
+          placeholder="Enter security name"
+          placeholderTextColor="#A09CAB"
+        />
+
+        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+          Staff Number:
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+          value={staffNumber}
+          onChangeText={setStaffNumber}
+          placeholder="Enter staff number"
+          placeholderTextColor="#A09CAB"
+        />
+
+        <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
+          Position:
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
+          value={position}
+          onChangeText={setPosition}
+          placeholder="Enter position"
           placeholderTextColor="#A09CAB"
         />
 
@@ -148,7 +190,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         title="Security Measures Compliance"
         isCompliant={isCompliant}
         onToggleCompliance={handleToggleCompliance}
-        confirmationText="I confirm that all security measures are compliant"
+        confirmationText="The in-flight supplies have gone through the following procedures: \n a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation."
         signature={pendingSignature ?? null}
         signedAt={securityCompliance?.signedAt ?? null}
         onSign={() => setShowSignatureModal(true)}

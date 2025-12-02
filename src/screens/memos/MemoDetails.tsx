@@ -78,14 +78,14 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <View className="flex-1 bg-bg-quaternary">
       <BreadCrumb items={breadcrumbItems} />
-
       <ScrollView className="flex-1">
         <View className="p-5">
           {/* Header Card */}
           <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted">
             <View className="flex-row items-start justify-between mb-4">
               <View className="flex-1">
-                <Text className="text-2xl font-bold text-text-primary mb-2">
+                {/* Increased to text-3xl (approx 24px) for title for better readability */}
+                <Text className="text-3xl font-bold text-text-primary mb-2">
                   {activeMemo.subject}
                 </Text>
                 <View className="flex-row items-center gap-2 flex-wrap">
@@ -98,6 +98,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                           : "bg-blue-100"
                     }`}
                   >
+                    {/* Kept as text-sm (14px) */}
                     <Text
                       className={`text-sm font-medium ${
                         activeMemo.priority === "High"
@@ -111,12 +112,14 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                     </Text>
                   </View>
                   <View className="bg-bg-tertiary px-3 py-1 rounded-full">
+                    {/* Kept as text-sm (14px) */}
                     <Text className="text-sm text-text-secondary">
                       {activeMemo.isRead ? "Read" : "Unread"}
                     </Text>
                   </View>
                   {activeMemo.isAcknowledged && (
                     <View className="bg-green-100 px-3 py-1 rounded-full">
+                      {/* Kept as text-sm (14px) */}
                       <Text className="text-sm text-green-700 font-medium">
                         Acknowledged
                       </Text>
@@ -124,7 +127,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   )}
                 </View>
               </View>
-
               <TouchableOpacity
                 className="ml-4"
                 onPress={() => toggleImportant(activeMemo.id)}
@@ -139,21 +141,26 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
             <View className="border-t border-border-muted pt-4 mb-4">
               <View className="flex-row items-center mb-2">
-                <Text className="text-text-tertiary text-sm font-medium w-20">
+                {/* Increased to text-base (16px) */}
+                <Text className="text-text-tertiary text-base font-medium w-20">
                   From:
                 </Text>
-                <Text className="text-text-primary text-base font-semibold">
+                {/* Increased to text-lg (16px) */}
+                <Text className="text-text-primary text-lg font-semibold">
                   {activeMemo.sender.name}{" "}
-                  <Text className="text-text-tertiary font-normal">
+                  {/* Kept inner text as base (16px) */}
+                  <Text className="text-text-tertiary font-normal text-base">
                     ({activeMemo.sender.role})
                   </Text>
                 </Text>
               </View>
               <View className="flex-row items-center">
-                <Text className="text-text-tertiary text-sm font-medium w-20">
+                {/* Increased to text-base (16px) */}
+                <Text className="text-text-tertiary text-base font-medium w-20">
                   Date:
                 </Text>
-                <Text className="text-text-secondary text-base">
+                {/* Increased to text-lg (16px) */}
+                <Text className="text-text-secondary text-lg">
                   {formatDateDetail(activeMemo.createdAt)}
                 </Text>
               </View>
@@ -166,33 +173,26 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                   disabled={activeMemo.isAcknowledged}
                   className={`flex-1 py-3 rounded-lg items-center ${activeMemo.isAcknowledged ? "bg-bg-tertiary opacity-50" : "bg-bg-button"}`}
                 >
+                  {/* Increased to text-lg (16px) */}
                   <Text
-                    className={`${activeMemo.isAcknowledged ? "text-text-tertiary" : "text-text-surface"} font-semibold text-base`}
+                    className={`${activeMemo.isAcknowledged ? "text-text-tertiary" : "text-text-surface"} font-semibold text-lg`}
                   >
                     {activeMemo.isAcknowledged ? "Acknowledged" : "Acknowledge"}
                   </Text>
                 </TouchableOpacity>
               )}
-
-              {/* <TouchableOpacity className="flex-1 border border-border-secondary py-3 rounded-lg items-center">
-                <Text className="text-text-secondary font-semibold text-base">
-                  Reply
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity className="flex-1 border border-border-secondary py-3 rounded-lg items-center">
-                <Text className="text-text-secondary font-semibold text-base">
-                  Forward
-                </Text>
-              </TouchableOpacity> */}
+              {/* Reply/Forward buttons removed as they were commented out */}
             </View>
           </View>
 
           {/* Content Card */}
           <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted min-h-[200px]">
-            <Text className="text-lg font-bold text-text-primary mb-4">
+            {/* Increased to text-xl (18px) */}
+            <Text className="text-xl font-bold text-text-primary mb-4">
               Message Content
             </Text>
-            <Text className="text-base text-text-secondary leading-6">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-lg text-text-secondary leading-6">
               {activeMemo.content}
             </Text>
           </View>
@@ -200,7 +200,8 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           {/* Attachments Card */}
           {activeMemo.attachments.length > 0 && (
             <View className="bg-bg-surface rounded-lg p-5 border border-border-muted">
-              <Text className="text-lg font-bold text-text-primary mb-4">
+              {/* Increased to text-xl (18px) */}
+              <Text className="text-xl font-bold text-text-primary mb-4">
                 Attachments ({activeMemo.attachments.length})
               </Text>
               {activeMemo.attachments.map((attachment) => (
@@ -210,7 +211,8 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 >
                   <View className="flex-row items-center flex-1">
                     <View className="w-10 h-10 bg-bg-accent rounded items-center justify-center mr-3">
-                      <Text className="text-lg">
+                      {/* Increased icon size to text-xl (18px) */}
+                      <Text className="text-xl">
                         {attachment.type === "pdf"
                           ? "📄"
                           : attachment.type === "excel"
@@ -219,18 +221,21 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       </Text>
                     </View>
                     <View className="flex-1">
+                      {/* Increased to text-lg (16px) */}
                       <Text
-                        className="text-base font-medium text-text-primary"
+                        className="text-lg font-medium text-text-primary"
                         numberOfLines={1}
                       >
                         {attachment.name}
                       </Text>
+                      {/* Kept as text-sm (14px) */}
                       <Text className="text-sm text-text-tertiary">
                         {attachment.size}
                       </Text>
                     </View>
                   </View>
                   <TouchableOpacity className="bg-bg-button px-4 py-2 rounded-lg ml-2">
+                    {/* Kept as text-sm (14px) for button text to be compact */}
                     <Text className="text-text-surface font-medium text-sm">
                       Download
                     </Text>

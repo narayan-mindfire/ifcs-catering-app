@@ -83,7 +83,8 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
-      const mockData = mockPreparations[flightId] || [];
+      const mockData = mockPreparations[0] || [];
+      console.log("MOCK DATA: ", mockData);
       console.log("SETTING MOCK DATA: ", mockData, "for flight id: ", flightId);
       const mockResponse: PreparationApiResponse = {
         success: true,

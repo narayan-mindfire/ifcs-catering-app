@@ -67,54 +67,52 @@ const DeliveriesScreen: React.FC = () => {
         fullName: d.tsaName || "",
         type: "Third Party Security Guard",
         raicNumber: d.tsaRacNumber || "",
+        staffNumber: undefined,
         signature: d.tsaSignature || null,
         signedAt: d.tsaSignatureTimestampDisplay
           ? new Date(d.tsaSignatureTimestampDisplay)
           : null,
-        note: d.tsaComment,
       });
     }
-
     if (d.securityName || d.securityRacNumber) {
       list.push({
         id: `${d.id}-sec`,
         fieldPrefix: "security",
-        fullName: d.securityName || "",
+        fullName: d.securityName || d.fullName || "",
         type: "Security Personnel",
         raicNumber: d.securityRacNumber || "",
+        staffNumber: d.securityStaffNumber || undefined,
         signature: d.securitySignature || null,
         signedAt: d.securitySignatureTimestampDisplay
           ? new Date(d.securitySignatureTimestampDisplay)
           : null,
-        note: d.securityComment,
       });
     }
-
-    if (d.driverName || d.driverRacNumber) {
+    if (d.driverName || d.driverStaffId) {
       list.push({
         id: `${d.id}-driver`,
         fieldPrefix: "driver",
         fullName: d.driverName || "",
         type: "Driver",
         raicNumber: d.driverRacNumber || "",
+        staffNumber: d.driverStaffId || undefined,
         signature: d.driverSignature || null,
-        signedAt: d.createdAt ? new Date(d.createdAt) : null,
-        note: d.dispatcherComment,
+        signedAt: null,
+        note: undefined,
       });
     }
-
-    if (d.crewName || d.crewRacNumber) {
+    if (d.crewName || d.crewStaffNumber) {
       list.push({
         id: `${d.id}-crew`,
         fieldPrefix: "crew",
         fullName: d.crewName || "",
         type: "Crew",
         raicNumber: d.crewRacNumber || "",
+        staffNumber: d.crewStaffNumber || undefined,
         signature: d.crewSignature || null,
         signedAt: d.crewSignatureTimestampDisplay
           ? new Date(d.crewSignatureTimestampDisplay)
           : null,
-        note: d.crewComment,
       });
     }
 
@@ -123,35 +121,41 @@ const DeliveriesScreen: React.FC = () => {
 
   const getDriversDeclaration = (d: Delivery): DriversDeclaration => ({
     driverName: d.driverName || "",
-    raicNumber: d.driverRacNumber || "",
+    driverStaffId: d.driverStaffId || "",
     truckSeal: d.truckSeal || "",
-    company: d.driverCompany || "",
-    sealIntact: !!d.driverSignature,
-    confirmationText: "I (the driver) confirm the SEAL is intact",
+    driverCompany: d.driverCompany || "",
+    sealIntact: false, // Backend doesn't have this field
+    confirmationText:
+      "I certify that a. the security of in-flight supplies is maintained during the transfer from in-flight supply facilies to aircraft b. in-flight supplies have been loaded into the aircraft in secure condition and handed over to the flight air crew or oman-air representative",
     signature: d.driverSignature || null,
-    signedAt: d.createdAt ? new Date(d.createdAt) : null,
+    signedAt: null, // Backend doesn't have this field
   });
 
   const getCrewCompliance = (d: Delivery): CrewCompliance => ({
-    isCompliant: !!d.crewSignature,
-    confirmationText: "I confirm crew compliance",
+    isCompliant: false, // Backend doesn't have this field
+    confirmationText:
+      "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
     signature: d.crewSignature || null,
     signedAt: d.crewSignatureTimestampDisplay
       ? new Date(d.crewSignatureTimestampDisplay)
       : null,
-    name: d.crewName,
-    raicNumber: d.crewRacNumber,
+    airCrewRepresentative: d.airCrewRepresentative || "",
+    crewName: d.crewName || "",
+    staffNumber: d.crewStaffNumber || "",
   });
 
   const getSecurityCompliance = (d: Delivery): SecurityCompliance => ({
-    isCompliant: !!d.securitySignature,
-    confirmationText: "Security checks passed",
+    isCompliant: false, // Backend doesn't have this field
+    confirmationText:
+      "The in-flight supplies have gone through the following procedures: a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation.",
     signature: d.securitySignature || null,
     signedAt: d.securitySignatureTimestampDisplay
       ? new Date(d.securitySignatureTimestampDisplay)
       : null,
-    name: d.securityName,
-    raicNumber: d.securityRacNumber,
+    provider: d.securityProvider || null,
+    name: d.securityName || null,
+    staffNumber: d.securityStaffNumber || null,
+    position: d.securityPosition || null,
   });
 
   const handleAddNewDelivery = () => {
@@ -174,22 +178,25 @@ const DeliveriesScreen: React.FC = () => {
     );
   };
 
-  // --- 1. Security Logic ---
   const handleSecurityComplianceUpdate = async (comp: SecurityCompliance) => {
     if (!selectedDeliveryId || !selectedDelivery) return;
 
     const promises = [];
+    const payload: Partial<Delivery> = {
+      securityProvider: comp.provider,
+      securityName: comp.name,
+      securityStaffNumber: comp.staffNumber,
+      securityPosition: comp.position,
+    };
+
     const hasTextChanges =
+      comp.provider !== selectedDelivery.securityProvider ||
       comp.name !== selectedDelivery.securityName ||
-      comp.raicNumber !== selectedDelivery.securityRacNumber;
+      comp.staffNumber !== selectedDelivery.securityStaffNumber ||
+      comp.position !== selectedDelivery.securityPosition;
 
     if (hasTextChanges) {
-      promises.push(
-        updateDelivery(flightId!, selectedDeliveryId, {
-          securityName: comp.name,
-          securityRacNumber: comp.raicNumber,
-        }),
-      );
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
     }
 
     const hasSignatureChanges =
@@ -209,7 +216,7 @@ const DeliveriesScreen: React.FC = () => {
     try {
       await Promise.all(promises);
     } catch (error) {
-      console.error("Error saving security compliance:", error);
+      console.error("Error saving Security Declaration:", error);
       Alert.alert("Error", "Failed to save some changes.");
     }
   };
@@ -219,17 +226,19 @@ const DeliveriesScreen: React.FC = () => {
 
     const promises = [];
 
+    const payload: Partial<Delivery> = {
+      airCrewRepresentative: comp.airCrewRepresentative,
+      crewName: comp.crewName,
+      crewStaffNumber: comp.staffNumber,
+    };
+
     const hasTextChanges =
-      comp.name !== selectedDelivery.crewName ||
-      comp.raicNumber !== selectedDelivery.crewRacNumber;
+      comp.airCrewRepresentative !== selectedDelivery.airCrewRepresentative ||
+      comp.crewName !== selectedDelivery.crewName ||
+      comp.staffNumber !== selectedDelivery.crewStaffNumber;
 
     if (hasTextChanges) {
-      promises.push(
-        updateDelivery(flightId!, selectedDeliveryId, {
-          crewName: comp.name,
-          crewRacNumber: comp.raicNumber,
-        }),
-      );
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
     }
 
     const hasSignatureChanges =
@@ -244,7 +253,7 @@ const DeliveriesScreen: React.FC = () => {
     try {
       await Promise.all(promises);
     } catch (error) {
-      console.error("Error saving crew compliance:", error);
+      console.error("Error saving Crew Declaration:", error);
       Alert.alert("Error", "Failed to save some changes.");
     }
   };
@@ -254,21 +263,21 @@ const DeliveriesScreen: React.FC = () => {
 
     const promises = [];
 
+    const payload: Partial<Delivery> = {
+      driverName: decl.driverName,
+      driverStaffId: decl.driverStaffId,
+      truckSeal: decl.truckSeal,
+      driverCompany: decl.driverCompany,
+    };
+
     const hasTextChanges =
       decl.driverName !== selectedDelivery.driverName ||
-      decl.raicNumber !== selectedDelivery.driverRacNumber ||
+      decl.driverStaffId !== selectedDelivery.driverStaffId ||
       decl.truckSeal !== selectedDelivery.truckSeal ||
-      decl.company !== selectedDelivery.driverCompany;
+      decl.driverCompany !== selectedDelivery.driverCompany;
 
     if (hasTextChanges) {
-      promises.push(
-        updateDelivery(flightId!, selectedDeliveryId, {
-          driverName: decl.driverName,
-          driverRacNumber: decl.raicNumber,
-          truckSeal: decl.truckSeal,
-          driverCompany: decl.company,
-        }),
-      );
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
     }
 
     const hasSignatureChanges =
@@ -288,29 +297,29 @@ const DeliveriesScreen: React.FC = () => {
     }
   };
 
-  const handleAddPreparer = (preparer: any) => {
-    if (!selectedDeliveryId) return;
-    const d = selectedDelivery!;
-    const payload: Partial<Delivery> = {};
+  // const handleAddPreparer = (preparer: any) => {
+  //   if (!selectedDeliveryId) return;
+  //   const d = selectedDelivery!;
+  //   const payload: Partial<Delivery> = {};
 
-    if (!d.tsaName) {
-      payload.tsaName = preparer.fullName;
-      payload.tsaRacNumber = preparer.raicNumber;
-      payload.tsaComment = preparer.note;
-    } else if (!d.securityName) {
-      payload.securityName = preparer.fullName;
-      payload.securityRacNumber = preparer.raicNumber;
-      payload.securityComment = preparer.note;
-    } else {
-      Alert.alert(
-        "Error",
-        "Slots full. Please use specific tabs for Driver/Crew.",
-      );
-      return;
-    }
+  //   if (!d.tsaName) {
+  //     payload.tsaName = preparer.fullName;
+  //     payload.tsaRacNumber = preparer.raicNumber;
+  //     payload.tsaComment = preparer.note;
+  //   } else if (!d.securityName) {
+  //     payload.securityName = preparer.fullName;
+  //     payload.securityRacNumber = preparer.raicNumber;
+  //     payload.securityComment = preparer.note;
+  //   } else {
+  //     Alert.alert(
+  //       "Error",
+  //       "Slots full. Please use specific tabs for Driver/Crew.",
+  //     );
+  //     return;
+  //   }
 
-    updateDelivery(flightId!, selectedDeliveryId, payload);
-  };
+  //   updateDelivery(flightId!, selectedDeliveryId, payload);
+  // };
 
   const handleUpdatePreparerSignature = (
     preparerId: string,
@@ -318,17 +327,17 @@ const DeliveriesScreen: React.FC = () => {
   ) => {
     if (!selectedDeliveryId) return;
 
-    if (preparerId.endsWith("-security")) {
-      addSignature(flightId!, selectedDeliveryId, "security", signature);
-    } else if (preparerId.endsWith("-sec")) {
-      updateDelivery(flightId!, selectedDeliveryId, {
-        securitySignature: signature,
-        securitySignatureTimestampDisplay: new Date().toISOString(),
-      });
-    } else if (preparerId.endsWith("-driver")) {
+    if (preparerId.endsWith("-driver")) {
       addSignature(flightId!, selectedDeliveryId, "driver", signature);
     } else if (preparerId.endsWith("-crew")) {
       addSignature(flightId!, selectedDeliveryId, "crew", signature);
+    } else if (preparerId.endsWith("-security")) {
+      updateDelivery(flightId!, selectedDeliveryId, {
+        tsaSignature: signature,
+        tsaSignatureTimestampDisplay: new Date().toISOString(),
+      });
+    } else if (preparerId.endsWith("-sec")) {
+      addSignature(flightId!, selectedDeliveryId, "security", signature);
     }
   };
 
@@ -355,17 +364,18 @@ const DeliveriesScreen: React.FC = () => {
               payload.securityName = "";
               payload.securityRacNumber = "";
               payload.securityComment = "";
-              payload.securitySignature = "";
+              payload.securitySignature = null;
             } else if (id.endsWith("-driver")) {
               payload.driverName = "";
-              payload.driverRacNumber = "";
+              payload.driverStaffId = "";
               payload.driverCompany = "";
-              payload.driverSignature = "";
+              payload.driverSignature = null;
               payload.truckSeal = "";
             } else if (id.endsWith("-crew")) {
               payload.crewName = "";
-              payload.crewRacNumber = "";
-              payload.crewSignature = "";
+              payload.airCrewRepresentative = "";
+              payload.crewStaffNumber = "";
+              payload.crewSignature = null;
             }
 
             updateDelivery(flightId!, selectedDeliveryId, payload);
@@ -452,17 +462,17 @@ const DeliveriesScreen: React.FC = () => {
                   onPress={() => setActiveTab("preparers")}
                 />
                 <TabButton
-                  title="Security Compliance"
+                  title="Security Declaration"
                   active={activeTab === "security"}
                   onPress={() => setActiveTab("security")}
                 />
                 <TabButton
-                  title="Driver Compliance"
+                  title="Driver's Declaration"
                   active={activeTab === "driver"}
                   onPress={() => setActiveTab("driver")}
                 />
                 <TabButton
-                  title="Crew Compliance"
+                  title="Crew Declaration"
                   active={activeTab === "crew"}
                   onPress={() => setActiveTab("crew")}
                 />
@@ -481,7 +491,6 @@ const DeliveriesScreen: React.FC = () => {
 
               {activeTab === "security" && (
                 <SecurityComplianceTab
-                  onAddPreparer={handleAddPreparer}
                   securityCompliance={getSecurityCompliance(selectedDelivery)}
                   onUpdateCompliance={handleSecurityComplianceUpdate}
                 />
@@ -496,7 +505,6 @@ const DeliveriesScreen: React.FC = () => {
 
               {activeTab === "crew" && (
                 <CrewComplianceTab
-                  onAddPreparer={handleAddPreparer}
                   crewCompliance={getCrewCompliance(selectedDelivery)}
                   onUpdateCompliance={handleCrewComplianceUpdate}
                 />

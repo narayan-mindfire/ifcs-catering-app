@@ -18,7 +18,20 @@ export const MOCK_MEMOS: Memo[] = [
     isAcknowledged: false,
     requiresAcknowledgement: true,
     createdAt: new Date().toISOString(),
-    attachments: [],
+    attachments: [
+      {
+        id: "att-1",
+        name: "Safety_Protocol_Update.pdf",
+        type: "pdf",
+        size: "2.1 MB",
+      },
+      {
+        id: "att-2",
+        name: "Checklist_Image.png",
+        type: "image",
+        size: "540 KB",
+      },
+    ],
   },
   {
     id: "2",
@@ -33,7 +46,14 @@ export const MOCK_MEMOS: Memo[] = [
     isAcknowledged: true,
     requiresAcknowledgement: true,
     createdAt: new Date(Date.now() - 86400000).toISOString(),
-    attachments: [],
+    attachments: [
+      {
+        id: "att-3",
+        name: "Maintenance_Report_Week12.xlsx",
+        type: "excel",
+        size: "860 KB",
+      },
+    ],
   },
   {
     id: "3",
@@ -78,6 +98,19 @@ export const MOCK_MEMOS: Memo[] = [
     isAcknowledged: false,
     requiresAcknowledgement: true,
     createdAt: new Date(Date.now() - 172800000).toISOString(),
-    attachments: [],
+    attachments: [
+      {
+        id: "att-4",
+        name: "Engine2_Inspection_Report.pdf",
+        type: "pdf",
+        size: "1.7 MB",
+      },
+      {
+        id: "att-5",
+        name: "Engine2_Photo.jpg",
+        type: "image",
+        size: "1.1 MB",
+      },
+    ],
   },
 ];

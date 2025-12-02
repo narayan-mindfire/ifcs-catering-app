@@ -20,28 +20,29 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   driversDeclaration,
   onUpdateDeclaration,
 }) => {
-  const [driverName, setDriverName] = useState("");
-  const [raicNumber, setRaicNumber] = useState("");
+  const [driver, setDriver] = useState("");
+  const [staffID, setStaffID] = useState("");
   const [truckSeal, setTruckSeal] = useState("");
   const [company, setCompany] = useState("");
   const [sealIntact, setSealIntact] = useState(false);
-  const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   const [pendingSignature, setPendingSignature] = useState<string | null>(null);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
 
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     if (driversDeclaration) {
-      setDriverName(driversDeclaration.driverName || "");
-      setRaicNumber(driversDeclaration.raicNumber || "");
+      setDriver(driversDeclaration.driverName || "");
+      setStaffID(driversDeclaration.driverStaffId || "");
       setTruckSeal(driversDeclaration.truckSeal || "");
-      setCompany(driversDeclaration.company || "");
+      setCompany(driversDeclaration.driverCompany || "");
       setSealIntact(driversDeclaration.sealIntact || false);
       setPendingSignature(driversDeclaration.signature || null);
     } else {
-      setDriverName("");
-      setRaicNumber("");
+      setDriver("");
+      setStaffID("");
       setTruckSeal("");
       setCompany("");
       setSealIntact(false);
@@ -54,17 +55,17 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     const originalSig = driversDeclaration?.signature || null;
 
     const changed =
-      driverName !== (driversDeclaration?.driverName || "") ||
-      raicNumber !== (driversDeclaration?.raicNumber || "") ||
+      driver !== (driversDeclaration?.driverName || "") ||
+      staffID !== (driversDeclaration?.driverStaffId || "") ||
       truckSeal !== (driversDeclaration?.truckSeal || "") ||
-      company !== (driversDeclaration?.company || "") ||
+      company !== (driversDeclaration?.driverCompany || "") ||
       sealIntact !== (driversDeclaration?.sealIntact || false) ||
       pendingSignature !== originalSig;
 
     setHasChanges(changed);
   }, [
-    driverName,
-    raicNumber,
+    driver,
+    staffID,
     truckSeal,
     company,
     sealIntact,
@@ -76,12 +77,12 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     setIsSaving(true);
 
     await onUpdateDeclaration({
-      driverName,
-      raicNumber,
-      truckSeal,
-      company,
-      sealIntact,
-      confirmationText: "I (the driver) confirm the SEAL is intact",
+      driverName: driver,
+      driverStaffId: staffID,
+      truckSeal: truckSeal,
+      driverCompany: company,
+      sealIntact: sealIntact,
+      confirmationText: "The driver confirms the seal is intact.",
       signature: pendingSignature,
       signedAt: pendingSignature
         ? new Date()
@@ -105,99 +106,100 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
     >
-      <View className="flex-1 flex-col justify-between bg-bg-surface rounded-2xl border border-border-muted p-4">
-        <View>
-          <Text className="text-xl font-semibold text-text-primary mb-4">
-            Driver Information
-          </Text>
+      <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+        <Text className="text-xl font-semibold text-text-primary mb-4">
+          Driver Information
+        </Text>
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Driver Name*
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={driverName}
-            onChangeText={setDriverName}
-            placeholder="Enter driver name"
-            placeholderTextColor="#A09CAB"
-          />
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Driver*
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+          value={driver}
+          onChangeText={setDriver}
+          placeholder="Enter driver name"
+          placeholderTextColor="#A09CAB"
+        />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            RAIC #*
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={raicNumber}
-            onChangeText={setRaicNumber}
-            placeholder="Enter RAIC number"
-            placeholderTextColor="#A09CAB"
-          />
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Staff ID*
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+          value={staffID}
+          onChangeText={setStaffID}
+          placeholder="Enter staff ID"
+          placeholderTextColor="#A09CAB"
+        />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Truck Seal*
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={truckSeal}
-            onChangeText={setTruckSeal}
-            placeholder="Enter truck seal ID"
-            placeholderTextColor="#A09CAB"
-          />
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Truck Seal*
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+          value={truckSeal}
+          onChangeText={setTruckSeal}
+          placeholder="Enter truck seal ID"
+          placeholderTextColor="#A09CAB"
+        />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Company*
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={company}
-            onChangeText={setCompany}
-            placeholder="Enter company name"
-            placeholderTextColor="#A09CAB"
-          />
-        </View>
+        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
+          Company*
+        </Text>
+        <TextInput
+          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+          value={company}
+          onChangeText={setCompany}
+          placeholder="Enter company name"
+          placeholderTextColor="#A09CAB"
+        />
 
-        <View>
-          {/* Save Button */}
-          <Pressable
-            onPress={handleSave}
-            disabled={!hasChanges || isSaving}
-            className={`mt-6 py-3 rounded-xl items-center ${
-              !hasChanges || isSaving
-                ? "bg-bg-tertiary opacity-50"
-                : "bg-bg-button"
-            }`}
-          >
-            {isSaving ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text
-                className={`font-semibold text-lg ${
-                  !hasChanges || isSaving
-                    ? "text-text-tertiary"
-                    : "text-text-surface"
-                }`}
-              >
-                {hasChanges ? "Save Changes" : "No Changes to Save"}
-              </Text>
-            )}
-          </Pressable>
-
-          {!hasChanges && driversDeclaration?.driverName && (
-            <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
-              <Text className="text-sm text-text-primary text-center font-medium">
-                ✓ Information Synced
-              </Text>
-            </View>
+        <Pressable
+          onPress={handleSave}
+          disabled={!hasChanges || isSaving}
+          className={`mt-6 py-3 rounded-xl items-center ${
+            !hasChanges || isSaving
+              ? "bg-bg-tertiary opacity-50"
+              : "bg-bg-button"
+          }`}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text
+              className={`font-semibold text-lg ${
+                !hasChanges || isSaving
+                  ? "text-text-tertiary"
+                  : "text-text-surface"
+              }`}
+            >
+              {hasChanges ? "Save Changes" : "No Changes to Save"}
+            </Text>
           )}
-        </View>
+        </Pressable>
+
+        {!hasChanges && driver && (
+          <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
+            <Text className="text-sm text-text-primary text-center font-medium">
+              ✓ Information Synced
+            </Text>
+          </View>
+        )}
       </View>
+
       <ComplianceSignatureCard
         title="Security Seal is Intact"
+        toPrint={true}
         isCompliant={sealIntact}
         onToggleCompliance={handleToggleSealIntact}
-        confirmationText="I (the driver) confirm the SEAL is intact"
-        signature={pendingSignature ?? null}
-        signedAt={driversDeclaration?.signedAt ?? null}
+        confirmationText={
+          "I certify that:\n" +
+          "a. The security of in-flight supplies has been maintained during transfer.\n" +
+          "b. Supplies were loaded in secure condition and handed over properly."
+        }
+        signature={pendingSignature}
+        signedAt={driversDeclaration?.signedAt || null}
         onSign={() => setShowSignatureModal(true)}
       />
 
