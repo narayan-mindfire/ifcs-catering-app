@@ -70,6 +70,7 @@ import BracketIcon from "./brackets-round.svg";
 import ArchiveIcon from "./archive.svg";
 import TrayIcon from "./tray.svg";
 import WashingMachineIcon from "./washing-machine.svg";
+import ImageIcon from "./image.svg";
 
 // --- Export all icons together ---
 export {
@@ -147,4 +148,5 @@ export {
   ArchiveIcon,
   TrayIcon,
   WashingMachineIcon,
+  ImageIcon,
 };

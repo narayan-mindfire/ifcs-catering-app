@@ -1,9 +1,10 @@
 import axios from "axios";
 const apiClient = axios.create({
-  // baseURL: "https://worrisome-overmodestly-nisha.ngrok-free.dev/api/v1",
-  baseURL: "https://caesural-antonina-apogeotropic.ngrok-free.dev/api/v1",
+  // baseURL: "https://worrisome-overmodestly-nisha.ngrok-free.dev/api/v1", //sambit
+  baseURL: "https://uniterative-nonvocally-retta.ngrok-free.dev/api/v1", //sagarika
+  // baseURL: "https://caesural-antonina-apogeotropic.ngrok-free.dev/api/v1", //jyoti
   // baseURL:
-  //   "https://ifcsde-apise-ppluvmz2chnl-1091653442.ca-central-1.elb.amazonaws.com/api/v1",
+  //   "https://ifcsde-apise-ppluvmz2chnl-1091653442.ca-central-1.elb.amazonaws.com/api/v1", //main
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
