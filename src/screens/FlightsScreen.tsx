@@ -47,6 +47,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 
   useEffect(() => {
     fetchFlights();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const formatDateToISO = (date: Date) => {
