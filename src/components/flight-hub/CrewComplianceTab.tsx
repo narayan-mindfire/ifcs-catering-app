@@ -13,8 +13,7 @@ import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 
 interface CrewComplianceTabProps {
   crewCompliance: CrewCompliance | null;
-  onUpdateCompliance: (compliance: CrewCompliance) => void;
-  onAddPreparer: (data: any) => void;
+  onUpdateCompliance: (compliance: CrewCompliance) => Promise<void>;
 }
 
 const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
@@ -22,64 +21,85 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   onUpdateCompliance,
 }) => {
   const [isCompliant, setIsCompliant] = useState(false);
+
+  const [airCrewRepresentative, setAirCrewRepresentative] = useState("");
+  const [crewName, setCrewName] = useState("");
+  const [staffNumber, setStaffNumber] = useState("");
+
+  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [raicNumber, setRaicNumber] = useState("");
+
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // SYNC: Update state when props change
   useEffect(() => {
     if (crewCompliance) {
-      setIsCompliant(crewCompliance.isCompliant);
-      setFullName(crewCompliance.name || "");
-      setRaicNumber(crewCompliance.raicNumber || "");
+      setIsCompliant(crewCompliance.isCompliant || false);
+      setAirCrewRepresentative(crewCompliance.airCrewRepresentative || "");
+      setCrewName(crewCompliance.crewName || "");
+      setStaffNumber(crewCompliance.staffNumber || "");
+      setPendingSignature(crewCompliance.signature || null);
     } else {
       setIsCompliant(false);
-      setFullName("");
-      setRaicNumber("");
+      setAirCrewRepresentative("");
+      setCrewName("");
+      setStaffNumber("");
+      setPendingSignature(null);
     }
     setHasChanges(false);
   }, [crewCompliance]);
 
-  // Detect changes
   useEffect(() => {
     const changed =
-      fullName !== (crewCompliance?.name || "") ||
-      raicNumber !== (crewCompliance?.raicNumber || "") ||
-      isCompliant !== (crewCompliance?.isCompliant || false);
+      isCompliant !== (crewCompliance?.isCompliant ?? false) ||
+      airCrewRepresentative !== (crewCompliance?.airCrewRepresentative ?? "") ||
+      crewName !== (crewCompliance?.crewName ?? "") ||
+      staffNumber !== (crewCompliance?.staffNumber ?? "") ||
+      pendingSignature !== (crewCompliance?.signature ?? null);
 
     setHasChanges(changed);
-  }, [fullName, raicNumber, isCompliant, crewCompliance]);
-
-  // Helper to construct the full object for updates
-  const getUpdatedObject = (
-    overrides: Partial<CrewCompliance> = {},
-  ): CrewCompliance => ({
+  }, [
     isCompliant,
-    confirmationText:
-      "I confirm that all CREW catering security measures are compliant",
-    signature: crewCompliance?.signature || null,
-    signedAt: crewCompliance?.signedAt || null,
-    name: fullName,
-    raicNumber: raicNumber,
-    ...overrides,
-  });
+    airCrewRepresentative,
+    crewName,
+    staffNumber,
+    pendingSignature,
+    crewCompliance,
+  ]);
 
   const handleSave = async () => {
     setIsSaving(true);
-    await onUpdateCompliance(getUpdatedObject());
-    setHasChanges(false);
-    setIsSaving(false);
-  };
 
-  const handleToggleCompliance = (value: boolean) => {
-    setIsCompliant(value);
+    await onUpdateCompliance({
+      isCompliant,
+      confirmationText:
+        "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
+      signature: pendingSignature,
+      signedAt: pendingSignature
+        ? new Date()
+        : crewCompliance?.signedAt || null,
+
+      airCrewRepresentative,
+      crewName,
+      staffNumber,
+    });
+
+    setIsSaving(false);
+    setHasChanges(false);
   };
 
   const handleSaveSignature = (signature: string) => {
-    onUpdateCompliance(getUpdatedObject({ signature, signedAt: new Date() }));
+    setPendingSignature(signature);
+    setShowSignatureModal(false);
   };
+
+  // Validation Logic
+  // ALL fields are mandatory here
+  const isFormValid =
+    airCrewRepresentative.trim() !== "" &&
+    crewName.trim() !== "" &&
+    staffNumber.trim() !== "" &&
+    pendingSignature !== null;
 
   return (
     <ScrollView
@@ -91,34 +111,46 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             Crew Member Details
           </Text>
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Crew Member Name
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Air Crew Representative Name <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={fullName}
-            onChangeText={setFullName}
-            placeholder="Enter crew member name"
+            value={airCrewRepresentative}
+            onChangeText={setAirCrewRepresentative}
+            placeholder="Enter air crew representative name"
             placeholderTextColor="#A09CAB"
           />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            RAIC #
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Crew Name <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={raicNumber}
-            onChangeText={setRaicNumber}
-            placeholder="Enter RAIC number"
+            value={crewName}
+            onChangeText={setCrewName}
+            placeholder="Enter crew name"
+            placeholderTextColor="#A09CAB"
+          />
+
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Staff Number <Text className="text-red-500">*</Text>
+          </Text>
+          <TextInput
+            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
+            value={staffNumber}
+            onChangeText={setStaffNumber}
+            placeholder="Enter staff number"
             placeholderTextColor="#A09CAB"
           />
         </View>
+
         <View>
           <Pressable
             onPress={handleSave}
-            disabled={!hasChanges || isSaving}
+            disabled={!hasChanges || isSaving || !isFormValid}
             className={`mt-6 py-3 rounded-xl items-center ${
-              !hasChanges || isSaving
+              !hasChanges || isSaving || !isFormValid
                 ? "bg-bg-tertiary opacity-50"
                 : "bg-bg-button"
             }`}
@@ -128,7 +160,7 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             ) : (
               <Text
                 className={`font-semibold text-lg ${
-                  !hasChanges || isSaving
+                  !hasChanges || isSaving || !isFormValid
                     ? "text-text-tertiary"
                     : "text-text-surface"
                 }`}
@@ -137,23 +169,23 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
               </Text>
             )}
           </Pressable>
-        </View>
 
-        {!hasChanges && fullName && (
-          <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
-            <Text className="text-sm text-text-primary text-center font-medium">
-              ✓ Information Synced
-            </Text>
-          </View>
-        )}
+          {!hasChanges && crewName && (
+            <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
+              <Text className="text-sm text-text-primary text-center font-medium">
+                ✓ Information Synced
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
       <ComplianceSignatureCard
         title="CREW Catering Security Measures Compliance"
         isCompliant={isCompliant}
-        onToggleCompliance={handleToggleCompliance}
-        confirmationText="I confirm that all CREW catering security measures are compliant"
-        signature={crewCompliance?.signature ?? null}
+        onToggleCompliance={setIsCompliant}
+        confirmationText="In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition"
+        signature={pendingSignature ?? null}
         signedAt={crewCompliance?.signedAt ?? null}
         onSign={() => setShowSignatureModal(true)}
       />

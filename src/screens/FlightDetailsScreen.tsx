@@ -10,7 +10,7 @@ import { PreparationsScreen } from "./details/Preparations";
 // import { InvoiceScreen } from "./details/Invoice";
 import DeliveriesScreen from "./details/Deliveries";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
-import { formatDate } from "../utils/dateFormatter";
+// import { formatDate } from "../utils/dateFormatter";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -67,7 +67,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 };
 
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId, route: flightRoute, date, flightNumber } = route.params;
+  const { flightId, route: flightRoute, flightNumber } = route.params;
   const selectFlightById = useFlightStore((state) => state.selectFlightById);
   const fetchPreparations = useFlightStore((state) => state.fetchPreparations);
 
@@ -108,9 +108,9 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
             DATE:{" "}
-            <Text className="text-text-secondary">
+            {/* <Text className="text-text-secondary">
               {formatDate(date.split("T")[0])}
-            </Text>
+            </Text> */}
           </Text>
         </View>
       </View>

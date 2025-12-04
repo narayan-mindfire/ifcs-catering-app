@@ -5,7 +5,8 @@ import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
 import { ArrowIcon } from "../../assets/icons";
 import { formatDate, formatTime } from "../../utils/dateFormatter";
-import { airlineIcons } from "../../assets/icons/airline";
+// import { airlineIcons } from "../../assets/icons/airline";
+import { EmairatesIcon } from "../../assets/logos";
 
 interface Props {
   flight: Flight;
@@ -24,8 +25,8 @@ export const FlightRow: React.FC<Props> = ({
   isPaired,
   flightGroup = [],
 }) => {
-  const airlineCode = flight.airline?.code || "WY";
-  const AirlineIcon = airlineIcons[airlineCode];
+  // const airlineCode = flight.airline?.code || "WY";
+  // const AirlineIcon = airlineIcons[airlineCode];
 
   const handlePress = () => {
     navigation.navigate("FlightDetails", {
@@ -103,7 +104,7 @@ export const FlightRow: React.FC<Props> = ({
             style={{ width: 40, height: 40, resizeMode: "contain" }}
           />
         ) : (
-          <AirlineIcon width={50} height={50} />
+          <EmairatesIcon width={50} height={50} />
         )}
       </View>
 

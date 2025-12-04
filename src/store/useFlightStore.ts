@@ -29,9 +29,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   fetchFlights: async () => {
     set({ isLoading: true, error: null });
     try {
-      // const response = await apiClient.get<FlightApiResponse>(
-      //   "/flights?page=1&limit=100&sortBy=scheduledDeparture&order=desc&airline=Oman+Air&fromDate=2025-11-28&toDate=2025-11-28",
-      // );
       const response = await apiClient.get<FlightApiResponse>("/flights");
       set({ flightGroups: response.data.data, isLoading: false });
     } catch (err: any) {
@@ -83,7 +80,8 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 800));
-      const mockData = mockPreparations[flightId] || [];
+      const mockData = mockPreparations[0] || [];
+      console.log("MOCK DATA: ", mockData);
       console.log("SETTING MOCK DATA: ", mockData, "for flight id: ", flightId);
       const mockResponse: PreparationApiResponse = {
         success: true,

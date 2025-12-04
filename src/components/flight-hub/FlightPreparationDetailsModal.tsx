@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,38 +7,112 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Switch,
+  ActivityIndicator,
 } from "react-native";
-import { LockIcon, CheckIcon, StringIcon } from "../../assets/icons";
-import { Checkbox } from "../flight-hub/SharedComponents";
+import { StatusRow } from "./StatusRow";
+import { CartVisualizer } from "./CartVisulaizer";
+import { ContainerVisualizer } from "./ContainerVisualizer";
+import {
+  ItemContentMapped,
+  RecursivePackingStandardNode,
+} from "../../types/preparations";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { ImageIcon } from "../../assets/icons";
 
 interface FlightPreparationModalProps {
   visible: boolean;
   onClose: () => void;
-  stowage?: string;
-  carrier?: string;
-  equipment?: string;
+  flightId: string;
+  preparationId: string;
+  isLocked: boolean;
+  isSealed: boolean;
+  isCompleted: boolean;
 }
-
-const DRAWER_ITEMS = [
-  { qty: 1, item: "DRAWER LINER 10 X 14 1/2 ATLAS" },
-  { qty: 3, item: "White Wine Montenero 187ml eco" },
-  { qty: 1, item: "Red Wine Montenero 187ml eco" },
-];
 
 export const FlightPreparationDetailsModal: React.FC<
   FlightPreparationModalProps
 > = ({
   visible,
   onClose,
-  stowage = "1202",
-  carrier = "Purser Kit",
-  equipment = "Canister Small Square Atlas",
+  flightId,
+  preparationId,
+  isLocked,
+  isSealed,
+  isCompleted,
 }) => {
-  const [isLooseItems, setIsLooseItems] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [isSealed, setIsSealed] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const { preparationDetail, fetchPreparationById, isPrepLoading } =
+    useFlightPreparationStore();
+
+  const [selectedDrawerContents, setSelectedDrawerContents] = useState<
+    ItemContentMapped[]
+  >([]);
+  const [activeDrawerName, setActiveDrawerName] = useState<string>("");
+  const [activeDrawerIndex, setActiveDrawerIndex] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (visible && flightId && preparationId) {
+      fetchPreparationById(flightId, preparationId);
+    }
+  }, [visible, flightId, preparationId]);
+
+  useEffect(() => {
+    if (!preparationDetail) return;
+
+    const packingStd = preparationDetail.packingStandard;
+    const equipmentType = packingStd?.equipmentItem?.type || "";
+    const parentContents = packingStd?.contents || [];
+    const parentName =
+      packingStd?.packingStandard?.name || "Equipment Contents";
+    const drawers = packingStd?.children || [];
+
+    if (equipmentType === "Cart" || equipmentType === "Container") {
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveDrawerName(parentName);
+        setActiveDrawerIndex(null);
+      } else if (drawers.length > 0) {
+        const firstDrawer = drawers[0];
+        setSelectedDrawerContents(firstDrawer.contents || []);
+        setActiveDrawerName(firstDrawer.packingStandard.name);
+        setActiveDrawerIndex(0);
+      }
+    } else {
+      setSelectedDrawerContents(parentContents);
+      setActiveDrawerName(parentName);
+      setActiveDrawerIndex(null);
+    }
+  }, [preparationDetail]);
+
+  const handleDrawerClick = (
+    drawerIndex: number | null,
+    drawerData: RecursivePackingStandardNode | null,
+  ) => {
+    const packingStd = preparationDetail?.packingStandard;
+    const parentContents = packingStd?.contents || [];
+    const parentName =
+      packingStd?.packingStandard?.name || "Equipment Contents";
+
+    setActiveDrawerIndex(drawerIndex);
+
+    if (drawerIndex !== null && drawerData) {
+      setSelectedDrawerContents(drawerData.contents || []);
+      setActiveDrawerName(drawerData.packingStandard.name);
+    } else {
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveDrawerName(parentName);
+      } else {
+        setSelectedDrawerContents([]);
+        setActiveDrawerName("");
+      }
+    }
+  };
+
+  const packingStd = preparationDetail?.packingStandard;
+  const drawers = packingStd?.children || [];
+  const equipmentType = packingStd?.equipmentItem?.type || "";
 
   return (
     <Modal
@@ -46,189 +121,197 @@ export const FlightPreparationDetailsModal: React.FC<
       transparent
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/40 justify-center items-center px-5 py-0">
-        <View className="w-[90%] max-w-[1000px] h-[85%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
-          {/* --- Header --- */}
-          <View className="p-6 border-b border-border-muted">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-medium text-text-secondary">
-                Flight Preparation Plan Details
-              </Text>
-              <TouchableOpacity onPress={onClose}>
-                <Text className="text-2xl text-text-tertiary">✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row gap-6 flex-wrap">
-              <Text className="text-sm text-text-tertiary">
-                Stowage:{" "}
-                <Text className="text-base text-text-secondary font-medium">
-                  {stowage}
-                </Text>
-              </Text>
-              <Text className="text-sm text-text-tertiary">
-                Carrier:{" "}
-                <Text className="text-base text-text-secondary font-medium">
-                  {carrier}
-                </Text>
-              </Text>
-              <Text className="text-sm text-text-tertiary">
-                Equipment:{" "}
-                <Text className="text-base text-text-secondary font-medium">
-                  {equipment}
-                </Text>
-              </Text>
-            </View>
+      <View className="flex-1 bg-black/60 justify-center items-center px-4">
+        <View className="w-full max-w-[1000px] h-[80%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
+          <View className="p-4 border-b border-border-muted flex-row justify-between items-center bg-bg-surface z-10">
+            <Text className="text-xl font-medium text-text-secondary">
+              Flight Preparation Plan Details
+            </Text>
+            <TouchableOpacity onPress={onClose} className="p-2">
+              <Text className="text-2xl text-text-tertiary font-bold">✕</Text>
+            </TouchableOpacity>
           </View>
 
-          <ScrollView
-            className="flex-1 bg-bg-quaternary"
-            contentContainerStyle={{ padding: 24 }}
-          >
-            {/* --- STATUS ROW --- */}
-            <View className="flex-row bg-bg-surface rounded-xl mb-6 p-4 border border-border-muted justify-around items-center">
-              {/* 1. Locked */}
-              <TouchableOpacity
-                className="flex-row items-center gap-3"
-                onPress={() => setIsLocked(!isLocked)}
-                activeOpacity={0.7}
-              >
-                <View className="flex-row items-center gap-2">
-                  {LockIcon ? (
-                    <LockIcon width={20} height={20} />
-                  ) : (
-                    <Text>🔒</Text>
-                  )}
-                  <Text className="text-base text-text-secondary font-medium">
-                    Locked
-                  </Text>
-                </View>
-                <Checkbox checked={isLocked} onChange={setIsLocked} />
-              </TouchableOpacity>
-
-              {/* 2. Sealed */}
-              <TouchableOpacity
-                className="flex-row items-center gap-3"
-                onPress={() => setIsSealed(!isSealed)}
-                activeOpacity={0.7}
-              >
-                <View className="flex-row items-center gap-2">
-                  <StringIcon />
-                  <Text className="text-base text-text-secondary font-medium">
-                    Sealed
-                  </Text>
-                </View>
-                <Checkbox checked={isSealed} onChange={setIsSealed} />
-              </TouchableOpacity>
-
-              {/* 3. Completed */}
-              <TouchableOpacity
-                className="flex-row items-center gap-3"
-                onPress={() => setIsCompleted(!isCompleted)}
-                activeOpacity={0.7}
-              >
-                <View className="flex-row items-center gap-2">
-                  <CheckIcon />
-                  <Text className="text-base text-text-secondary font-medium">
-                    Completed
-                  </Text>
-                </View>
-                <Checkbox checked={isCompleted} onChange={setIsCompleted} />
-              </TouchableOpacity>
+          {isPrepLoading || !preparationDetail ? (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color="#602AF3" />
+              <Text className="mt-4 text-text-secondary">
+                Loading Details...
+              </Text>
             </View>
+          ) : (
+            <ScrollView
+              className="flex-1 bg-bg-quaternary"
+              contentContainerStyle={{ padding: 16 }}
+            >
+              <StatusRow
+                isLocked={isLocked}
+                isSealed={isSealed}
+                isCompleted={isCompleted}
+              />
 
-            {/* --- Main Grid --- */}
-            <View className="flex-row gap-6">
-              {/* Left Column: Images */}
-              <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4">
-                <View className="flex-1 items-center justify-start">
-                  <Text className="text-base text-text-secondary mb-3">
-                    Position in Galley
+              <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted flex-row flex-wrap gap-y-4">
+                <View className="w-1/3">
+                  <Text className="text-text-secondary text-xs">Galley</Text>
+                  <Text className="text-text-primary font-bold">
+                    {preparationDetail.galleyPosition || "N/A"}
                   </Text>
-                  <Image
-                    source={require("../../assets/icons/preparations_details/galley0.png")}
-                    className="w-full h-[300px]"
-                    resizeMode="contain"
-                  />
                 </View>
-                <View className="flex-1 items-center justify-start">
-                  <Text className="text-base text-text-secondary mb-3">
-                    Ultralight bluedart
+                <View className="w-1/3">
+                  <Text className="text-text-secondary text-xs">Carrier</Text>
+                  <Text className="text-text-primary font-bold">
+                    {preparationDetail.nameDisplay || "N/A"}
                   </Text>
-                  <Image
-                    source={require("../../assets/icons/preparations_details/galley1.png")}
-                    className="w-full h-[200px] mt-5"
-                    resizeMode="contain"
-                  />
+                </View>
+                <View className="w-1/3">
+                  <Text className="text-text-secondary text-xs">Position</Text>
+                  <Text className="text-text-primary font-bold">
+                    {preparationDetail.position || "N/A"}
+                  </Text>
+                </View>
+                <View className="w-1/3">
+                  <Text className="text-text-secondary text-xs">Equipment</Text>
+                  <Text className="text-text-primary font-bold">
+                    {preparationDetail.equipment || "N/A"}
+                  </Text>
+                </View>
+                <View className="w-1/3">
+                  <Text className="text-text-secondary text-xs">Door</Text>
+                  <Text className="text-text-primary font-bold">
+                    {preparationDetail.door || "N/A"}
+                  </Text>
                 </View>
               </View>
+              <View className="flex-row gap-4 mt-6 h-[500px]">
+                <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
+                  <View className="flex-1 items-center justify-center">
+                    {preparationDetail.aircraftPosition?.picture ? (
+                      <Image
+                        source={{
+                          uri: preparationDetail.aircraftPosition.picture,
+                        }}
+                        className="w-full h-full"
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Text className="text-text-tertiary">
+                        No Position Image
+                      </Text>
+                    )}
+                  </View>
 
-              {/* Right Column: Table */}
-              <View className="flex-1">
-                <View className="flex-row justify-end items-center mb-3 gap-2">
-                  <Text className="text-sm text-text-tertiary">
-                    Loose Items
-                  </Text>
-                  <Switch
-                    value={isLooseItems}
-                    onValueChange={setIsLooseItems}
-                    trackColor={{ false: "#ccc", true: "#602AF3" }}
-                  />
+                  <View className="flex-1 items-center justify-center pt-8">
+                    {equipmentType === "Container" ? (
+                      <ContainerVisualizer
+                        cabinetFrameImg={packingStd?.equipmentCategory?.picture}
+                        numberOfDrawers={
+                          packingStd?.equipmentItem?.drawerCount || 0
+                        }
+                        drawersData={drawers}
+                        defaultOpenDrawer={activeDrawerIndex}
+                        onDrawerClick={(idx: any) => {
+                          if (idx !== null && drawers[idx]) {
+                            handleDrawerClick(idx, drawers[idx]);
+                          } else {
+                            handleDrawerClick(null, null);
+                          }
+                        }}
+                      />
+                    ) : equipmentType === "Cart" ? (
+                      <CartVisualizer
+                        cabinetFrameImg={packingStd?.equipmentCategory?.picture}
+                        numberOfDrawers={
+                          packingStd?.equipmentItem?.drawerCount || 0
+                        }
+                        drawers={drawers}
+                        defaultOpenDrawer={activeDrawerIndex}
+                        onDrawerClick={handleDrawerClick}
+                      />
+                    ) : (
+                      <Image
+                        source={{
+                          uri: packingStd?.equipmentCategory?.picture || "",
+                        }}
+                        className="w-full h-full"
+                        resizeMode="contain"
+                      />
+                    )}
+                  </View>
                 </View>
 
-                <View className="bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
-                  <View className="p-4 border-b border-border-muted">
-                    <Text className="text-base text-text-tertiary">
-                      Selected:{" "}
-                      <Text className="text-text-primary">Drawer 3</Text>
+                <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
+                  <View className="p-3 border-b border-border-muted bg-bg-secondary">
+                    <Text className="text-sm font-bold text-text-primary">
+                      {activeDrawerName || "Content Details"}
                     </Text>
                   </View>
-                  <View className="flex-row bg-bg-quaternary p-3 border-b border-border-muted">
-                    <Text className="flex-1 font-semibold text-text-primary text-xs">
-                      Qty.
+
+                  <View className="flex-row p-2 border-b border-border-muted bg-bg-tertiary">
+                    <Text className="flex-1 text-xs font-bold text-text-secondary text-center">
+                      Qty
                     </Text>
-                    <Text className="flex-[4] font-semibold text-text-primary text-xs">
+                    <Text className="flex-[3] text-xs font-bold text-text-secondary pl-2">
                       Item
                     </Text>
-                    <Text className="flex-1 font-semibold text-text-primary text-xs text-right">
-                      Action
+                    <Text className="flex-1 text-xs font-bold text-text-secondary text-center">
+                      Img
                     </Text>
                   </View>
-                  {DRAWER_ITEMS.map((row, idx) => (
-                    <View
-                      key={idx}
-                      className="flex-row p-3 border-b border-border-muted items-center"
-                    >
-                      <Text className="flex-1 text-sm text-text-secondary text-center">
-                        {row.qty}
-                      </Text>
-                      <Text className="flex-[4] text-sm text-text-secondary">
-                        {row.item}
-                      </Text>
-                      <View className="flex-1 items-end">
-                        <View className="w-6 h-6 bg-bg-tertiary rounded justify-center items-center">
-                          <Text>📷</Text>
+
+                  <ScrollView>
+                    {selectedDrawerContents.length > 0 ? (
+                      selectedDrawerContents.map((item, index) => (
+                        <View
+                          key={item.id || index}
+                          className="flex-row p-3 border-b border-border-muted items-center"
+                        >
+                          <Text className="flex-1 text-sm text-text-primary text-center">
+                            {item.quantity}
+                          </Text>
+                          <Text className="flex-[3] text-sm text-text-primary pl-2">
+                            {item.packingStandardItemDef?.provisionItem?.name ||
+                              item.packingStandardItemDef?.mealItem?.name ||
+                              item.name}
+                          </Text>
+                          <View className="flex-1 items-center">
+                            {item.packingStandardItemDef?.provisionItem
+                              ?.picture || item.packingStandardItemPicture ? (
+                              <Image
+                                source={{
+                                  uri:
+                                    item.packingStandardItemDef?.provisionItem
+                                      ?.picture ||
+                                    item.packingStandardItemPicture ||
+                                    "",
+                                }}
+                                className="w-8 h-8 rounded"
+                                resizeMode="cover"
+                              />
+                            ) : (
+                              <ImageIcon width={25} height={25} />
+                            )}
+                          </View>
                         </View>
+                      ))
+                    ) : (
+                      <View className="p-4 items-center">
+                        <Text className="text-text-muted text-sm">
+                          No items in this selection.
+                        </Text>
                       </View>
-                    </View>
-                  ))}
-                  <TouchableOpacity className="m-4 bg-bg-secondary p-3 rounded-xl items-center">
-                    <Text className="text-text-secondary font-medium">
-                      Add Image
-                    </Text>
-                  </TouchableOpacity>
+                    )}
+                  </ScrollView>
                 </View>
               </View>
-            </View>
-          </ScrollView>
+            </ScrollView>
+          )}
 
-          {/* --- Footer --- */}
-          <View className="p-4 border-t border-border-muted items-end">
+          <View className="p-4 border-t border-border-muted items-end bg-bg-surface">
             <TouchableOpacity
               onPress={onClose}
-              className="border border-border-muted py-2.5 px-8 rounded-xl"
+              className="bg-bg-button py-3 px-8 rounded-xl"
             >
-              <Text className="text-text-secondary text-sm">Close</Text>
+              <Text className="text-white font-semibold">Close</Text>
             </TouchableOpacity>
           </View>
         </View>

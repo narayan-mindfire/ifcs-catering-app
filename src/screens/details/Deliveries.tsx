@@ -24,7 +24,6 @@ import {
 import { useFlightStore } from "../../store/useFlightStore";
 
 type TabType = "dispatcher" | "preparers" | "security" | "driver" | "crew";
-// type TabType = "preparers" | "security" | "driver" | "crew";
 
 const DeliveriesScreen: React.FC = () => {
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
@@ -58,11 +57,9 @@ const DeliveriesScreen: React.FC = () => {
 
   const selectedDelivery = deliveries.find((d) => d.id === selectedDeliveryId);
 
-  // ✅ UPDATED: Now includes Driver and Crew in the list
   const getContentPreparers = (d: Delivery): ContentPreparer[] => {
     const list: ContentPreparer[] = [];
 
-    // 1. TSA
     if (d.tsaName || d.tsaRacNumber) {
       list.push({
         id: `${d.id}-security`,
@@ -70,57 +67,52 @@ const DeliveriesScreen: React.FC = () => {
         fullName: d.tsaName || "",
         type: "Third Party Security Guard",
         raicNumber: d.tsaRacNumber || "",
+        staffNumber: undefined,
         signature: d.tsaSignature || null,
         signedAt: d.tsaSignatureTimestampDisplay
           ? new Date(d.tsaSignatureTimestampDisplay)
           : null,
-        note: d.tsaComment,
       });
     }
-
-    // 2. Security (Airline Rep)
     if (d.securityName || d.securityRacNumber) {
       list.push({
         id: `${d.id}-sec`,
         fieldPrefix: "security",
-        fullName: d.securityName || "",
+        fullName: d.securityName || d.fullName || "",
         type: "Security Personnel",
         raicNumber: d.securityRacNumber || "",
+        staffNumber: d.securityStaffNumber || undefined,
         signature: d.securitySignature || null,
         signedAt: d.securitySignatureTimestampDisplay
           ? new Date(d.securitySignatureTimestampDisplay)
           : null,
-        note: d.securityComment,
       });
     }
-
-    // 3. Driver
-    if (d.driverName || d.driverRacNumber) {
+    if (d.driverName || d.driverStaffId) {
       list.push({
         id: `${d.id}-driver`,
         fieldPrefix: "driver",
         fullName: d.driverName || "",
         type: "Driver",
         raicNumber: d.driverRacNumber || "",
+        staffNumber: d.driverStaffId || undefined,
         signature: d.driverSignature || null,
-        signedAt: d.createdAt ? new Date(d.createdAt) : null, // Uses creation time as proxy if no specific sign date
-        note: d.dispatcherComment,
+        signedAt: d.driverSignatureTimestampDisplay || null,
+        note: undefined,
       });
     }
-
-    // 4. Crew
-    if (d.crewName || d.crewRacNumber) {
+    if (d.crewName || d.crewStaffNumber) {
       list.push({
         id: `${d.id}-crew`,
         fieldPrefix: "crew",
         fullName: d.crewName || "",
         type: "Crew",
         raicNumber: d.crewRacNumber || "",
+        staffNumber: d.crewStaffNumber || undefined,
         signature: d.crewSignature || null,
         signedAt: d.crewSignatureTimestampDisplay
           ? new Date(d.crewSignatureTimestampDisplay)
           : null,
-        note: d.crewComment,
       });
     }
 
@@ -129,35 +121,41 @@ const DeliveriesScreen: React.FC = () => {
 
   const getDriversDeclaration = (d: Delivery): DriversDeclaration => ({
     driverName: d.driverName || "",
-    raicNumber: d.driverRacNumber || "",
+    driverStaffId: d.driverStaffId || "",
     truckSeal: d.truckSeal || "",
-    company: d.driverCompany || "",
-    sealIntact: !!d.driverSignature,
-    confirmationText: "I (the driver) confirm the SEAL is intact",
+    driverCompany: d.driverCompany || "",
+    sealIntact: false,
+    confirmationText:
+      "I certify that a. the security of in-flight supplies is maintained during the transfer from in-flight supply facilies to aircraft b. in-flight supplies have been loaded into the aircraft in secure condition and handed over to the flight air crew or oman-air representative",
     signature: d.driverSignature || null,
-    signedAt: d.createdAt ? new Date(d.createdAt) : null,
+    signedAt: null,
   });
 
   const getCrewCompliance = (d: Delivery): CrewCompliance => ({
-    isCompliant: !!d.crewSignature,
-    confirmationText: "I confirm crew compliance",
+    isCompliant: false,
+    confirmationText:
+      "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
     signature: d.crewSignature || null,
     signedAt: d.crewSignatureTimestampDisplay
       ? new Date(d.crewSignatureTimestampDisplay)
       : null,
-    name: d.crewName,
-    raicNumber: d.crewRacNumber,
+    airCrewRepresentative: d.airCrewRepresentative || "",
+    crewName: d.crewName || "",
+    staffNumber: d.crewStaffNumber || "",
   });
 
   const getSecurityCompliance = (d: Delivery): SecurityCompliance => ({
-    isCompliant: !!d.securitySignature,
-    confirmationText: "Security checks passed",
+    isCompliant: false,
+    confirmationText:
+      "The in-flight supplies have gone through the following procedures: a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation.",
     signature: d.securitySignature || null,
     signedAt: d.securitySignatureTimestampDisplay
       ? new Date(d.securitySignatureTimestampDisplay)
       : null,
-    name: d.securityName,
-    raicNumber: d.securityRacNumber,
+    provider: d.securityProvider || null,
+    name: d.securityName || null,
+    staffNumber: d.securityStaffNumber || null,
+    position: d.securityPosition || null,
   });
 
   const handleAddNewDelivery = () => {
@@ -180,52 +178,145 @@ const DeliveriesScreen: React.FC = () => {
     );
   };
 
-  // Note: Only adds TSA/Security via this specific button in ContentPreparersTab
-  // Driver/Crew usually added via their specific tabs, but if needed, logic is here.
-  const handleAddPreparer = (preparer: any) => {
-    if (!selectedDeliveryId) return;
-    const d = selectedDelivery!;
-    const payload: Partial<Delivery> = {};
+  const handleSecurityComplianceUpdate = async (comp: SecurityCompliance) => {
+    if (!selectedDeliveryId || !selectedDelivery) return;
 
-    if (!d.tsaName) {
-      payload.tsaName = preparer.fullName;
-      payload.tsaRacNumber = preparer.raicNumber;
-      payload.tsaComment = preparer.note;
-    } else if (!d.securityName) {
-      payload.securityName = preparer.fullName;
-      payload.securityRacNumber = preparer.raicNumber;
-      payload.securityComment = preparer.note;
-    } else {
-      Alert.alert(
-        "Error",
-        "Slots full. Please use specific tabs for Driver/Crew.",
-      );
-      return;
+    const promises = [];
+    const payload: Partial<Delivery> = {
+      securityProvider: comp.provider,
+      securityName: comp.name,
+      securityStaffNumber: comp.staffNumber,
+      securityPosition: comp.position,
+    };
+
+    const hasTextChanges =
+      comp.provider !== selectedDelivery.securityProvider ||
+      comp.name !== selectedDelivery.securityName ||
+      comp.staffNumber !== selectedDelivery.securityStaffNumber ||
+      comp.position !== selectedDelivery.securityPosition;
+
+    if (hasTextChanges) {
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
     }
 
-    updateDelivery(flightId!, selectedDeliveryId, payload);
+    const hasSignatureChanges =
+      comp.signature && comp.signature !== selectedDelivery.securitySignature;
+
+    if (hasSignatureChanges) {
+      promises.push(
+        addSignature(
+          flightId!,
+          selectedDeliveryId,
+          "security",
+          comp.signature!,
+        ),
+      );
+    }
+
+    try {
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Error saving Security Declaration:", error);
+      Alert.alert("Error", "Failed to save some changes.");
+    }
   };
+
+  const handleCrewComplianceUpdate = async (comp: CrewCompliance) => {
+    if (!selectedDeliveryId || !selectedDelivery) return;
+
+    const promises = [];
+
+    const payload: Partial<Delivery> = {
+      airCrewRepresentative: comp.airCrewRepresentative,
+      crewName: comp.crewName,
+      crewStaffNumber: comp.staffNumber,
+    };
+
+    const hasTextChanges =
+      comp.airCrewRepresentative !== selectedDelivery.airCrewRepresentative ||
+      comp.crewName !== selectedDelivery.crewName ||
+      comp.staffNumber !== selectedDelivery.crewStaffNumber;
+
+    if (hasTextChanges) {
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
+    }
+
+    const hasSignatureChanges =
+      comp.signature && comp.signature !== selectedDelivery.crewSignature;
+
+    if (hasSignatureChanges) {
+      promises.push(
+        addSignature(flightId!, selectedDeliveryId, "crew", comp.signature!),
+      );
+    }
+
+    try {
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Error saving Crew Declaration:", error);
+      Alert.alert("Error", "Failed to save some changes.");
+    }
+  };
+
+  const handleDriverComplianceUpdate = async (decl: DriversDeclaration) => {
+    if (!selectedDeliveryId || !selectedDelivery) return;
+
+    const promises = [];
+
+    const payload: Partial<Delivery> = {
+      driverName: decl.driverName,
+      driverStaffId: decl.driverStaffId,
+      truckSeal: decl.truckSeal,
+      driverCompany: decl.driverCompany,
+    };
+
+    const hasTextChanges =
+      decl.driverName !== selectedDelivery.driverName ||
+      decl.driverStaffId !== selectedDelivery.driverStaffId ||
+      decl.truckSeal !== selectedDelivery.truckSeal ||
+      decl.driverCompany !== selectedDelivery.driverCompany;
+
+    if (hasTextChanges) {
+      promises.push(updateDelivery(flightId!, selectedDeliveryId, payload));
+    }
+
+    const hasSignatureChanges =
+      decl.signature && decl.signature !== selectedDelivery.driverSignature;
+
+    if (hasSignatureChanges) {
+      promises.push(
+        addSignature(flightId!, selectedDeliveryId, "driver", decl.signature!),
+      );
+    }
+
+    try {
+      await Promise.all(promises);
+    } catch (error) {
+      console.error("Error saving driver declaration:", error);
+      Alert.alert("Error", "Failed to save some changes.");
+    }
+  };
+
   const handleUpdatePreparerSignature = (
     preparerId: string,
     signature: string,
   ) => {
     if (!selectedDeliveryId) return;
 
-    if (preparerId.endsWith("-security")) {
-      addSignature(flightId!, selectedDeliveryId, "security", signature);
-    } else if (preparerId.endsWith("-sec")) {
-      updateDelivery(flightId!, selectedDeliveryId, {
-        securitySignature: signature,
-        securitySignatureTimestampDisplay: new Date().toISOString(),
-      });
-    } else if (preparerId.endsWith("-driver")) {
+    if (preparerId.endsWith("-driver")) {
       addSignature(flightId!, selectedDeliveryId, "driver", signature);
     } else if (preparerId.endsWith("-crew")) {
       addSignature(flightId!, selectedDeliveryId, "crew", signature);
+    } else if (preparerId.endsWith("-security")) {
+      updateDelivery(flightId!, selectedDeliveryId, {
+        tsaSignature: signature,
+        tsaSignatureTimestampDisplay: new Date().toISOString(),
+      });
+    } else if (preparerId.endsWith("-sec")) {
+      addSignature(flightId!, selectedDeliveryId, "security", signature);
     }
   };
 
-  // ✅ UPDATED: Handles deletion for Driver and Crew from the list
   const handleDeletePreparer = (id: string) => {
     if (!selectedDeliveryId) return;
 
@@ -249,17 +340,18 @@ const DeliveriesScreen: React.FC = () => {
               payload.securityName = "";
               payload.securityRacNumber = "";
               payload.securityComment = "";
-              payload.securitySignature = "";
+              payload.securitySignature = null;
             } else if (id.endsWith("-driver")) {
               payload.driverName = "";
-              payload.driverRacNumber = "";
+              payload.driverStaffId = "";
               payload.driverCompany = "";
-              payload.driverSignature = "";
+              payload.driverSignature = null;
               payload.truckSeal = "";
             } else if (id.endsWith("-crew")) {
               payload.crewName = "";
-              payload.crewRacNumber = "";
-              payload.crewSignature = "";
+              payload.airCrewRepresentative = "";
+              payload.crewStaffNumber = "";
+              payload.crewSignature = null;
             }
 
             updateDelivery(flightId!, selectedDeliveryId, payload);
@@ -271,7 +363,6 @@ const DeliveriesScreen: React.FC = () => {
 
   return (
     <View className="flex-1 flex-row bg-bg-surface">
-      {/* Sidebar */}
       <View className="w-[260px] border-r border-border-muted p-4 bg-bg-surface">
         <View className="pb-4 border-b border-border-muted mb-4">
           <Text className="text-lg font-semibold text-text-primary mb-3">
@@ -319,7 +410,6 @@ const DeliveriesScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      {/* Main Content */}
       <View className="flex-1 flex-col">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
@@ -328,7 +418,6 @@ const DeliveriesScreen: React.FC = () => {
           </View>
         ) : selectedDelivery ? (
           <>
-            {/* Tabs */}
             <View className="p-4 pb-0 bg-bg-surface h-[60px] w-auto">
               <ScrollView
                 horizontal
@@ -343,35 +432,28 @@ const DeliveriesScreen: React.FC = () => {
                   justifyContent: "space-between",
                 }}
               >
-                {/* <TabButton
-                  title="Dispatcher Comments"
-                  active={activeTab === "dispatcher"}
-                  onPress={() => setActiveTab("dispatcher")}
-                /> */}
                 <TabButton
-                  title="Content Preparers"
+                  title="Security Seals"
                   active={activeTab === "preparers"}
                   onPress={() => setActiveTab("preparers")}
                 />
                 <TabButton
-                  title="Security Compliance"
+                  title="Security Declaration"
                   active={activeTab === "security"}
                   onPress={() => setActiveTab("security")}
                 />
                 <TabButton
-                  title="Driver Compliance"
+                  title="Driver Declaration"
                   active={activeTab === "driver"}
                   onPress={() => setActiveTab("driver")}
                 />
                 <TabButton
-                  title="Crew Compliance"
+                  title="Crew Declaration"
                   active={activeTab === "crew"}
                   onPress={() => setActiveTab("crew")}
                 />
               </ScrollView>
             </View>
-
-            {/* Tab Content */}
             <View className="flex-1 p-4 bg-bg-surface">
               {activeTab === "dispatcher" && <DispatcherCommentsTab />}
 
@@ -385,88 +467,22 @@ const DeliveriesScreen: React.FC = () => {
 
               {activeTab === "security" && (
                 <SecurityComplianceTab
-                  onAddPreparer={handleAddPreparer}
                   securityCompliance={getSecurityCompliance(selectedDelivery)}
-                  onUpdateCompliance={(comp) => {
-                    if (!selectedDeliveryId) return;
-
-                    const payload: Partial<Delivery> = {
-                      securityName: comp.name,
-                      securityRacNumber: comp.raicNumber,
-                    };
-
-                    if (
-                      comp.signature &&
-                      comp.signature !== selectedDelivery.securitySignature
-                    ) {
-                      addSignature(
-                        flightId!,
-                        selectedDeliveryId,
-                        "security",
-                        comp.signature,
-                      );
-                    } else {
-                      updateDelivery(flightId!, selectedDeliveryId, payload);
-                    }
-                  }}
+                  onUpdateCompliance={handleSecurityComplianceUpdate}
                 />
               )}
 
               {activeTab === "driver" && (
                 <DriversDeclarationTab
                   driversDeclaration={getDriversDeclaration(selectedDelivery)}
-                  onUpdateDeclaration={(decl) => {
-                    if (!selectedDeliveryId) return;
-
-                    const payload: Partial<Delivery> = {
-                      driverName: decl.driverName,
-                      driverRacNumber: decl.raicNumber,
-                      truckSeal: decl.truckSeal,
-                      driverCompany: decl.company,
-                    };
-
-                    if (
-                      decl.signature &&
-                      decl.signature !== selectedDelivery.driverSignature
-                    ) {
-                      addSignature(
-                        flightId!,
-                        selectedDeliveryId,
-                        "driver",
-                        decl.signature,
-                      );
-                    }
-                    updateDelivery(flightId!, selectedDeliveryId, payload);
-                  }}
+                  onUpdateDeclaration={handleDriverComplianceUpdate}
                 />
               )}
 
               {activeTab === "crew" && (
                 <CrewComplianceTab
-                  onAddPreparer={handleAddPreparer}
                   crewCompliance={getCrewCompliance(selectedDelivery)}
-                  onUpdateCompliance={(comp) => {
-                    if (!selectedDeliveryId) return;
-
-                    const payload: Partial<Delivery> = {
-                      crewName: comp.name,
-                      crewRacNumber: comp.raicNumber,
-                    };
-
-                    if (
-                      comp.signature &&
-                      comp.signature !== selectedDelivery.crewSignature
-                    ) {
-                      addSignature(
-                        flightId!,
-                        selectedDeliveryId,
-                        "crew",
-                        comp.signature,
-                      );
-                    } else {
-                      updateDelivery(flightId!, selectedDeliveryId, payload);
-                    }
-                  }}
+                  onUpdateCompliance={handleCrewComplianceUpdate}
                 />
               )}
             </View>
@@ -497,7 +513,9 @@ const TabButton = ({
 }) => (
   <Pressable
     onPress={onPress}
-    className={`py-2.5 px-5 rounded-[20px] ${active ? "bg-bg-secondary" : ""}`}
+    className={`py-2.5 px-5 rounded-[20px] ${
+      active ? "bg-bg-accent border-bg-button border-[0.5px]" : ""
+    }`}
   >
     <Text
       className={`text-lg ${

@@ -65,6 +65,12 @@ import BoxInactiveIcon from "./packageInactive.svg";
 import StringInactiveIcon from "./signature.svg";
 import DeliveryInactiveIcon from "./deliveryInactive.svg";
 import StarIcon from "./star.svg";
+import DresserIcon from "./dresser.svg";
+import BracketIcon from "./brackets-round.svg";
+import ArchiveIcon from "./archive.svg";
+import TrayIcon from "./tray.svg";
+import WashingMachineIcon from "./washing-machine.svg";
+import ImageIcon from "./image.svg";
 
 // --- Export all icons together ---
 export {
@@ -137,4 +143,10 @@ export {
   DeliveryIcon,
   LockIcon,
   StarIcon,
+  DresserIcon,
+  BracketIcon,
+  ArchiveIcon,
+  TrayIcon,
+  WashingMachineIcon,
+  ImageIcon,
 };

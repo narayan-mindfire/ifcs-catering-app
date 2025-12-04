@@ -20,7 +20,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos } = useMemoStore();
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
-
   const [filterStatus, setFilterStatus] = useState<FilterType>("All");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
@@ -63,7 +62,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       );
     }
 
-    // 3. Filter by Read/Unread (Inbox Only)
+    // 3. Filter by Read/Unread Status (only applies to Inbox)
     if (activeTab === "Inbox" && filterStatus !== "All") {
       if (filterStatus === "Unread") data = data.filter((m) => !m.isRead);
       if (filterStatus === "Read") data = data.filter((m) => m.isRead);
@@ -83,45 +82,31 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
           { label: "Memos" },
         ]}
       />
-
-      {/* Header Container */}
       <View className="px-5 py-4 bg-bg-surface z-10">
-        <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-2xl font-bold text-text-primary">Memos</Text>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("CreateMemo")}
-            className="bg-bg-button px-4 py-2 rounded-lg flex-row items-center"
-          >
-            <Text className="text-base text-text-surface font-semibold">
-              + Add Memo
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         <View className="flex-row items-center gap-3">
           {activeTab === "Inbox" && (
             <View className="relative z-50">
               <TouchableOpacity
                 onPress={() => setIsDropdownVisible(!isDropdownVisible)}
-                className={`border rounded-lg px-4 py-2 min-w-[100px] items-center ${
+                className={`border rounded-lg px-4 py-3 min-w-[120px] items-center ${
                   filterStatus !== "All"
                     ? "bg-bg-tertiary border-bg-button"
                     : "border-border-secondary"
                 }`}
               >
+                {/* Increased to text-lg (16px) */}
                 <Text
                   className={
                     filterStatus !== "All"
-                      ? "text-bg-button font-medium"
-                      : "text-text-secondary"
+                      ? "text-bg-button font-medium text-lg"
+                      : "text-text-secondary text-lg"
                   }
                 >
                   {filterStatus} ▼
                 </Text>
               </TouchableOpacity>
-
               {isDropdownVisible && (
-                <View className="absolute top-12 left-0 w-[120px] bg-bg-surface border border-border-muted rounded-lg shadow-lg z-50">
+                <View className="absolute top-14 left-0 w-[140px] bg-bg-surface border border-border-muted rounded-lg shadow-lg z-50">
                   {(["All", "Unread", "Read"] as FilterType[]).map(
                     (opt, index) => (
                       <TouchableOpacity
@@ -134,8 +119,9 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                           index !== 2 ? "border-b border-border-muted" : ""
                         }`}
                       >
+                        {/* Increased to text-lg (16px) */}
                         <Text
-                          className={`font-medium ${
+                          className={`font-medium text-lg ${
                             filterStatus === opt
                               ? "text-bg-button"
                               : "text-text-primary"
@@ -150,20 +136,19 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               )}
             </View>
           )}
-
-          <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-2">
+          <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-3">
             <TextInput
               placeholder="Search..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              className="flex-1 text-text-primary"
+              // Increased to text-lg (16px)
+              className="flex-1 text-text-primary text-lg"
               placeholderTextColor="#A09CAB"
             />
           </View>
         </View>
       </View>
 
-      {/* Tabs Row with Record Counter */}
       <View className="flex-row items-center bg-bg-surface border-b border-border-muted z-0">
         <ScrollView
           horizontal
@@ -181,11 +166,13 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                   setIsDropdownVisible(false);
                 }}
                 className={`px-6 py-3 rounded-t-lg ${
-                  activeTab === tab ? "bg-bg-secondary" : "bg-transparent"
+                  activeTab === tab
+                    ? "bg-bg-accent border-bg-button border-t-1 border-l-1 border-r-1 "
+                    : "bg-transparent"
                 }`}
               >
                 <Text
-                  className={`text-base font-medium ${
+                  className={`text-lg font-medium ${
                     activeTab === tab
                       ? "text-text-primary"
                       : "text-text-tertiary"
@@ -197,11 +184,10 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
             ),
           )}
         </ScrollView>
-
-        {/* Record Counter - Fixed to Right */}
         <View className="pr-5 pl-2">
           <View className="bg-bg-button/10 px-3 py-1 rounded-full border border-bg-button/20">
-            <Text className="text-bg-button text-xs font-semibold">
+            {/* Kept as text-sm (14px) for record count to be smaller */}
+            <Text className="text-bg-button text-sm font-semibold">
               {currentMemos.length} records
             </Text>
           </View>
@@ -211,7 +197,8 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView className="flex-1 z-0">
         {currentMemos.length === 0 ? (
           <View className="p-10 items-center">
-            <Text className="text-text-tertiary">No Memos Found</Text>
+            {/* Increased to text-base (16px) */}
+            <Text className="text-text-tertiary text-base">No Memos Found</Text>
           </View>
         ) : (
           currentMemos.map((memo) => (
@@ -236,15 +223,17 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 />
               </View>
               <View className="flex-1">
+                {/* Increased to text-lg (16px) */}
                 <Text
-                  className={`text-base ${
+                  className={`text-lg ${
                     !memo.isRead ? "font-bold" : "text-text-secondary"
                   }`}
                 >
                   {memo.sender.name}
                 </Text>
+                {/* Increased to text-base (16px) */}
                 <Text
-                  className="text-sm text-text-tertiary mt-1"
+                  className="text-base text-text-tertiary mt-1"
                   numberOfLines={1}
                 >
                   {memo.subject}
@@ -265,4 +254,5 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
     </View>
   );
 };
+
 export default MemosScreen;

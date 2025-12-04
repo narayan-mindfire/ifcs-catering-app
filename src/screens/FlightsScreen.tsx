@@ -34,9 +34,12 @@ interface Props {
 }
 
 const FlightsScreen: React.FC<Props> = ({ navigation }) => {
+  const renderCount = React.useRef(0);
+  renderCount.current = renderCount.current + 1;
+
+  console.log(`FlightsScreen rendered: ${renderCount.current} times`);
   const { flightGroups, isLoading, error, fetchFlights } = useFlightStore();
 
-  // --- State ---
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [flightNumFilter, setFlightNumFilter] = useState("");
@@ -47,7 +50,6 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- Helpers ---
   const formatDateToISO = (date: Date) => {
     return date.toISOString().split("T")[0];
   };
@@ -101,10 +103,13 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
         const matchesNum = flightNumFilter
           ? fullFlightNum.toLowerCase().includes(flightNumFilter.toLowerCase())
           : true;
-
+        console.log("SELECTED DATE: ", selectedDate);
+        console.log("DATE STRING: ", dateString);
         const matchesDate = selectedDate
-          ? flight.scheduledDeparture.startsWith(dateString)
+          ? (flight.scheduledDeparture?.startsWith(dateString) ?? false)
           : true;
+
+        console.log("MATCHES DATE: ", matchesDate);
 
         const matchesAirline = airlineFilter
           ? flight.airline?.name

@@ -27,12 +27,10 @@ const AVAILABLE_USERS = [
 
 const CreateMemoScreen = ({ route, navigation }: Props) => {
   const { addMemo } = useMemoStore();
-
   const [flight, setFlight] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isPriority, setIsPriority] = useState(false);
-
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
@@ -51,6 +49,11 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
   const handleSubmit = () => {
     if (!subject || !message) {
       Alert.alert("Error", "Please enter subject and message");
+      return;
+    }
+
+    if (selectedUserIds.length === 0) {
+      Alert.alert("Error", "Please select at least one recipient.");
       return;
     }
 
@@ -91,20 +94,23 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
       {/* Header */}
       <View className="bg-bg-surface px-5 py-4 border-b border-border-muted">
         <TouchableOpacity onPress={() => navigation.goBack()} className="mb-4">
-          <Text className="text-2xl text-text-secondary">←</Text>
+          {/* Increased to text-3xl for the back arrow */}
+          <Text className="text-3xl text-text-secondary">←</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView className="flex-1">
         <View className="bg-bg-surface m-4 rounded-lg border border-border-muted p-5">
           <View className="bg-bg-accent py-3 px-4 rounded-lg mb-6 -mx-5 -mt-5">
+            {/* Increased to text-xl (18px) */}
             <Text className="text-xl font-semibold text-text-primary text-center">
               Add Memo
             </Text>
           </View>
 
           <View className="mb-5">
-            <Text className="text-text-primary font-semibold mb-2">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-text-primary font-semibold text-lg mb-2">
               Flight (Optional)
             </Text>
             <TextInput
@@ -112,12 +118,14 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
               onChangeText={setFlight}
               placeholder="e.g. AI-302"
               placeholderTextColor="#A09CAB"
-              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-text-primary"
+              // Increased to text-lg (16px)
+              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-lg text-text-primary"
             />
           </View>
 
           <View className="mb-5">
-            <Text className="text-text-primary font-semibold mb-2">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-text-primary font-semibold text-lg mb-2">
               Subject
             </Text>
             <TextInput
@@ -125,12 +133,14 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
               onChangeText={setSubject}
               placeholder="Enter Subject"
               placeholderTextColor="#A09CAB"
-              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-text-primary"
+              // Increased to text-lg (16px)
+              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-lg text-text-primary"
             />
           </View>
 
           <View className="mb-5">
-            <Text className="text-text-primary font-semibold mb-2">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-text-primary font-semibold text-lg mb-2">
               Message
             </Text>
             <TextInput
@@ -141,21 +151,26 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
               multiline
               numberOfLines={8}
               textAlignVertical="top"
-              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-text-primary min-h-[160px]"
+              // Increased to text-lg (16px)
+              className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 text-lg text-text-primary min-h-[160px]"
             />
           </View>
 
           <View className="mb-5">
-            <Text className="text-text-primary font-semibold mb-2">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-text-primary font-semibold text-lg mb-2">
               Users Assigned
             </Text>
             <TouchableOpacity
               onPress={() => setIsModalVisible(true)}
               className="bg-bg-tertiary border border-border-muted rounded-lg px-4 py-3 min-h-[50px] justify-center"
             >
+              {/* Increased to text-lg (16px) */}
               <Text
                 className={
-                  displaySelectedUsers ? "text-text-primary" : "text-[#A09CAB]"
+                  displaySelectedUsers
+                    ? "text-text-primary text-lg"
+                    : "text-[#A09CAB] text-lg"
                 }
               >
                 {displaySelectedUsers || "Select users..."}
@@ -171,13 +186,13 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
               <View
                 className={`w-5 h-5 rounded border-2 mr-3 items-center justify-center ${isPriority ? "bg-bg-button border-bg-button" : "border-border-secondary"}`}
               >
+                {/* Kept as text-xs (12px) for tick mark */}
                 {isPriority && (
                   <Text className="text-text-surface text-xs font-bold">✓</Text>
                 )}
               </View>
-              <Text className="text-text-primary text-base">
-                Set as Priority
-              </Text>
+              {/* Increased to text-lg (16px) */}
+              <Text className="text-text-primary text-lg">Set as Priority</Text>
             </TouchableOpacity>
           </View>
 
@@ -185,14 +200,15 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
             onPress={handleSubmit}
             className="bg-bg-button rounded-lg py-3 items-center mt-2"
           >
-            <Text className="text-text-surface font-semibold text-base">
+            {/* Increased to text-lg (16px) */}
+            <Text className="text-text-surface font-semibold text-lg">
               Submit
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      {/* Modal Code remains same as previous steps... */}
+      {/* Modal Code (User Selection) */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -201,6 +217,7 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
       >
         <View className="flex-1 bg-black/50 justify-center items-center p-4">
           <View className="bg-bg-surface w-full max-w-sm rounded-xl p-5 shadow-lg max-h-[80%]">
+            {/* Increased to text-xl (18px) */}
             <Text className="text-xl font-bold text-text-primary mb-4 text-center">
               Select Users
             </Text>
@@ -215,10 +232,14 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
                     onPress={() => toggleUserSelection(item.id)}
                     className={`flex-row items-center justify-between p-3 mb-2 rounded-lg border ${isSelected ? "bg-bg-tertiary border-bg-button" : "bg-bg-surface border-border-muted"}`}
                   >
-                    <Text className="text-text-primary font-medium">
+                    {/* Increased to text-lg (16px) */}
+                    <Text className="text-text-primary font-medium text-lg">
                       {item.name}
                     </Text>
-                    {isSelected && <Text className="text-bg-button">✓</Text>}
+                    {/* Increased to text-lg (16px) */}
+                    {isSelected && (
+                      <Text className="text-bg-button text-lg">✓</Text>
+                    )}
                   </TouchableOpacity>
                 );
               }}
@@ -227,7 +248,8 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
               onPress={() => setIsModalVisible(false)}
               className="bg-bg-button py-3 rounded-lg items-center"
             >
-              <Text className="text-text-surface font-bold">Done</Text>
+              {/* Increased to text-lg (16px) */}
+              <Text className="text-text-surface font-bold text-lg">Done</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -235,4 +257,5 @@ const CreateMemoScreen = ({ route, navigation }: Props) => {
     </View>
   );
 };
+
 export default CreateMemoScreen;
