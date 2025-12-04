@@ -97,7 +97,7 @@ const DeliveriesScreen: React.FC = () => {
         raicNumber: d.driverRacNumber || "",
         staffNumber: d.driverStaffId || undefined,
         signature: d.driverSignature || null,
-        signedAt: null,
+        signedAt: d.driverSignatureTimestampDisplay || null,
         note: undefined,
       });
     }
@@ -124,15 +124,15 @@ const DeliveriesScreen: React.FC = () => {
     driverStaffId: d.driverStaffId || "",
     truckSeal: d.truckSeal || "",
     driverCompany: d.driverCompany || "",
-    sealIntact: false, // Backend doesn't have this field
+    sealIntact: false,
     confirmationText:
       "I certify that a. the security of in-flight supplies is maintained during the transfer from in-flight supply facilies to aircraft b. in-flight supplies have been loaded into the aircraft in secure condition and handed over to the flight air crew or oman-air representative",
     signature: d.driverSignature || null,
-    signedAt: null, // Backend doesn't have this field
+    signedAt: null,
   });
 
   const getCrewCompliance = (d: Delivery): CrewCompliance => ({
-    isCompliant: false, // Backend doesn't have this field
+    isCompliant: false,
     confirmationText:
       "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
     signature: d.crewSignature || null,
@@ -145,7 +145,7 @@ const DeliveriesScreen: React.FC = () => {
   });
 
   const getSecurityCompliance = (d: Delivery): SecurityCompliance => ({
-    isCompliant: false, // Backend doesn't have this field
+    isCompliant: false,
     confirmationText:
       "The in-flight supplies have gone through the following procedures: a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation.",
     signature: d.securitySignature || null,
@@ -297,30 +297,6 @@ const DeliveriesScreen: React.FC = () => {
     }
   };
 
-  // const handleAddPreparer = (preparer: any) => {
-  //   if (!selectedDeliveryId) return;
-  //   const d = selectedDelivery!;
-  //   const payload: Partial<Delivery> = {};
-
-  //   if (!d.tsaName) {
-  //     payload.tsaName = preparer.fullName;
-  //     payload.tsaRacNumber = preparer.raicNumber;
-  //     payload.tsaComment = preparer.note;
-  //   } else if (!d.securityName) {
-  //     payload.securityName = preparer.fullName;
-  //     payload.securityRacNumber = preparer.raicNumber;
-  //     payload.securityComment = preparer.note;
-  //   } else {
-  //     Alert.alert(
-  //       "Error",
-  //       "Slots full. Please use specific tabs for Driver/Crew.",
-  //     );
-  //     return;
-  //   }
-
-  //   updateDelivery(flightId!, selectedDeliveryId, payload);
-  // };
-
   const handleUpdatePreparerSignature = (
     preparerId: string,
     signature: string,
@@ -457,7 +433,7 @@ const DeliveriesScreen: React.FC = () => {
                 }}
               >
                 <TabButton
-                  title="Content Preparers"
+                  title="Security Seals"
                   active={activeTab === "preparers"}
                   onPress={() => setActiveTab("preparers")}
                 />
@@ -467,7 +443,7 @@ const DeliveriesScreen: React.FC = () => {
                   onPress={() => setActiveTab("security")}
                 />
                 <TabButton
-                  title="Driver's Declaration"
+                  title="Driver Declaration"
                   active={activeTab === "driver"}
                   onPress={() => setActiveTab("driver")}
                 />

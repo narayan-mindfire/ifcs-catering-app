@@ -102,6 +102,14 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
     setSealIntact(value);
   };
 
+  // Validation Logic
+  const isFormValid =
+    driver.trim() !== "" &&
+    staffID.trim() !== "" &&
+    // truckSeal.trim() !== "" &&
+    // company.trim() !== "" &&
+    pendingSignature !== null;
+
   return (
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
@@ -111,8 +119,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           Driver Information
         </Text>
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Driver*
+        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+          Driver Name <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -122,8 +130,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           placeholderTextColor="#A09CAB"
         />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Staff ID*
+        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+          Staff ID <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -133,8 +141,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           placeholderTextColor="#A09CAB"
         />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Truck Seal*
+        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+          Truck Seal
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -144,8 +152,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           placeholderTextColor="#A09CAB"
         />
 
-        <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-          Company*
+        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+          Company
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -157,9 +165,10 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
 
         <Pressable
           onPress={handleSave}
-          disabled={!hasChanges || isSaving}
+          // Button is disabled if: No changes OR Saving OR Form is Invalid
+          disabled={!hasChanges || isSaving || !isFormValid}
           className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving
+            !hasChanges || isSaving || !isFormValid
               ? "bg-bg-tertiary opacity-50"
               : "bg-bg-button"
           }`}
@@ -169,7 +178,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           ) : (
             <Text
               className={`font-semibold text-lg ${
-                !hasChanges || isSaving
+                !hasChanges || isSaving || !isFormValid
                   ? "text-text-tertiary"
                   : "text-text-surface"
               }`}

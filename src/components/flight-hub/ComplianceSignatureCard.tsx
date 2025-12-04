@@ -33,7 +33,10 @@ export const ComplianceSignatureCard: React.FC<
         <Text className="text-base text-text-secondary font-semibold max-w-[80%]">
           {title}
         </Text>
-        <Checkbox checked={isCompliant} onChange={onToggleCompliance} />
+        <Checkbox
+          checked={isCompliant || signature !== null}
+          onChange={onToggleCompliance}
+        />
       </View>
 
       <View className="flex-row mb-5">
@@ -42,28 +45,44 @@ export const ComplianceSignatureCard: React.FC<
         </View>
 
         {toPrint && (
-          <View className="flex-row items-center ml-2">
+          <View className="flex-row ml-2">
             <PrintIcon />
             <Text className="text-xl text-text-primary">Print</Text>
           </View>
         )}
       </View>
 
-      <Text className="text-base text-text-secondary mb-1.5">Signature</Text>
+      <Text className="text-base text-text-secondary mb-1.5">
+        Signature <Text className="text-red-500">*</Text>
+      </Text>
+
       {signature ? (
         <View>
-          <View className="h-[250px] border border-border-muted rounded-xl bg-bg-surface overflow-hidden">
+          <View className="h-[200px] border border-border-muted rounded-xl bg-bg-surface overflow-hidden mb-2">
             <Image
               source={{ uri: signature }}
               className="w-full h-full"
               resizeMode="contain"
             />
           </View>
-          <Text className="text-right text-text-tertiary text-xs mt-1">
-            Signed: {signedAt ? formatDate(String(signedAt)) : ""}
-          </Text>
+
+          <View className="flex-row justify-between items-center">
+            <Text className="text-text-tertiary text-xs">
+              Signed: {signedAt ? formatDate(String(signedAt)) : "Pending Save"}
+            </Text>
+
+            <Pressable
+              onPress={onSign}
+              className="bg-bg-tertiary px-4 py-2 rounded-lg border border-border-muted"
+            >
+              <Text className="text-text-primary font-medium text-sm">
+                Update Signature
+              </Text>
+            </Pressable>
+          </View>
         </View>
       ) : (
+        /* Sign Placeholder */
         <Pressable
           className={`h-[250px] border-2 border-dashed rounded-xl justify-center items-center ${
             isCompliant
@@ -76,7 +95,7 @@ export const ComplianceSignatureCard: React.FC<
           <Text className="text-text-tertiary">
             {isCompliant
               ? "Click here to sign"
-              : "please check above to enable signing"}
+              : "Please check the box above to enable signing"}
           </Text>
         </Pressable>
       )}

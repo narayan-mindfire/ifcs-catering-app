@@ -108,6 +108,14 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
     setShowSignatureModal(false);
   };
 
+  // Validation Logic
+  // Position is NOT mandatory
+  const isFormValid =
+    provider.trim() !== "" &&
+    name.trim() !== "" &&
+    staffNumber.trim() !== "" &&
+    pendingSignature !== null;
+
   return (
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
@@ -118,7 +126,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         </Text>
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Provider:
+          Provider <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
@@ -129,7 +137,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         />
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Security Name:
+          Security Name <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
@@ -140,7 +148,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         />
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Staff Number:
+          Staff Number <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
@@ -151,7 +159,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         />
 
         <Text className="text-base text-text-secondary mb-1.5 mt-2.5">
-          Position:
+          Position (Optional)
         </Text>
         <TextInput
           className="border border-border-muted rounded-xl p-3 text-base text-text-primary bg-bg-surface"
@@ -163,9 +171,9 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
 
         <Pressable
           onPress={handleSave}
-          disabled={!hasChanges || isSaving}
+          disabled={!hasChanges || isSaving || !isFormValid}
           className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving
+            !hasChanges || isSaving || !isFormValid
               ? "bg-bg-tertiary opacity-50"
               : "bg-bg-button"
           }`}
@@ -175,7 +183,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
           ) : (
             <Text
               className={`font-semibold text-lg ${
-                !hasChanges || isSaving
+                !hasChanges || isSaving || !isFormValid
                   ? "text-text-tertiary"
                   : "text-text-surface"
               }`}
@@ -190,7 +198,9 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
         title="Security Measures Compliance"
         isCompliant={isCompliant}
         onToggleCompliance={handleToggleCompliance}
-        confirmationText="The in-flight supplies have gone through the following procedures: \n a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation."
+        confirmationText={
+          "The in-flight supplies have gone through the following procedures: \n\n a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation."
+        }
         signature={pendingSignature ?? null}
         signedAt={securityCompliance?.signedAt ?? null}
         onSign={() => setShowSignatureModal(true)}

@@ -122,7 +122,7 @@ export const FlightPreparationDetailsModal: React.FC<
       onRequestClose={onClose}
     >
       <View className="flex-1 bg-black/60 justify-center items-center px-4">
-        <View className="w-full max-w-[1000px] h-[90%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
+        <View className="w-full max-w-[1000px] h-[80%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
           <View className="p-4 border-b border-border-muted flex-row justify-between items-center bg-bg-surface z-10">
             <Text className="text-xl font-medium text-text-secondary">
               Flight Preparation Plan Details

@@ -93,6 +93,14 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     setShowSignatureModal(false);
   };
 
+  // Validation Logic
+  // ALL fields are mandatory here
+  const isFormValid =
+    airCrewRepresentative.trim() !== "" &&
+    crewName.trim() !== "" &&
+    staffNumber.trim() !== "" &&
+    pendingSignature !== null;
+
   return (
     <ScrollView
       contentContainerStyle={{ flexDirection: "row", padding: 10, gap: 20 }}
@@ -103,8 +111,8 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             Crew Member Details
           </Text>
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Air Crew Representative Name*
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Air Crew Representative Name <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -114,8 +122,8 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             placeholderTextColor="#A09CAB"
           />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Crew Name*
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Crew Name <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -125,8 +133,8 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             placeholderTextColor="#A09CAB"
           />
 
-          <Text className="text-lg text-text-secondary mb-1.5 mt-2.5">
-            Staff Number*
+          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
+            Staff Number <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
@@ -140,9 +148,9 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         <View>
           <Pressable
             onPress={handleSave}
-            disabled={!hasChanges || isSaving}
+            disabled={!hasChanges || isSaving || !isFormValid}
             className={`mt-6 py-3 rounded-xl items-center ${
-              !hasChanges || isSaving
+              !hasChanges || isSaving || !isFormValid
                 ? "bg-bg-tertiary opacity-50"
                 : "bg-bg-button"
             }`}
@@ -151,7 +159,11 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
               <ActivityIndicator color="#fff" />
             ) : (
               <Text
-                className={`font-semibold text-lg ${!hasChanges || isSaving ? "text-text-tertiary" : "text-text-surface"}`}
+                className={`font-semibold text-lg ${
+                  !hasChanges || isSaving || !isFormValid
+                    ? "text-text-tertiary"
+                    : "text-text-surface"
+                }`}
               >
                 {hasChanges ? "Save Changes" : "No Changes to Save"}
               </Text>
