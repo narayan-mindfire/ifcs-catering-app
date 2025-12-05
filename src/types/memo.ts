@@ -1,32 +1,50 @@
 // src/types/memo.ts
-export type MemoTab = "Inbox" | "Draft" | "Acknowledged By Me" | "Sent";
 
-export interface User {
+export type MemoTab = "Inbox" | "Acknowledged By Me";
+
+export interface MemoAttachment {
   id: string;
-  name: string;
-  role: string;
+  memoId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: string;
+  mimeType: string;
 }
 
-export interface Attachment {
+export interface MemoRecipient {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  picture: string | null;
+  acknowledgedAt: Date | null;
+  isAcknowledge: boolean;
+}
+
+export interface MemoSender {
   id: string;
-  name: string;
-  type: "pdf" | "image" | "excel";
-  size: string;
+  firstName: string;
+  lastName: string;
+  picture: string | null;
+  // Role isn't in your user schema explicitly, mapping 'type' if available, else generic
+  role?: string;
 }
 
 export interface Memo {
   id: string;
-  sender: User;
-  recipients: User[]; // Added recipients
-  flightNumber?: string; // Added flight
   subject: string;
-  content: string;
-  priority: "Low" | "Medium" | "High";
-  isRead: boolean;
-  isImportant: boolean;
-  isDraft: boolean;
-  isAcknowledged: boolean;
-  requiresAcknowledgement: boolean;
+  note: string; // Mapped from backend 'note' to UI 'content'
+  priority: number; // 1, 2, 3
+  status: "Draft" | "Sent";
+  flightId: string | null;
+  createdByUserId: string;
   createdAt: string;
-  attachments: Attachment[];
+  updatedAt: string;
+
+  // Joins
+  sender?: MemoSender;
+  attachments?: MemoAttachment[];
+  recipients?: MemoRecipient[];
+
+  // UI Helpers (derived properties)
+  isAcknowledged?: boolean; // Derived from API logic
 }

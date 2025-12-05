@@ -1,6 +1,14 @@
 import { create } from "zustand";
+import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
-import { MOCK_MEMOS } from "../const/memosData";
+
+const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  meta?: any;
+}
 
 interface MemoState {
   memos: Memo[];
@@ -8,16 +16,9 @@ interface MemoState {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
-  fetchMemos: () => Promise<void>;
+  fetchMemos: (tab: MemoTab, search?: string) => Promise<void>;
   fetchMemoById: (id: string) => Promise<void>;
-  addMemo: (memo: Memo) => void; // <--- NEW ACTION
-  markAsRead: (id: string) => Promise<void>;
-  toggleImportant: (id: string) => Promise<void>;
   acknowledgeMemo: (id: string) => Promise<void>;
-
-  // Selectors
-  getMemosByTab: (tab: MemoTab) => Memo[];
 }
 
 export const useMemoStore = create<MemoState>((set, get) => ({
@@ -26,94 +27,90 @@ export const useMemoStore = create<MemoState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchMemos: async () => {
+  fetchMemos: async (tab: MemoTab, search?: string) => {
     set({ isLoading: true, error: null });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // If memos are already loaded in state, don't overwrite with mock defaults if we added new ones
-        const currentMemos = get().memos;
-        if (currentMemos.length === 0) {
-          set({ memos: MOCK_MEMOS, isLoading: false });
-        } else {
-          set({ isLoading: false });
+    try {
+      const viewParam = tab === "Inbox" ? "Inbox" : "Acknowledged";
+      const params: Record<string, any> = {
+        view: viewParam,
+        limit: 100,
+        offset: 0,
+      };
+      if (search && search.trim()) {
+        params.search = search.trim();
+      }
+      const response = await apiClient.get("/memos", {
+        params,
+        headers: { "x-user-id": CURRENT_USER_ID },
+      });
+
+      const flattenedMemos = response.data.data.map((item: any) => {
+        if (item.memo) {
+          return {
+            ...item.memo,
+            sender: item.sender,
+            recipients: item.recipients || [],
+            isAcknowledged:
+              item.memo.status === "Sent" && tab === "Acknowledged By Me",
+          };
         }
-        resolve();
-      }, 800);
-    });
+
+        return item;
+      });
+
+      set({
+        memos: flattenedMemos,
+        isLoading: false,
+      });
+    } catch (err: any) {
+      console.error("Fetch Memos Error:", err);
+      set({
+        error: "Failed to fetch memos",
+        isLoading: false,
+        memos: [],
+      });
+    }
   },
 
   fetchMemoById: async (id: string) => {
     set({ isLoading: true, error: null, activeMemo: null });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Search in current state first (to find newly added memos)
-        const allMemos = get().memos.length > 0 ? get().memos : MOCK_MEMOS;
-        const memo = allMemos.find((m) => m.id === id);
-
-        if (memo) {
-          if (!memo.isRead) {
-            get().markAsRead(id);
-            set({ activeMemo: { ...memo, isRead: true } });
-          } else {
-            set({ activeMemo: memo });
-          }
-        } else {
-          set({ error: "Memo not found" });
-        }
-        set({ isLoading: false });
-        resolve();
-      }, 500);
-    });
-  },
-
-  addMemo: (newMemo: Memo) => {
-    set((state) => ({
-      memos: [newMemo, ...state.memos],
-    }));
-  },
-
-  markAsRead: async (id: string) => {
-    set((state) => ({
-      memos: state.memos.map((m) => (m.id === id ? { ...m, isRead: true } : m)),
-    }));
-  },
-
-  toggleImportant: async (id: string) => {
-    set((state) => ({
-      memos: state.memos.map((m) =>
-        m.id === id ? { ...m, isImportant: !m.isImportant } : m,
-      ),
-      activeMemo:
-        state.activeMemo?.id === id
-          ? { ...state.activeMemo, isImportant: !state.activeMemo.isImportant }
-          : state.activeMemo,
-    }));
+    try {
+      const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
+        headers: { "x-user-id": CURRENT_USER_ID },
+      });
+      set({
+        activeMemo: response.data.data,
+        isLoading: false,
+      });
+    } catch (err: any) {
+      console.error("Fetch Memo Detail Error:", err);
+      set({
+        error: "Failed to load memo details",
+        isLoading: false,
+      });
+    }
   },
 
   acknowledgeMemo: async (id: string) => {
-    set({ isLoading: true });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        set((state) => ({
-          memos: state.memos.map((m) =>
-            m.id === id ? { ...m, isAcknowledged: true } : m,
-          ),
-          activeMemo:
-            state.activeMemo?.id === id
-              ? { ...state.activeMemo, isAcknowledged: true }
-              : state.activeMemo,
-          isLoading: false,
-        }));
-        resolve();
-      }, 600);
-    });
-  },
+    try {
+      await apiClient.patch(
+        `/memos/${id}/acknowledge`,
+        { isAcknowledge: true },
+        { headers: { "x-user-id": CURRENT_USER_ID } },
+      );
 
-  getMemosByTab: (tab: MemoTab) => {
-    const { memos } = get();
-    // Logic: In a real app, 'Sent' logic would be based on senderID.
-    // For this demo, we will just return all memos for Inbox to see the one we created.
-    if (tab === "Inbox") return memos;
-    return [];
+      const currentActive = get().activeMemo;
+      if (currentActive && currentActive.id === id) {
+        set({
+          activeMemo: { ...currentActive, isAcknowledged: true },
+        });
+      }
+      set((state) => ({
+        memos: state.memos.filter((m) => m.id !== id),
+      }));
+    } catch (err: any) {
+      console.error("Acknowledge Error:", err);
+      throw err;
+    }
   },
 }));
