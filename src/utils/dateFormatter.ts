@@ -18,3 +18,23 @@ export const formatDate = (isoString: string | null): string => {
 
   return `${month} ${day} ${year}`;
 };
+
+/**
+ * Robust date formatter that handles Strings, Dates, and Nulls
+ */
+export const formatDateDetail = (
+  dateInput: string | Date | null | undefined,
+) => {
+  if (!dateInput) return "";
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return "";
+
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  });
+};

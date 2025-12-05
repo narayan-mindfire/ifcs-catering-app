@@ -30,7 +30,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.ifcscateringapp"
+      "package": "com.narayanp.ifcscateringapp"
     },
     "web": {
       "favicon": "./assets/favicon.png",
