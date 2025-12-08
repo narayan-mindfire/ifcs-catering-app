@@ -5,7 +5,6 @@ import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
 import { ArrowIcon } from "../../assets/icons";
 import { formatDate, formatTime } from "../../utils/dateFormatter";
-// import { airlineIcons } from "../../assets/icons/airline";
 import { EmairatesIcon } from "../../assets/logos";
 
 interface Props {
@@ -25,18 +24,7 @@ export const FlightRow: React.FC<Props> = ({
   isPaired,
   flightGroup = [],
 }) => {
-  // const airlineCode = flight.airline?.code || "WY";
-  // const AirlineIcon = airlineIcons[airlineCode];
-
-  const handlePress = () => {
-    navigation.navigate("FlightDetails", {
-      flightNumber: flight.flightNumber,
-      flightId: flight.id,
-      route: flight.pairRoute ?? "",
-      date: flight.scheduledDeparture,
-    });
-  };
-
+  // -------- FIX: Correctly compute routeText -------- //
   const getRouteDisplay = () => {
     if (isPaired && flightGroup.length > 1) {
       if (isFirstInGroup) {
@@ -54,6 +42,16 @@ export const FlightRow: React.FC<Props> = ({
   };
 
   const routeText = getRouteDisplay();
+
+  // -------- FIX: Pass correct routeText + scheduledDeparture -------- //
+  const handlePress = () => {
+    navigation.navigate("FlightDetails", {
+      flightNumber: flight.airline?.designator + flight.flightNumber,
+      flightId: flight.id,
+      route: routeText, // UPDATED
+      date: flight.scheduledDeparture, // UPDATED (exact date sent)
+    });
+  };
 
   const getTimeDisplay = (
     scheduled: string,
@@ -118,9 +116,7 @@ export const FlightRow: React.FC<Props> = ({
 
       <View className="flex-[8] py-2.5 px-1 justify-center">
         <Text className="text-[17px] font-semibold text-black">
-          {flight.airline?.designator === "" || null
-            ? "WY"
-            : flight.airline?.designator}
+          {flight.airline?.designator || "WY"}
           {flight.flightNumber}
         </Text>
       </View>
@@ -140,7 +136,6 @@ export const FlightRow: React.FC<Props> = ({
         </Text>
       </View>
 
-      {/* --- Departure Time Column --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
         <Text
           className={`text-xs mb-0.5 uppercase ${departureData.colorClass}`}
@@ -155,7 +150,6 @@ export const FlightRow: React.FC<Props> = ({
         </Text>
       </View>
 
-      {/* --- Arrival Time Column --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
         <Text className={`text-xs mb-0.5 uppercase ${arrivalData.colorClass}`}>
           {arrivalData.label}
