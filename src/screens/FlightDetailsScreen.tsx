@@ -67,14 +67,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
 };
 
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId, route: flightRoute, flightNumber } = route.params;
+  const { flightId, route: flightRoute, flightNumber, date } = route.params;
   const selectFlightById = useFlightStore((state) => state.selectFlightById);
-  const fetchPreparations = useFlightStore((state) => state.fetchPreparations);
 
   useEffect(() => {
     if (flightId) {
       selectFlightById(flightId);
-      fetchPreparations(flightId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flightId]);
@@ -101,13 +99,15 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
         <View className="flex-row p-4">
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            FLIGHT: <Text className="text-text-secondary">{flightNumber}</Text>
+            FLIGHT:
+            <Text className="text-text-secondary"> WY{flightNumber}</Text>
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            ROUTE: <Text className="text-text-secondary">{flightRoute}</Text>
+            ROUTE: <Text className="text-text-secondary">MCT-TRV-MCT</Text>
+            <Text className="text-text-secondary">{flightRoute}</Text>
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
-            DATE:{" "}
+            DATE: <Text className="text-text-secondary">DEC 4, 2025</Text>
             {/* <Text className="text-text-secondary">
               {formatDate(date.split("T")[0])}
             </Text> */}

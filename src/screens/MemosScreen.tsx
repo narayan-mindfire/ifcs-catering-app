@@ -13,7 +13,14 @@ import { RootStackParamList } from "../../App";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { useMemoStore } from "../store/useMemosStore";
 import { MemoTab } from "../types/memo";
-import { ArrowIcon, StarIcon } from "../assets/icons";
+import {
+  ArrowIcon,
+  CheckIcon,
+  CheckIconActive,
+  StarIcon,
+  TrayIcon,
+  TrayIconActive,
+} from "../assets/icons";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
 
@@ -107,14 +114,30 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                className={`flex-1 py-2 mx-1 rounded-full items-center justify-center 
-            ${isActive ? "bg-bg-button" : ""}
-          `}
+                // Added 'flex-row' to align icon and text
+                className={`flex-1 flex-row py-2 mx-1 rounded-full items-center justify-center 
+                  ${isActive ? "bg-bg-button" : ""}
+                `}
               >
+                {/* Icon Logic */}
+                <View className="mr-2">
+                  {tab === "Inbox" ? (
+                    isActive ? (
+                      <TrayIconActive />
+                    ) : (
+                      <TrayIcon />
+                    )
+                  ) : isActive ? (
+                    <CheckIconActive />
+                  ) : (
+                    <CheckIcon height={40} width={40} />
+                  )}
+                </View>
+
                 <Text
                   className={`text-base font-semibold py-1
-              ${isActive ? "text-white" : "text-text-tertiary"}
-            `}
+                    ${isActive ? "text-white" : "text-text-tertiary"}
+                  `}
                 >
                   {tab}
                 </Text>

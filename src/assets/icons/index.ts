@@ -71,6 +71,8 @@ import ArchiveIcon from "./archive.svg";
 import TrayIcon from "./tray.svg";
 import WashingMachineIcon from "./washing-machine.svg";
 import ImageIcon from "./image.svg";
+import CheckIconActive from "./checkActive.svg";
+import TrayIconActive from "./trayActive.svg";
 
 // --- Export all icons together ---
 export {
@@ -149,4 +151,6 @@ export {
   TrayIcon,
   WashingMachineIcon,
   ImageIcon,
+  CheckIconActive,
+  TrayIconActive,
 };

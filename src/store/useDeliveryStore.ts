@@ -46,19 +46,10 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
   fetchDeliveries: async (flightId: string) => {
     set({ isLoading: true, error: null });
     try {
-      console.log(
-        "======================FLIGHT ID WE'RE TRYING FOR: ",
-        flightId,
-      );
       const response = await apiClient.get<ApiResponse<Delivery[]>>(
         `/flights/${flightId}/deliveries`,
       );
-
-      console.log("Full Response:", response.data);
       const deliveriesArray = response.data.data || [];
-
-      console.log("Extracted Deliveries Array:", deliveriesArray);
-
       set({
         deliveries: deliveriesArray,
         selectedDeliveryId:

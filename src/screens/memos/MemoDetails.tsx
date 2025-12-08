@@ -140,7 +140,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   }
 
-  // --- Render Prep ---
   const senderName = activeMemo.sender
     ? `${activeMemo.sender.firstName} ${activeMemo.sender.lastName}`
     : "Unknown";
@@ -157,7 +156,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress: () => navigation.navigate("Dashboard"),
           },
           { label: "Memos", onPress: () => navigation.navigate("Memos") },
-          { label: "Details" },
+          { label: activeMemo.subject as string },
         ]}
       />
 

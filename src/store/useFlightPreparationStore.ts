@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import apiClient from "../api/axiosClient";
 import {
-  Preparation,
+  PreparationItem,
   PreparationDetailData,
   PreparationFlagUpdatePayload,
+  PrintData,
 } from "../types/preparations";
 
 // Generic API Response wrapper
@@ -20,12 +21,12 @@ interface ApiResponse<T> {
 }
 
 interface FlightPreparationState {
-  preparations: Preparation[];
+  preparations: PreparationItem[];
   preparationDetail: PreparationDetailData | null;
 
-  // Loading states
-  isLoading: boolean; // For the main list
-  isPrepLoading: boolean; // For the details modal (NEW)
+  isLoading: boolean;
+  isPrinting: boolean;
+  isPrepLoading: boolean;
 
   error: string | null;
 
@@ -39,6 +40,9 @@ interface FlightPreparationState {
     preparationId: string,
     payload: PreparationFlagUpdatePayload,
   ) => Promise<void>;
+  printPreparation: (
+    flightId: string,
+  ) => Promise<{ success: boolean; fileUrl?: string; error?: string }>;
   clearPreparationDetail: () => void;
 }
 
@@ -47,16 +51,22 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     preparations: [],
     preparationDetail: null,
     isLoading: false,
-    isPrepLoading: false, // Initial state
+    isPrepLoading: false,
     error: null,
+    isPrinting: false,
 
-    // 1. Fetch Main List
     fetchPreparations: async (flightId: string) => {
+      console.log("CALLED CALLED CALLED CALLED");
+      const callFlight =
+        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
       set({ isLoading: true, error: null });
       try {
-        const response = await apiClient.get<ApiResponse<Preparation[]>>(
-          `/flights/${flightId}/preparations`,
+        const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
+          `/flights/${callFlight}/preparations`,
           {
+            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
             params: { includeContent: true },
           },
         );
@@ -83,16 +93,24 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       }
     },
 
-    // 2. Fetch Single Detail (Uses isPrepLoading)
+    // 2. Fetch Single Detail
     fetchPreparationById: async (flightId: string, preparationId: string) => {
-      // Only trigger the modal loading state
       set({ isPrepLoading: true, error: null });
+      const callFlight =
+        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
       try {
         const response = await apiClient.get<
           ApiResponse<PreparationDetailData>
-        >(`/flights/${flightId}/preparations/${preparationId}`);
-
+        >(`/flights/${callFlight}/preparations/${preparationId}`, {
+          baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+        });
         if (response.data.success) {
+          console.log(
+            "Preparation Detail Response:",
+            JSON.stringify(response.data.data, null, 2),
+          );
           set({
             preparationDetail: response.data.data,
             isPrepLoading: false,
@@ -121,9 +139,12 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       payload: PreparationFlagUpdatePayload,
     ) => {
       try {
-        const response = await apiClient.patch<ApiResponse<Preparation>>(
+        const response = await apiClient.patch<ApiResponse<PreparationItem>>(
           `/flights/${flightId}/preparation-flags/${preparationId}`,
           payload,
+          {
+            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+          },
         );
 
         if (response.data.success) {
@@ -141,6 +162,42 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         }
       } catch (err: any) {
         console.error("Network error during patch:", err);
+      }
+    },
+
+    printPreparation: async (flightId: string) => {
+      const callFlight =
+        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
+      set({ isPrinting: true, error: null });
+      try {
+        const response = await apiClient.post<ApiResponse<PrintData>>(
+          `/flights/${callFlight}/preparations/print`,
+          {},
+          {
+            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+          },
+        );
+
+        set({ isPrinting: false });
+
+        if (response.data.success && response.data.data?.fileUrl) {
+          return { success: true, fileUrl: response.data.data.fileUrl };
+        } else {
+          return {
+            success: false,
+            error: response.data.message || "Failed to generate print file",
+          };
+        }
+      } catch (err: any) {
+        console.error("Print Error:", err);
+        set({
+          error:
+            err.response?.data?.message || "Network error generating print",
+          isPrinting: false,
+        });
+        return { success: false, error: err.message };
       }
     },
 

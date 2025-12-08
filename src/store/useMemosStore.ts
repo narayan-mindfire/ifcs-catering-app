@@ -1,7 +1,12 @@
 import { create } from "zustand";
-import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
+// import apiClient from "../api/axiosClient";
+import axios from "axios";
 
+const apiClient = axios.create({
+  baseURL: "https://optimally-metazoal-jenae.ngrok-free.dev/api/v1",
+  timeout: 20000,
+});
 const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
 
 interface ApiResponse<T> {

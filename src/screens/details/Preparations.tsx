@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   SectionList,
   FlatList,
+  Alert,
 } from "react-native";
 import {
   BoxIcon,
@@ -35,9 +36,7 @@ import { FlightPreparationDetailsModal } from "../../components/flight-hub/Fligh
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { Preparation } from "../../types/preparations";
-
-const SAMPLE_PDF = require("../../assets/sample.pdf");
+import { PreparationItem } from "../../types/preparations";
 
 // --- Helper to assign icons to dynamic names ---
 const getIconForPreparationType = (type: string) => {
@@ -86,11 +85,11 @@ const ValidationModal = ({
 
 // Updated Filter Component to accept dynamic data
 const MultiSelectFilter = ({
-  options, // NEW PROP
+  options,
   selectedOptions,
   onToggleOption,
 }: {
-  options: { label: string; icon: React.ReactNode }[]; // NEW TYPE
+  options: { label: string; icon: React.ReactNode }[];
   selectedOptions: string[];
   onToggleOption: (option: string) => void;
 }) => {
@@ -182,12 +181,16 @@ export const PreparationsScreen: React.FC = () => {
   const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [pdfVisible, setPdfVisible] = useState(false);
+  // New state to hold dynamic PDF source
+  const [pdfSource, setPdfSource] = useState<any>(null);
 
   const [validationMsg, setValidationMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
-  const [selectedItem, setSelectedItem] = useState<Preparation | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PreparationItem | null>(
+    null,
+  );
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
   // Status state for Modal
@@ -198,13 +201,20 @@ export const PreparationsScreen: React.FC = () => {
   });
 
   const buttonRef = useRef<View>(null);
+
   const selectedFlight = useFlightStore((state) => state.selectedFlight);
-  const { preparations, isLoading, fetchPreparations } =
-    useFlightPreparationStore();
+  const {
+    preparations,
+    isLoading,
+    fetchPreparations,
+    printPreparation,
+    isPrinting,
+  } = useFlightPreparationStore();
 
   // --- Fetch Data ---
   useEffect(() => {
     if (selectedFlight?.id) {
+      console.log("Fetching preparations for flight:", selectedFlight.id);
       fetchPreparations(selectedFlight.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -212,7 +222,6 @@ export const PreparationsScreen: React.FC = () => {
 
   // --- Dynamic Filters Logic ---
   const filterOptions = useMemo(() => {
-    // 1. Get unique PreparedBy names
     const uniqueNames = Array.from(
       new Set(
         preparations
@@ -220,7 +229,6 @@ export const PreparationsScreen: React.FC = () => {
           .filter((name): name is string => !!name),
       ),
     );
-    // 2. Map to objects with icons
     return uniqueNames.map((name) => ({
       label: name,
       icon: getIconForPreparationType(name),
@@ -238,7 +246,7 @@ export const PreparationsScreen: React.FC = () => {
   };
 
   // --- Logic ---
-  const handleOpenDetailModal = (item: Preparation) => {
+  const handleOpenDetailModal = (item: PreparationItem) => {
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
     const isLocked =
       item.assemblyProcessFlag === "inprogress" ||
@@ -255,6 +263,18 @@ export const PreparationsScreen: React.FC = () => {
     setDetailModalVisible(true);
   };
 
+  const handleOpenPdf = (item: PreparationItem) => {
+    if (item.labelUrl) {
+      setPdfSource({ uri: item.labelUrl, cache: true });
+      setPdfVisible(true);
+    } else {
+      Alert.alert(
+        "No Label Available",
+        "There is no label URL associated with this item.",
+      );
+    }
+  };
+
   const sectionedData = useMemo(() => {
     let filtered = preparations;
     if (selectedFilters.length > 0) {
@@ -263,7 +283,7 @@ export const PreparationsScreen: React.FC = () => {
       );
     }
 
-    const grouped: Record<string, Preparation[]> = {};
+    const grouped: Record<string, PreparationItem[]> = {};
     filtered.forEach((item) => {
       const key = item.preparedBy || "Unassigned";
       if (!grouped[key]) {
@@ -280,26 +300,6 @@ export const PreparationsScreen: React.FC = () => {
       }));
   }, [preparations, selectedFilters]);
 
-  const dynamicPaxData = React.useMemo(() => {
-    if (!selectedFlight) return [];
-    const p = selectedFlight.passengers || {};
-    return [
-      {
-        label: "Business Studio",
-        value: p.businessStudioCount ? String(p.businessStudioCount) : "0",
-      },
-      {
-        label: "Business",
-        value: p.businessCount ? String(p.businessCount) : "0",
-      },
-      {
-        label: "Economy",
-        value: p.economyCount ? String(p.economyCount) : "0",
-      },
-      { label: "Crew", value: p.crewCount ? String(p.crewCount) : "0" },
-    ];
-  }, [selectedFlight]);
-
   const handleOpenPaxModal = () => {
     buttonRef.current?.measure((fx, fy, width, height, px, py) => {
       setDropdownPos({ top: py + height + 5, left: px });
@@ -309,7 +309,7 @@ export const PreparationsScreen: React.FC = () => {
 
   const handleSequenceCheck = (
     stepName: "prepared" | "sealed" | "locked" | "verify" | "delivery",
-    item: Preparation,
+    item: PreparationItem,
   ) => {
     const isPrepared = !!item.isContentPrepared;
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
@@ -345,12 +345,27 @@ export const PreparationsScreen: React.FC = () => {
   };
 
   const handlePrint = async () => {
-    // Print logic placeholder
-    console.log("Printing...");
+    if (!selectedFlight?.id) {
+      Alert.alert("Error", "No flight selected.");
+      return;
+    }
+
+    console.log("Generating print for flight:", selectedFlight.id);
+    const result = await printPreparation(selectedFlight.id);
+
+    if (result.success && result.fileUrl) {
+      setPdfSource({ uri: result.fileUrl, cache: true });
+      setPdfVisible(true);
+    } else {
+      Alert.alert(
+        "Print Error",
+        result.error || "Failed to generate print document.",
+      );
+    }
   };
 
   // --- Render Item with Highlighted Icons ---
-  const renderItem = ({ item }: { item: Preparation }) => {
+  const renderItem = ({ item }: { item: PreparationItem }) => {
     // 1. Calculate Status
     const isPrepared = !!item.isContentPrepared;
     const isSealed = !!item.sealTagNumber;
@@ -360,32 +375,34 @@ export const PreparationsScreen: React.FC = () => {
     const isVerified = item.assemblyProcessFlag === "completed";
     const isDelivered = item.loadedTruckFlag === "loaded";
 
-    // 2. Select Icons (Swap active/inactive if available)
+    // 2. Select Icons
     const RenderBoxIcon = isPrepared ? BoxIcon : BoxInactiveIcon;
     const RenderStringIcon = isSealed ? StringIcon : StringInactiveIcon;
     const RenderDeliveryIcon = isDelivered
       ? DeliveryIcon
       : DeliveryInactiveIcon;
 
-    // 3. Define Colors for icons that don't have explicit "Inactive" versions imported
-    // Assuming Green (#008000) for Active, Grey (#9CA3AF) for Inactive
+    // 3. Define Colors
     const lockColor = isLocked ? "#008000" : "#9CA3AF";
     const verifyColor = isVerified ? "#008000" : "#9CA3AF";
 
     return (
       <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary bg-bg-surface">
         <View className="flex-[2] justify-center">
+          {/* UPDATED: Stowage mapping */}
           <Text className="text-lg text-text-primary font-semibold">
-            {item.position}
+            {item.stowage || item.position || "N/A"}
           </Text>
         </View>
         <View className="flex-[3] justify-center">
+          {/* UPDATED: Carrier mapping with fallbacks */}
           <Text className="text-lg text-text-primary">
-            {item.nameDisplay || "N/A"}
+            {item.carrier || item.name || item.nameDisplay || "N/A"}
           </Text>
         </View>
         <View className="flex-[4] flex-row justify-end items-center gap-5">
-          <TouchableOpacity onPress={() => setPdfVisible(true)}>
+          {/* UPDATED: Open PDF from URL */}
+          <TouchableOpacity onPress={() => handleOpenPdf(item)}>
             <QrIcon height={30} width={30} />
           </TouchableOpacity>
 
@@ -400,7 +417,6 @@ export const PreparationsScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => handleSequenceCheck("locked", item)}>
-            {/* Use Color Tinting for Lock */}
             <LockOpenIcon
               height={30}
               width={30}
@@ -410,7 +426,6 @@ export const PreparationsScreen: React.FC = () => {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => handleSequenceCheck("verify", item)}>
-            {/* Use Color Tinting for Check */}
             <CheckIcon
               height={30}
               width={30}
@@ -429,7 +444,7 @@ export const PreparationsScreen: React.FC = () => {
                   position: "absolute",
                   top: -6,
                   right: -6,
-                  backgroundColor: isDelivered ? "#008000" : "#602AF3", // Change color if delivered
+                  backgroundColor: isDelivered ? "#008000" : "#602AF3",
                   borderRadius: 10,
                   height: 18,
                   minWidth: 18,
@@ -441,7 +456,7 @@ export const PreparationsScreen: React.FC = () => {
                 <Text
                   style={{ color: "white", fontSize: 10, fontWeight: "bold" }}
                 >
-                  {Math.floor(Math.random() * 3) + 1}
+                  n/a
                 </Text>
               </View>
             </View>
@@ -471,8 +486,11 @@ export const PreparationsScreen: React.FC = () => {
     <View className="flex-1 bg-bg-surface p-4">
       <PdfViewerModal
         visible={pdfVisible}
-        onClose={() => setPdfVisible(false)}
-        source={SAMPLE_PDF}
+        onClose={() => {
+          setPdfVisible(false);
+          // Removed setPdfSource(null) to fix crash: [TypeError: Cannot read property 'uri' of null]
+        }}
+        source={pdfSource}
       />
 
       <ValidationModal
@@ -503,25 +521,10 @@ export const PreparationsScreen: React.FC = () => {
               Flight:{" "}
               {selectedFlight?.flightNumber || selectedFlight?.id || "N/A"}
             </Text>
-            <View className="h-px bg-border-muted mb-2.5" />
-            {dynamicPaxData.map((item, index) => (
-              <View
-                key={index}
-                className="flex-row justify-between items-center mb-2"
-              >
-                <Text className="text-lg text-text-secondary flex-1">
-                  {item.label}
-                </Text>
-                <Text className="text-sm font-semibold text-text-primary">
-                  {item.value}
-                </Text>
-              </View>
-            ))}
           </View>
         </TouchableOpacity>
       </Modal>
 
-      {/* Detail Modal moved outside to prevent re-render issues */}
       {selectedItem && (
         <FlightPreparationDetailsModal
           visible={detailModalVisible}
@@ -530,6 +533,7 @@ export const PreparationsScreen: React.FC = () => {
             setSelectedItem(null);
           }}
           preparationId={selectedItem.id}
+          // Use dynamic flight ID, fallback to empty string if not available
           flightId={selectedFlight?.id || ""}
           isLocked={selectedPrepStatus.isLocked}
           isSealed={selectedPrepStatus.isSealed}
@@ -539,18 +543,27 @@ export const PreparationsScreen: React.FC = () => {
 
       <View className="flex-row mb-5 z-10">
         <View className="flex-1 flex-row justify-start">
-          {/* Top Action Buttons */}
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
             <Text className="text-xl font-normal m-0.5 text-text-primary">
               Prep Scan
             </Text>
           </Pressable>
-          {/* ... other top buttons ... */}
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
+            <ScanIcon height={28} width={28} />
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Verify Seal
+            </Text>
+          </Pressable>
+          <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
+            <ScanIcon height={28} width={28} />
+            <Text className="text-xl font-normal m-0.5 text-text-primary">
+              Assembel Scan
+            </Text>
+          </Pressable>
         </View>
 
         <View className="flex-1 flex-row justify-end">
-          {/* Use the new Dynamic Options */}
           <MultiSelectFilter
             options={filterOptions}
             selectedOptions={selectedFilters}
@@ -572,10 +585,15 @@ export const PreparationsScreen: React.FC = () => {
           <Pressable
             className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
             onPress={handlePrint}
+            disabled={isPrinting}
           >
-            <PrintIcon />
+            {isPrinting ? (
+              <ActivityIndicator size="small" color="#602AF3" />
+            ) : (
+              <PrintIcon />
+            )}
             <Text className="text-xl font-normal m-0.5 text-text-primary">
-              Print
+              {isPrinting ? "Printing..." : "Print"}
             </Text>
           </Pressable>
         </View>

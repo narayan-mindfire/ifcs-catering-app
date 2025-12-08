@@ -6,7 +6,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import { RecursivePackingStandardNode } from "../../types/preparations";
+import { PackingStandardContainer } from "../../types/preparations";
 
 interface DrawerItemProps {
   isOpen: boolean;
@@ -44,7 +44,7 @@ const DrawerItem: React.FC<DrawerItemProps> = ({
       style={{
         position: "absolute",
         top: `${isOpen ? positionTop : positionTop}%`,
-        left: `${isOpen ? "11.7" : "28"}%`,
+        left: `${isOpen ? "13.7" : "30"}%`,
         width: isOpen ? "95%" : "79%",
         height: 40,
         zIndex: isOpen ? 100 : 10,
@@ -72,12 +72,12 @@ const DrawerItem: React.FC<DrawerItemProps> = ({
 
 interface CartProps {
   cabinetFrameImg?: string | null;
-  drawers?: RecursivePackingStandardNode[];
+  drawers?: PackingStandardContainer[];
   numberOfDrawers: number;
   defaultOpenDrawer?: number | null;
   onDrawerClick: (
     drawerIndex: number | null,
-    drawerData: RecursivePackingStandardNode | null,
+    drawerData: PackingStandardContainer | null,
   ) => void;
 }
 
@@ -91,6 +91,11 @@ export const CartVisualizer: React.FC<CartProps> = ({
   const [openDrawerIndex, setOpenDrawerIndex] = useState<number | null>(
     defaultOpenDrawer,
   );
+
+  // Reset local state if defaultOpenDrawer prop changes
+  useEffect(() => {
+    setOpenDrawerIndex(defaultOpenDrawer);
+  }, [defaultOpenDrawer]);
 
   let drawerPositions = [11, 22, 33, 44, 55, 66, 77];
 
@@ -126,16 +131,17 @@ export const CartVisualizer: React.FC<CartProps> = ({
 
         return (
           <DrawerItem
-            key={drawer.packingStandard.id}
+            key={drawer.id}
             isOpen={isOpen}
             positionTop={positionTop}
             originalIndex={originalIndex}
+            // Updated property access for new PackingStandardContainer type
             imageUrl={
               isOpen
-                ? drawer.equipmentCategory?.pictureOpen
-                : drawer.equipmentCategory?.pictureClosed
+                ? drawer.equipmentItem?.pictureOpen
+                : drawer.equipmentItem?.pictureClosed
             }
-            label={drawer.packingStandard.name}
+            label={drawer.name}
             onPress={() => {
               const newIndex = isOpen ? null : originalIndex;
               setOpenDrawerIndex(newIndex);

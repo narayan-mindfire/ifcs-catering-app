@@ -1,60 +1,118 @@
-export type PreparationAction = "seal" | "assembly" | "load";
+export interface PreparationItem {
+  position: string;
+  nameDisplay: string;
+  equipment: string;
+  preparedBy: string;
 
-export interface PreparationApiResponse {
-  success: boolean;
-  message: string;
-  data: Preparation[];
-}
-
-export interface UpdateFlagPayload {
-  action: PreparationAction;
-  sealTagNumber?: string | number;
-}
-
-export interface Preparation {
   id: string;
   flightId: string;
-  packingStandardId: string | null;
-  storageId: string | null;
-  parentStorageId: string | null;
-  galleyConfigurationId: string | null;
+  storageId: string;
+  code: string;
+  name: string;
+  priority: number;
+  date: string;
+
   isContentPrepared: boolean;
-  isTrackConsumption: boolean;
   isDynamicLoadingIncomplete: boolean;
-  name: string | null;
-  nameDisplay: string | null;
-  code: string | null;
-  position: string | null;
-  positionRap: string | null;
-  rotationCode: string | null;
-  direction: string | null;
-  weight: number | null;
-  availableWeight: number | null;
-  galleyCode: string | null;
-  galleyPosition: string | null;
-  preparedBy: string | null;
-  priority: number | null;
-  equipment: string | null;
-  quantity: number | null;
-  date: string | null;
-  qrCode: string | null;
-  qrCodeUrl: string | null;
-  dynamicLoadingQrCode: string | null;
-  dynamicLoadingQrCodeUrl: string | null;
-  labelUrl: string | null;
-  report: string | null;
-  sealTagNumber: string | null;
-  assemblyProcessFlag: string | null;
-  loadedTruckFlag: string | null;
+  assemblyProcessFlag: string;
+  loadedTruckFlag: string;
+  isLockRequired: boolean;
+  isTrackConsumption: boolean;
+  weight: number;
+  availableWeight: number;
+  quantity: number;
+  sealTagNumber: string;
+
+  qrCodeUrl: string;
+  dynamicLoadingQrCodeUrl: string;
+  labelUrl: string;
+  report: string;
+
   createdAt: string;
   updatedAt: string;
-  door?: string | null;
+
+  packingStandardId: string;
+  parentStorageId: string;
+  galleyConfigurationId: string;
+  galleyCode: string;
+  galleyPosition: string;
+  positionRap: string;
+  rotationCode: string;
+  direction: string;
+  qrCode: string;
+  dynamicLoadingQrCode: string;
+  galleyNumber: string;
+  door: string;
+  stowage: string;
+  carrier: string;
+  doorNumber: string;
 }
 
-export interface ProvisionItemDetail {
+export interface PreparationFlagUpdatePayload {
+  action: "assembly" | "seal" | "load" | "prepared";
+  assemblyProcessFlag?: boolean;
+  sealNumber?: number;
+  loadedTruckFlag?: boolean;
+  isContentPrepared?: boolean;
+}
+
+export interface PromptModalState {
+  isOpen: boolean;
+  rowIndex: number | null;
+  actionIndex: number | null;
+  actionName: string;
+  isBlocked: boolean;
+  isCompleted: boolean;
+}
+
+//****************************ADD DYNAMIC LOADING****************************************/
+export interface Meal {
   id: string;
-  fmId: string | null;
-  code: string | null;
+  fmId: string;
+  mealCode: string;
+  name: string;
+  nameShort: string;
+  mealType: string | null;
+  mealDescription: string | null;
+  isActive: boolean;
+  isTrackConsumption: boolean;
+  dynamicLoadingPriority: number | null;
+  picture?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MealResponse {
+  success: boolean;
+  message: string;
+  data: Meal[];
+  meta: {
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+export interface MealFilters {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: "asc" | "desc";
+  search?: string;
+  mealCode?: string;
+  mealType?: string;
+  isActive?: boolean;
+}
+
+export interface ProvisionItem {
+  id: string;
+  fmId: string;
+  code: string;
   name: string;
   nameShort: string | null;
   description: string | null;
@@ -65,8 +123,8 @@ export interface ProvisionItemDetail {
   isTrackConsumption: boolean;
   isDeadhead: boolean;
   isDynamic: boolean;
-  picture: string | null;
-  type: string | null;
+  picture?: string | null;
+  type: string;
   typeCabin: string | null;
   typeService: string | null;
   weight: string | null;
@@ -75,152 +133,237 @@ export interface ProvisionItemDetail {
   updatedAt: string;
 }
 
-export interface PackingStandardItemDef {
-  id: string;
-  fmId: string | null;
-  packingStandardId: string | null;
-  provisionId: string | null;
-  name: string | null;
-  isContainer: boolean;
-  isDynamic: boolean;
-  isTrackConsumption: boolean;
-  quantity: number | null;
-  isFront: boolean;
-  isRear: boolean;
-  position: string | null;
-  picture: string | null;
-  createdAt: string;
-  updatedAt: string;
-  provisionItem: ProvisionItemDetail | null;
-  mealItem: ProvisionItemDetail | null;
+export interface ProvisionResponse {
+  success: boolean;
+  message: string;
+  data: ProvisionItem[];
+  meta: {
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
 }
 
-export interface ItemContentMapped {
+export interface ProvisionFilters {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: "asc" | "desc";
+  search?: string;
+  code?: string;
+  type?: string;
+  typeCabin?: string;
+  typeService?: string;
+  isActive?: boolean;
+  isEquipment?: boolean;
+  isFood?: boolean;
+}
+
+//****************************PREPARATION DETAIL****************************************/
+export interface FlightPreparationModalProps {
+  open: boolean;
+  onClose: () => void;
+  isLocked: boolean;
+  isSealed: boolean;
+  isCompleted: boolean;
+  preparationId: string;
+  flightId: string;
+  isLockRequired: boolean;
+}
+
+export interface EquipmentItem {
   id: string;
   name: string;
-  quantity: number;
-  packingStandardItemPicture: string | null;
-  provisionItemPicture: string | null;
-  packingStandardItemDef: PackingStandardItemDef | null;
+  type: string | null;
+  picture?: string | null;
+  pictureOpen: string | null;
+  pictureClosed: string | null;
 }
 
-export interface RecursivePackingStandardNode {
-  packingStandard: {
-    id: string;
-    fmId: string | null;
-    parentId: string | null;
-    equipmentItemId: string | null;
-    name: string;
-    dateStart: string | null;
-    dateEnd: string | null;
-    preparedBy: string | null;
-    labelText: string | null;
-    labelTextRear: string | null;
-    report: string | null;
-    picture: string | null;
-    calendarDateSelected: string | null;
-    isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
-  };
-  equipmentItem: {
-    id: string;
-    fmId: string | null;
-    equipmentCategoryId: string | null;
-    categoryClientId: string | null;
-    name: string;
-    nameShort: string | null;
-    isDouble: boolean;
-    codeS: string | null;
-    weight: string | null;
-    weightCapacity: string | null;
-    hasDrawer: boolean;
-    isactive: boolean;
-    isDynamic: boolean;
-    type: string | null;
-    drawerCount: number | null;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
-  equipmentCategory: {
-    id: string;
-    fmId: string | null;
-    name: string;
-    contains: string | null;
-    hasDrawer: boolean;
-    hasLabel: boolean;
-    hasLock: boolean;
-    hasRear: boolean;
-    hasSeal: boolean;
-    picture: string | null;
-    pictureOpen: string | null;
-    pictureClosed: string | null;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
-  contents: ItemContentMapped[];
-  children: RecursivePackingStandardNode[];
+export interface PackingStandardContainer {
+  id: string;
+  name: string;
+  equipmentItem: EquipmentItem;
+  items: PackingStandardItem[];
+}
+
+export interface PackingStandardItem {
+  id: string;
+  itemId: string;
+  name: string;
+  code: string;
+  picture?: string | null;
+  description: string | null;
+  quantity: number;
+  isDynamic: boolean;
+  isFront: boolean;
+  isRear: boolean;
+}
+
+export interface AircraftConfigGalleyPosition {
+  id: string;
+  fmId: string | null;
+  aircraftConfigId: string;
+  aircraftConfigGalleyId: string | null;
+  picture?: string | null;
+  pictureName: string | null;
+  galleyPosition: string;
+  containerNumber: string;
+  position: string | null;
+}
+
+export interface PackingStandard {
+  id: string;
+  name: string;
+  equipmentItem: EquipmentItem;
+  items: PackingStandardItem[];
+  containers: PackingStandardContainer[];
 }
 
 export interface PreparationDetailData {
   id: string;
-  fmId: string | null;
-  door: string | null;
   flightId: string;
-  packingStandardId: string | null;
-  storageId: string | null;
-  parentStorageId: string | null;
-  galleyConfigurationId: string | null;
-  isContentPrepared: boolean;
-  isTrackConsumption: boolean;
-  isDynamicLoadingIncomplete: boolean;
-  name: string | null;
+  name: string;
   nameDisplay: string | null;
-  code: string | null;
-  position: string | null;
+  code: string;
+  position: string;
   positionRap: string | null;
-  rotationCode: string | null;
-  direction: string | null;
+  rotationCode: string;
+  direction: string;
   weight: string | null;
-  availableWeight: string | null;
   galleyCode: string | null;
   galleyPosition: string | null;
-  preparedBy: string | null;
+  preparedBy: string;
   priority: number | null;
-  equipment: string | null;
-  quantity: number | null;
-  date: string | null;
-  qrCode: string | null;
-  qrCodeUrl: string | null;
-  dynamicLoadingQrCode: string | null;
-  dynamicLoadingQrCodeUrl: string | null;
-  labelUrl: string | null;
-  report: string | null;
+  equipment: string;
   sealTagNumber: string | null;
   assemblyProcessFlag: string | null;
   loadedTruckFlag: string | null;
-  createdAt: string;
-  updatedAt: string;
-  aircraftPosition: {
-    id: string;
-    fmId: string | null;
-    aircraftConfigId: string | null;
-    aircraftConfigGalleyId: string | null;
-    picture: string | null;
-    pictureName: string | null;
-    galleyPosition: string | null;
-    containerNumber: string | null;
-    position: string | null;
-    createdAt: string;
-    updatedAt: string;
-  } | null;
-  calculatedPosition: string | null;
-  packingStandard: RecursivePackingStandardNode | null;
+  labelUrl: string | null;
+  qrCodeUrl: string | null;
+  door: string | null;
+  aircraftConfigGalleyPosition: AircraftConfigGalleyPosition;
+  packingStandard: PackingStandard;
 }
 
-export interface PreparationFlagUpdatePayload {
-  action: "assembly" | "seal" | "load";
-  assemblyProcessFlag?: string;
-  sealTagNumber?: string;
-  loadedTruckFlag?: string;
+export interface PreparationDetailResponse {
+  success: boolean;
+  message: string;
+  data: PreparationDetailData | null;
 }
+
+//****************************PREPARATION STORE STATE****************************************/
+export interface PreparationPrintResponse {
+  success: boolean;
+  fileUrl: string;
+  fileKey: string;
+  bucket: string;
+}
+export interface PreparationStoreState {
+  preparations: PreparationItem[];
+  preparationDetail: PreparationDetailData | null;
+  meals: Meal[];
+  mealsMeta: MealResponse["meta"] | null;
+  provisions: ProvisionItem[];
+  provisionsMeta: ProvisionResponse["meta"] | null;
+  isLoading: boolean;
+  error: string | null;
+  fetchData: (flightId: string) => Promise<void>;
+  updateFlag: (
+    flightId: string,
+    preparationId: string,
+    payload: PreparationFlagUpdatePayload,
+  ) => Promise<void>;
+  fetchMeals: (filters?: MealFilters) => Promise<void>;
+  fetchProvisions: (filters?: ProvisionFilters) => Promise<void>;
+  fetchDataById: (flightId: string, preparationId: string) => Promise<void>;
+  printPreparation: (
+    preparationId: string,
+  ) => Promise<PreparationPrintResponse>;
+}
+
+export interface PrintData {
+  success: boolean;
+  fileUrl: string;
+  fileKey: string;
+  bucket: string;
+}
+
+//****************************PREPARATION INFO COMPONENTS****************************************/
+
+export interface CartProps {
+  cabinetFrameImg?: string | null;
+  drawers?: PackingStandardContainer[];
+  numberOfDrawers: number;
+  defaultOpenDrawer?: number | null;
+  onDrawerClick: (
+    drawerIndex: number | null,
+    drawerData: PackingStandardContainer | null,
+  ) => void;
+}
+
+export interface DrawerProps {
+  isOpen: boolean;
+  onClick: () => void;
+  drawer?: PackingStandardContainer | null;
+  position: { top: number };
+  drawerName?: string;
+}
+
+export interface ContainerProps {
+  cabinetFrameImg?: string | null;
+  drawersData: PackingStandardContainer[];
+  numberOfDrawers?: number;
+  defaultOpenDrawer?: number | null;
+  onDrawerClick: (drawerIndex: number | null) => void;
+}
+export type CompletedActionsState = {
+  [key: string]: number[];
+};
+
+export interface PromptModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  actionName: string;
+  isBlocked: boolean;
+  isCompleted: boolean;
+}
+
+export interface QRCodeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pdfUrl: string;
+  title?: string;
+}
+
+export interface SealNumberModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (sealNumber: number) => void;
+  title?: string;
+}
+
+export interface StatusRowProps {
+  isLocked: boolean;
+  isSealed: boolean;
+  isCompleted: boolean;
+  isLockRequired: boolean;
+}
+
+export interface Status {
+  label: string;
+  icon: string;
+  isActive: boolean;
+}
+
+export interface DynamicLoadingModalProps {
+  onClose: () => void;
+}
+
+export type SelectedItemData = Meal | ProvisionItem;

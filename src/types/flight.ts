@@ -1,5 +1,3 @@
-// types/flight.ts
-
 export interface Aircraft {
   id: string;
   type: string;
@@ -28,12 +26,18 @@ export interface PreparationStatus {
   loadedTruckFlag: string;
 }
 
+export interface LoadingPlan {
+  name: string;
+  status?: string;
+  version?: number;
+}
+
 export interface Flight {
   id: string;
   flightNumber: string;
 
   // Directions and Locations
-  direction: string | null;
+  direction: "ARR" | "DEP" | string | null; // Typed string union for better DX, fallback to string
   departureDestination: string;
   departureGate: string | null;
   arrivalDestination: string;
@@ -58,7 +62,7 @@ export interface Flight {
   // Status and Flags
   status: string | null;
   isCancelled: boolean;
-  preparationStatus: PreparationStatus; // Added based on new JSON
+  preparationStatus: PreparationStatus;
 
   // Routes & Pairing
   pairRoute: string | null;
@@ -68,19 +72,56 @@ export interface Flight {
   // Relations
   aircraft: Aircraft | null;
   airline: Airline | null;
-  passengers: any; // Or use PaxCounts if the data matches
-  loadingPlan: { name: string } | null;
+  passengers: PaxCounts | null; // Updated from 'any' to specific type
+  loadingPlan: LoadingPlan | null;
 
   // Meta
-  flightType: string | null; // Added based on new JSON
+  flightType: string | null;
   flightTypeIataCode: string | null;
   cutoffTime: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+// Filter Definition
+export interface FlightFilters {
+  // Search & Dates
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  isPrepared?: boolean;
+
+  // Core Attributes
+  direction?: "ARR" | "DEP";
+  status?: string[];
+  airlineIds?: string[];
+  hideCancelled?: boolean;
+  isCancelled?: boolean; // Added to match store usage
+
+  // Pagination
+  page?: number;
+  pageSize?: number;
+  limit?: number; // Added to match store usage
+
+  // Sorting
+  sortBy?: keyof Flight;
+  sortOrder?: "asc" | "desc";
+  order?: "asc" | "desc"; // Added to match store usage
+
+  // Specific Metadata Filters (Added from store usage)
+  client?: string;
+  station?: string;
+  route?: string;
+  flight?: string; // for flightNumber search
+}
+
 export interface FlightApiResponse {
   success: boolean;
-  data: Flight[][];
-  meta: any;
+  data: Flight[][]; // Preserved user's structure (Array of Arrays)
+  meta: {
+    total: number;
+    page: number;
+    last_page: number;
+    per_page: number;
+  };
 }

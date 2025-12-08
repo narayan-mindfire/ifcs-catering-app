@@ -13,8 +13,8 @@ import { StatusRow } from "./StatusRow";
 import { CartVisualizer } from "./CartVisulaizer";
 import { ContainerVisualizer } from "./ContainerVisualizer";
 import {
-  ItemContentMapped,
-  RecursivePackingStandardNode,
+  PackingStandardItem,
+  PackingStandardContainer,
 } from "../../types/preparations";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { ImageIcon } from "../../assets/icons";
@@ -44,7 +44,7 @@ export const FlightPreparationDetailsModal: React.FC<
     useFlightPreparationStore();
 
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
-    ItemContentMapped[]
+    PackingStandardItem[]
   >([]);
   const [activeDrawerName, setActiveDrawerName] = useState<string>("");
   const [activeDrawerIndex, setActiveDrawerIndex] = useState<number | null>(
@@ -62,24 +62,29 @@ export const FlightPreparationDetailsModal: React.FC<
 
     const packingStd = preparationDetail.packingStandard;
     const equipmentType = packingStd?.equipmentItem?.type || "";
-    const parentContents = packingStd?.contents || [];
-    const parentName =
-      packingStd?.packingStandard?.name || "Equipment Contents";
-    const drawers = packingStd?.children || [];
 
+    // In new structure, root items are in 'items', drawers are in 'containers'
+    const rootItems = packingStd?.items || [];
+    const containers = packingStd?.containers || [];
+    const parentName = packingStd?.name || "Equipment Contents";
+
+    // Logic to determine initial view
     if (equipmentType === "Cart" || equipmentType === "Container") {
-      if (parentContents.length > 0) {
-        setSelectedDrawerContents(parentContents);
+      if (containers.length > 0) {
+        // If there are drawers/containers, select the first one by default
+        const firstContainer = containers[0];
+        setSelectedDrawerContents(firstContainer.items || []);
+        setActiveDrawerName(firstContainer.name);
+        setActiveDrawerIndex(0);
+      } else {
+        // Fallback to root items if no containers exist
+        setSelectedDrawerContents(rootItems);
         setActiveDrawerName(parentName);
         setActiveDrawerIndex(null);
-      } else if (drawers.length > 0) {
-        const firstDrawer = drawers[0];
-        setSelectedDrawerContents(firstDrawer.contents || []);
-        setActiveDrawerName(firstDrawer.packingStandard.name);
-        setActiveDrawerIndex(0);
       }
     } else {
-      setSelectedDrawerContents(parentContents);
+      // For loose items (e.g. Bags, Oven inserts), show root items
+      setSelectedDrawerContents(rootItems);
       setActiveDrawerName(parentName);
       setActiveDrawerIndex(null);
     }
@@ -87,32 +92,32 @@ export const FlightPreparationDetailsModal: React.FC<
 
   const handleDrawerClick = (
     drawerIndex: number | null,
-    drawerData: RecursivePackingStandardNode | null,
+    drawerData: PackingStandardContainer | null,
   ) => {
     const packingStd = preparationDetail?.packingStandard;
-    const parentContents = packingStd?.contents || [];
-    const parentName =
-      packingStd?.packingStandard?.name || "Equipment Contents";
+    const rootItems = packingStd?.items || [];
+    const parentName = packingStd?.name || "Equipment Contents";
 
     setActiveDrawerIndex(drawerIndex);
 
     if (drawerIndex !== null && drawerData) {
-      setSelectedDrawerContents(drawerData.contents || []);
-      setActiveDrawerName(drawerData.packingStandard.name);
+      // User clicked a specific drawer
+      setSelectedDrawerContents(drawerData.items || []);
+      setActiveDrawerName(drawerData.name);
     } else {
-      if (parentContents.length > 0) {
-        setSelectedDrawerContents(parentContents);
-        setActiveDrawerName(parentName);
-      } else {
-        setSelectedDrawerContents([]);
-        setActiveDrawerName("");
-      }
+      // User clicked the "frame" or descaled, show root items
+      setSelectedDrawerContents(rootItems);
+      setActiveDrawerName(parentName);
     }
   };
 
   const packingStd = preparationDetail?.packingStandard;
-  const drawers = packingStd?.children || [];
+  const containers = packingStd?.containers || [];
   const equipmentType = packingStd?.equipmentItem?.type || "";
+
+  // New payload uses 'aircraftConfigGalleyPosition' instead of 'aircraftPosition'
+  const positionImage =
+    preparationDetail?.aircraftConfigGalleyPosition?.picture;
 
   return (
     <Modal
@@ -148,6 +153,11 @@ export const FlightPreparationDetailsModal: React.FC<
                 isLocked={isLocked}
                 isSealed={isSealed}
                 isCompleted={isCompleted}
+                // isLockRequired={
+                //   preparationDetail.packingStandard?.items?.some(
+                //     (i) => i.isDynamic,
+                //   ) ?? false
+                // } // Infer lock requirement or map from new payload if available
               />
 
               <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted flex-row flex-wrap gap-y-4">
@@ -160,7 +170,9 @@ export const FlightPreparationDetailsModal: React.FC<
                 <View className="w-1/3">
                   <Text className="text-text-secondary text-xs">Carrier</Text>
                   <Text className="text-text-primary font-bold">
-                    {preparationDetail.nameDisplay || "N/A"}
+                    {preparationDetail.nameDisplay ||
+                      preparationDetail.name ||
+                      "N/A"}
                   </Text>
                 </View>
                 <View className="w-1/3">
@@ -185,10 +197,10 @@ export const FlightPreparationDetailsModal: React.FC<
               <View className="flex-row gap-4 mt-6 h-[500px]">
                 <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
                   <View className="flex-1 items-center justify-center">
-                    {preparationDetail.aircraftPosition?.picture ? (
+                    {positionImage ? (
                       <Image
                         source={{
-                          uri: preparationDetail.aircraftPosition.picture,
+                          uri: positionImage,
                         }}
                         className="w-full h-full"
                         resizeMode="contain"
@@ -203,15 +215,13 @@ export const FlightPreparationDetailsModal: React.FC<
                   <View className="flex-1 items-center justify-center pt-8">
                     {equipmentType === "Container" ? (
                       <ContainerVisualizer
-                        cabinetFrameImg={packingStd?.equipmentCategory?.picture}
-                        numberOfDrawers={
-                          packingStd?.equipmentItem?.drawerCount || 0
-                        }
-                        drawersData={drawers}
+                        cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                        numberOfDrawers={containers.length}
+                        drawersData={containers}
                         defaultOpenDrawer={activeDrawerIndex}
                         onDrawerClick={(idx: any) => {
-                          if (idx !== null && drawers[idx]) {
-                            handleDrawerClick(idx, drawers[idx]);
+                          if (idx !== null && containers[idx]) {
+                            handleDrawerClick(idx, containers[idx]);
                           } else {
                             handleDrawerClick(null, null);
                           }
@@ -219,18 +229,17 @@ export const FlightPreparationDetailsModal: React.FC<
                       />
                     ) : equipmentType === "Cart" ? (
                       <CartVisualizer
-                        cabinetFrameImg={packingStd?.equipmentCategory?.picture}
-                        numberOfDrawers={
-                          packingStd?.equipmentItem?.drawerCount || 0
-                        }
-                        drawers={drawers}
+                        cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                        numberOfDrawers={containers.length}
+                        drawers={containers}
                         defaultOpenDrawer={activeDrawerIndex}
                         onDrawerClick={handleDrawerClick}
                       />
                     ) : (
+                      // Fallback for simple items (bags, ovens)
                       <Image
                         source={{
-                          uri: packingStd?.equipmentCategory?.picture || "",
+                          uri: packingStd?.equipmentItem?.picture || "",
                         }}
                         className="w-full h-full"
                         resizeMode="contain"
@@ -269,20 +278,14 @@ export const FlightPreparationDetailsModal: React.FC<
                             {item.quantity}
                           </Text>
                           <Text className="flex-[3] text-sm text-text-primary pl-2">
-                            {item.packingStandardItemDef?.provisionItem?.name ||
-                              item.packingStandardItemDef?.mealItem?.name ||
-                              item.name}
+                            {/* New Item structure is flat */}
+                            {item.name}
                           </Text>
                           <View className="flex-1 items-center">
-                            {item.packingStandardItemDef?.provisionItem
-                              ?.picture || item.packingStandardItemPicture ? (
+                            {item.picture ? (
                               <Image
                                 source={{
-                                  uri:
-                                    item.packingStandardItemDef?.provisionItem
-                                      ?.picture ||
-                                    item.packingStandardItemPicture ||
-                                    "",
+                                  uri: item.picture,
                                 }}
                                 className="w-8 h-8 rounded"
                                 resizeMode="cover"
