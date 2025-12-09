@@ -7,7 +7,7 @@ import ScanIcon from "./scan.svg";
 import ExitIcon from "./exit.svg";
 import DropdownIcon from "./dropdown.svg";
 import PlaneIcon from "./plane.svg";
-import NoFlightIcon from "./noflight.svg";
+// import NoFlightIcon from "./noflight.svg";
 import FilterIcon from "./filter.svg";
 import RedirectIcon from "./redirect.svg";
 import ArrowIcon from "./arrowIcon.svg";
@@ -18,7 +18,7 @@ import RedirectDarkIcon from "./redirectDark.svg";
 import PdfIcon from "./pdf.svg";
 import UploadIcon from "./upload.svg";
 import DownloadIcon from "./download.svg";
-import PrintIcon from "./print.svg";
+import PrintIcon from "./printer.svg";
 import ThreeDotsIcon from "./dots.svg";
 import RotateRightIcon from "./rotate.svg";
 import UserIcon from "./user.svg";
@@ -34,6 +34,9 @@ import BowlIcon from "./bowl.svg";
 import BoxIcon from "./box.svg";
 import CalendarIcon from "./calendar.svg";
 import CheckIconSuccess from "./check.svg";
+import VideoThinIcon from "./video-thin.svg";
+import ImageThinIcon from "./image-thin.svg";
+import NoFlightsIcon from "./noflight.svg";
 import DelayIcon from "./delay.svg";
 import DeleteIcon from "./delete.svg";
 import DropdownIconAlt from "./dropdownIcon.svg";
@@ -73,7 +76,8 @@ import WashingMachineIcon from "./washing-machine.svg";
 import ImageIcon from "./image.svg";
 import CheckIconActive from "./checkActive.svg";
 import TrayIconActive from "./trayActive.svg";
-
+import FolderIcon from "./folder.svg";
+import VideoIcon from "./video.svg";
 // --- Export all icons together ---
 export {
   // Existing
@@ -85,7 +89,6 @@ export {
   ExitIcon,
   DropdownIcon,
   PlaneIcon,
-  NoFlightIcon,
   FilterIcon,
   RedirectIcon,
   ArrowIcon,
@@ -104,6 +107,8 @@ export {
   BoxInactiveIcon,
   StringInactiveIcon,
   DeliveryInactiveIcon,
+  FolderIcon,
+  VideoIcon,
 
   // New
   AddIcon,
@@ -151,6 +156,9 @@ export {
   TrayIcon,
   WashingMachineIcon,
   ImageIcon,
+  ImageThinIcon,
+  VideoThinIcon,
   CheckIconActive,
   TrayIconActive,
+  NoFlightsIcon,
 };

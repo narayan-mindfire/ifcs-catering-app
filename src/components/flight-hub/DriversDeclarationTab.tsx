@@ -165,7 +165,6 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
 
         <Pressable
           onPress={handleSave}
-          // Button is disabled if: No changes OR Saving OR Form is Invalid
           disabled={!hasChanges || isSaving || !isFormValid}
           className={`mt-6 py-3 rounded-xl items-center ${
             !hasChanges || isSaving || !isFormValid

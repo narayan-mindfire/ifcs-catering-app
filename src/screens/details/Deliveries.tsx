@@ -97,7 +97,9 @@ const DeliveriesScreen: React.FC = () => {
         raicNumber: d.driverRacNumber || "",
         staffNumber: d.driverStaffId || undefined,
         signature: d.driverSignature || null,
-        signedAt: d.driverSignatureTimestampDisplay || null,
+        signedAt: d.driverSignatureTimestampDisplay
+          ? new Date(d.driverSignatureTimestampDisplay)
+          : null,
         note: undefined,
       });
     }
@@ -128,7 +130,9 @@ const DeliveriesScreen: React.FC = () => {
     confirmationText:
       "I certify that a. the security of in-flight supplies is maintained during the transfer from in-flight supply facilies to aircraft b. in-flight supplies have been loaded into the aircraft in secure condition and handed over to the flight air crew or oman-air representative",
     signature: d.driverSignature || null,
-    signedAt: null,
+    signedAt: d.driverSignatureTimestampDisplay
+      ? new Date(d.driverSignatureTimestampDisplay)
+      : null,
   });
 
   const getCrewCompliance = (d: Delivery): CrewCompliance => ({
@@ -268,6 +272,9 @@ const DeliveriesScreen: React.FC = () => {
       driverStaffId: decl.driverStaffId,
       truckSeal: decl.truckSeal,
       driverCompany: decl.driverCompany,
+      driverSignatureTimestampDisplay: decl.signedAt
+        ? decl.signedAt.toISOString()
+        : null,
     };
 
     const hasTextChanges =

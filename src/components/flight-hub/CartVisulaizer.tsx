@@ -115,11 +115,7 @@ export const CartVisualizer: React.FC<CartProps> = ({
   return (
     <View className="relative w-[180px] h-[360px] items-center justify-center">
       <Image
-        source={
-          cabinetFrameImg
-            ? { uri: cabinetFrameImg }
-            : require("../../assets/images/sky.png")
-        }
+        source={cabinetFrameImg ? { uri: cabinetFrameImg } : undefined}
         className="h-full w-full"
         resizeMode="contain"
       />
