@@ -30,7 +30,7 @@ export interface Delivery {
   truckSeal?: string | null;
   driverSignature?: string | null;
   driverRacNumber?: string | null;
-  driverSignatureTimestampDisplay?: Date | null;
+  driverSignatureTimestampDisplay?: string | null;
 
   /** TSA FIELDS (Third-party security) */
   tsaName?: string | null;

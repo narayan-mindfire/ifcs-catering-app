@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../App";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+
+import { NoFlightsIcon, PlaneIcon, QrIcon } from "../assets/icons";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;
 type SpotCheckScreenNavigationProp = StackNavigationProp<
@@ -28,60 +30,45 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   ];
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-50">
       <BreadCrumb items={breadcrumbItems} />
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Spot Check Screen</Text>
-        {/* <Text style={styles.flightId}>Flight ID: {flightId}</Text> */}
-        <Text style={styles.description}>This is the Spot Check screen.</Text>
+      <View className="flex-1 justify-center items-center px-6">
+        <View className="items-center mb-8">
+          <NoFlightsIcon width={100} height={100} />
+          <Text className="text-xl font-medium text-text-tertiary mt-6 text-center">
+            No Flight Selected
+          </Text>
+        </View>
+
+        <View className="flex-row items-center justify-center w-full max-w-md">
+          <TouchableOpacity
+            className="flex-1 bg-bg-secondary rounded-2xl p-6 items-center justify-center aspect-square"
+            activeOpacity={0.7}
+            onPress={() => console.log("Select Flight Pressed")}
+          >
+            <PlaneIcon />
+            <Text className="mt-3 text-gray-700 font-medium text-lg text-center">
+              Select a Flight
+            </Text>
+          </TouchableOpacity>
+
+          <Text className="text-gray-500 font-medium text-lg mx-6">Or</Text>
+
+          <TouchableOpacity
+            className="flex-1 bg-bg-secondary rounded-2xl p-6 items-center justify-center aspect-square"
+            activeOpacity={0.7}
+            onPress={() => console.log("Scan Flight Pressed")}
+          >
+            <QrIcon width={40} height={40} />
+            <Text className="mt-3 text-gray-700 font-medium text-lg text-center">
+              Scan a Flight
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  header: {
-    backgroundColor: "#ffffff",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e1e8ed",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: "#007AFF",
-    fontWeight: "600",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#1f2937",
-    marginBottom: 10,
-  },
-  flightId: {
-    fontSize: 18,
-    color: "#6b7280",
-    marginBottom: 20,
-  },
-  description: {
-    fontSize: 16,
-    color: "#9ca3af",
-    textAlign: "center",
-  },
-});
 
 export default SpotCheckScreen;

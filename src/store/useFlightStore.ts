@@ -40,7 +40,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
   setFilters: (newFilters: FlightFilters) => {
     set({ filters: newFilters });
-    // Trigger fetch immediately when filters are set
     get().fetchFlights(newFilters);
   },
 
@@ -58,17 +57,14 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         order: currentFilters.order,
       };
 
-      // 2. Map Filter Fields
       if (currentFilters.search) {
         params.search = currentFilters.search;
       }
 
-      // Map 'startDate' -> 'fromDate' (API expects fromDate)
       if (currentFilters.startDate) {
         params.fromDate = currentFilters.startDate;
       }
 
-      // Map 'endDate' -> 'toDate' (if exists)
       if (currentFilters.endDate) {
         params.toDate = currentFilters.endDate;
       }
@@ -89,7 +85,8 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
       // 4. Call API with Staging URL Override
       const response = await apiClient.get<FlightApiResponse>("/flights", {
-        baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+        // baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+        baseURL: "https://caesural-antonina-apogeotropic.ngrok-free.dev/api/v1", //jyoti
         params,
       });
 
@@ -102,7 +99,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         filters: currentFilters,
       });
     } catch (err: any) {
-      console.error("❌ Fetch Flights Error:", err);
+      console.error("Fetch Flights Error:", err);
       if (err.response) {
         console.error("Error Response Data:", err.response.data);
       }

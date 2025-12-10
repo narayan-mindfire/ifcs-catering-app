@@ -51,6 +51,11 @@ export const FlightPreparationDetailsModal: React.FC<
     null,
   );
 
+  // --- Image Preview State ---
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [previewItemName, setPreviewItemName] = useState<string>("");
+
   useEffect(() => {
     if (visible && flightId && preparationId) {
       fetchPreparationById(flightId, preparationId);
@@ -111,6 +116,18 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   };
 
+  const handleImagePress = (url: string | null | undefined, name: string) => {
+    setPreviewImageUrl(url || null);
+    setPreviewItemName(name);
+    setIsPreviewVisible(true);
+  };
+
+  const closeImagePreview = () => {
+    setIsPreviewVisible(false);
+    setPreviewImageUrl(null);
+    setPreviewItemName("");
+  };
+
   const packingStd = preparationDetail?.packingStandard;
   const containers = packingStd?.containers || [];
   const equipmentType = packingStd?.equipmentItem?.type || "";
@@ -153,11 +170,6 @@ export const FlightPreparationDetailsModal: React.FC<
                 isLocked={isLocked}
                 isSealed={isSealed}
                 isCompleted={isCompleted}
-                // isLockRequired={
-                //   preparationDetail.packingStandard?.items?.some(
-                //     (i) => i.isDynamic,
-                //   ) ?? false
-                // } // Infer lock requirement or map from new payload if available
               />
 
               <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted flex-row flex-wrap gap-y-4">
@@ -278,10 +290,14 @@ export const FlightPreparationDetailsModal: React.FC<
                             {item.quantity}
                           </Text>
                           <Text className="flex-[3] text-sm text-text-primary pl-2">
-                            {/* New Item structure is flat */}
                             {item.name}
                           </Text>
-                          <View className="flex-1 items-center">
+                          <TouchableOpacity
+                            className="flex-1 items-center"
+                            onPress={() =>
+                              handleImagePress(item.picture, item.name)
+                            }
+                          >
                             {item.picture ? (
                               <Image
                                 source={{
@@ -293,7 +309,7 @@ export const FlightPreparationDetailsModal: React.FC<
                             ) : (
                               <ImageIcon width={25} height={25} />
                             )}
-                          </View>
+                          </TouchableOpacity>
                         </View>
                       ))
                     ) : (
@@ -319,6 +335,56 @@ export const FlightPreparationDetailsModal: React.FC<
           </View>
         </View>
       </View>
+
+      {/* --- Image Preview Modal --- */}
+      <Modal
+        visible={isPreviewVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={closeImagePreview}
+      >
+        <View className="flex-1 bg-black/80 justify-center items-center z-50">
+          <View className="bg-bg-surface w-96 rounded-2xl overflow-hidden p-4">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text
+                className="text-lg font-bold text-text-primary flex-1 mr-2"
+                numberOfLines={1}
+              >
+                {previewItemName}
+              </Text>
+              <TouchableOpacity onPress={closeImagePreview} className="p-1">
+                <Text className="text-text-secondary text-xl font-bold">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="w-full h-80 bg-bg-quaternary rounded-xl justify-center items-center overflow-hidden border border-border-muted">
+              {previewImageUrl ? (
+                <Image
+                  source={{ uri: previewImageUrl }}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+              ) : (
+                <View className="items-center justify-center">
+                  <ImageIcon width={60} height={60} color="#9CA3AF" />
+                  <Text className="text-text-muted mt-2 font-medium">
+                    Image Not Available
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View className="mt-4 flex-row justify-end">
+              <TouchableOpacity
+                onPress={closeImagePreview}
+                className="bg-bg-button py-2 px-6 rounded-lg"
+              >
+                <Text className="text-white font-semibold text-sm">Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 };

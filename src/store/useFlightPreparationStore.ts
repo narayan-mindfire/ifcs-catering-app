@@ -60,7 +60,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       const callFlight =
         flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
           ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
+          : flightId;
       set({ isLoading: true, error: null });
       try {
         const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
@@ -99,7 +99,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       const callFlight =
         flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
           ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
+          : flightId;
       try {
         const response = await apiClient.get<
           ApiResponse<PreparationDetailData>
@@ -169,7 +169,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       const callFlight =
         flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
           ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : "a990a562-e77e-4461-82ad-bbcd003ae4b1";
+          : flightId;
       set({ isPrinting: true, error: null });
       try {
         const response = await apiClient.post<ApiResponse<PrintData>>(
