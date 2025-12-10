@@ -51,7 +51,7 @@ export interface PreparationItem {
 export interface PreparationFlagUpdatePayload {
   action: "assembly" | "seal" | "load" | "prepared";
   assemblyProcessFlag?: boolean;
-  sealNumber?: number;
+  sealTagNumber?: number | string;
   loadedTruckFlag?: boolean;
   isContentPrepared?: boolean;
 }

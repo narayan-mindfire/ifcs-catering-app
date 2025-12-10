@@ -16,9 +16,10 @@ import {
   DeliveryIcon,
   CheckIcon,
   LockOpenIcon,
-  BoxInactiveIcon,
-  StringInactiveIcon,
-  DeliveryInactiveIcon,
+  StringIconTrue,
+  BoxIconTrue,
+  CheckIconTrue,
+  DeliveryIconTrue,
   InfoIcon,
   PrintIcon,
   QrIcon,
@@ -34,11 +35,15 @@ import {
 
 import { FlightPreparationDetailsModal } from "../../components/flight-hub/FlightPreparationDetailsModal";
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
+import { SealNumberModal } from "../../components/preparation/SealNumberModal";
+import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { PreparationItem } from "../../types/preparations";
 
-// --- Helper to assign icons to dynamic names ---
+const hasUserSignature = true;
+
+// Helper to assign icons to dynamic names
 const getIconForPreparationType = (type: string) => {
   const lowerType = type?.toLowerCase() || "";
   if (lowerType.includes("bond")) return <ArchiveIcon width={20} height={20} />;
@@ -48,7 +53,7 @@ const getIconForPreparationType = (type: string) => {
   if (lowerType.includes("loading"))
     return <DresserIcon width={20} height={20} />;
   if (lowerType.includes("tray")) return <TrayIcon width={20} height={20} />;
-  return <DresserIcon width={20} height={20} />; // Default
+  return <DresserIcon width={20} height={20} />;
 };
 
 const ValidationModal = ({
@@ -67,7 +72,7 @@ const ValidationModal = ({
           <InfoIcon width={24} height={24} color="#602AF3" />
         </View>
         <Text className="text-lg font-bold text-text-primary mb-2 text-center">
-          Sequence Required
+          Action Required
         </Text>
         <Text className="text-base text-text-secondary text-center mb-5">
           {message}
@@ -83,7 +88,6 @@ const ValidationModal = ({
   </Modal>
 );
 
-// Updated Filter Component to accept dynamic data
 const MultiSelectFilter = ({
   options,
   selectedOptions,
@@ -181,7 +185,6 @@ export const PreparationsScreen: React.FC = () => {
   const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [pdfVisible, setPdfVisible] = useState(false);
-  // New state to hold dynamic PDF source
   const [pdfSource, setPdfSource] = useState<any>(null);
 
   const [validationMsg, setValidationMsg] = useState("");
@@ -193,7 +196,25 @@ export const PreparationsScreen: React.FC = () => {
   );
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 
-  // Status state for Modal
+  // Seal Number Modal
+  const [sealModalVisible, setSealModalVisible] = useState(false);
+  const [currentActionItem, setCurrentActionItem] =
+    useState<PreparationItem | null>(null);
+
+  // Confirmation Modal
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [confirmModalData, setConfirmModalData] = useState<{
+    title: string;
+    message: string;
+    actionType: "disable" | "enable";
+    onConfirm: () => void;
+  }>({
+    title: "",
+    message: "",
+    actionType: "disable",
+    onConfirm: () => {},
+  });
+
   const [selectedPrepStatus, setSelectedPrepStatus] = useState({
     isLocked: false,
     isSealed: false,
@@ -209,9 +230,10 @@ export const PreparationsScreen: React.FC = () => {
     fetchPreparations,
     printPreparation,
     isPrinting,
+    updatePreparationFlag,
+    isUpdating,
   } = useFlightPreparationStore();
 
-  // --- Fetch Data ---
   useEffect(() => {
     if (selectedFlight?.id) {
       console.log("Fetching preparations for flight:", selectedFlight.id);
@@ -220,7 +242,6 @@ export const PreparationsScreen: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFlight?.id]);
 
-  // --- Dynamic Filters Logic ---
   const filterOptions = useMemo(() => {
     const uniqueNames = Array.from(
       new Set(
@@ -245,7 +266,6 @@ export const PreparationsScreen: React.FC = () => {
     });
   };
 
-  // --- Logic ---
   const handleOpenDetailModal = (item: PreparationItem) => {
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
     const isLocked =
@@ -307,43 +327,6 @@ export const PreparationsScreen: React.FC = () => {
     });
   };
 
-  const handleSequenceCheck = (
-    stepName: "prepared" | "sealed" | "locked" | "verify" | "delivery",
-    item: PreparationItem,
-  ) => {
-    const isPrepared = !!item.isContentPrepared;
-    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
-    const isLocked =
-      item.assemblyProcessFlag === "inprogress" ||
-      item.assemblyProcessFlag === "completed";
-    const isVerified = item.assemblyProcessFlag === "completed";
-
-    let error = "";
-    switch (stepName) {
-      case "prepared":
-        break;
-      case "sealed":
-        if (!isPrepared) error = "Please complete Preparation first.";
-        break;
-      case "locked":
-        if (!isSealed) error = "Please complete Sealing first.";
-        break;
-      case "verify":
-        if (!isLocked) error = "Please complete Locking first.";
-        break;
-      case "delivery":
-        if (!isVerified) error = "Please complete Verification first.";
-        break;
-    }
-
-    if (error) {
-      setValidationMsg(error);
-      setShowValidation(true);
-    } else {
-      console.log(`Step ${stepName} clicked successfully.`);
-    }
-  };
-
   const handlePrint = async () => {
     if (!selectedFlight?.id) {
       Alert.alert("Error", "No flight selected.");
@@ -364,102 +347,283 @@ export const PreparationsScreen: React.FC = () => {
     }
   };
 
-  // --- Render Item with Highlighted Icons ---
-  const renderItem = ({ item }: { item: PreparationItem }) => {
-    // 1. Calculate Status
+  // ACTION HANDLERS
+
+  const handlePreparedAction = async (item: PreparationItem) => {
+    if (!selectedFlight?.id) return;
+
     const isPrepared = !!item.isContentPrepared;
-    const isSealed = !!item.sealTagNumber;
-    const isLocked =
+
+    if (isPrepared) {
+      // Disable preparation
+      setConfirmModalData({
+        title: "Disable Preparation",
+        message: "Are you sure you want to mark this as not prepared?",
+        actionType: "disable",
+        onConfirm: async () => {
+          setConfirmModalVisible(false);
+          const success = await updatePreparationFlag(
+            selectedFlight.id,
+            item.id,
+            {
+              action: "prepared",
+              isContentPrepared: false,
+            },
+          );
+          if (success) {
+            Alert.alert("Success", "Preparation status updated");
+          }
+        },
+      });
+      setConfirmModalVisible(true);
+    } else {
+      // Enable preparation
+      const success = await updatePreparationFlag(selectedFlight.id, item.id, {
+        action: "prepared",
+        isContentPrepared: true,
+      });
+      if (success) {
+        Alert.alert("Success", "Marked as prepared");
+      }
+    }
+  };
+
+  const handleSealAction = async (item: PreparationItem) => {
+    if (!selectedFlight?.id) return;
+
+    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+    const isAssembled = item.assemblyProcessFlag === "true"; // Logic based on renderItem
+
+    if (isSealed) {
+      // VALIDATION: Cannot turn off Seal if Assembly is still active
+      if (isAssembled) {
+        setValidationMsg("Assembly must be undone before removing the seal.");
+        setShowValidation(true);
+        return;
+      }
+
+      // Disable seal
+      setConfirmModalData({
+        title: "Remove Seal",
+        message: "Are you sure you want to remove the seal from this item?",
+        actionType: "disable",
+        onConfirm: async () => {
+          setConfirmModalVisible(false);
+          const success = await updatePreparationFlag(
+            selectedFlight.id,
+            item.id,
+            {
+              action: "seal",
+              sealTagNumber: "",
+            },
+          );
+          if (success) {
+            Alert.alert("Success", "Seal removed");
+          }
+        },
+      });
+      setConfirmModalVisible(true);
+    } else {
+      // Check if user has signature
+      if (!hasUserSignature) {
+        setValidationMsg("Please add your signature before sealing.");
+        setShowValidation(true);
+        return;
+      }
+
+      // Show seal number modal
+      setCurrentActionItem(item);
+      setSealModalVisible(true);
+    }
+  };
+
+  const handleSaveSealNumber = async (sealNumber: number) => {
+    setSealModalVisible(false);
+    if (!currentActionItem || !selectedFlight?.id) return;
+
+    const success = await updatePreparationFlag(
+      selectedFlight.id,
+      currentActionItem.id,
+      {
+        action: "seal",
+        sealTagNumber: sealNumber,
+      },
+    );
+
+    if (success) {
+      Alert.alert("Success", `Seal applied with tag number: ${sealNumber}`);
+    }
+    setCurrentActionItem(null);
+  };
+
+  const handleAssemblyAction = async (item: PreparationItem) => {
+    if (!selectedFlight?.id) return;
+
+    const isAssembled =
       item.assemblyProcessFlag === "inprogress" ||
-      item.assemblyProcessFlag === "completed";
-    const isVerified = item.assemblyProcessFlag === "completed";
-    const isDelivered = item.loadedTruckFlag === "loaded";
+      item.assemblyProcessFlag === "completed" ||
+      item.assemblyProcessFlag === "true";
 
-    // 2. Select Icons
-    const RenderBoxIcon = isPrepared ? BoxIcon : BoxInactiveIcon;
-    const RenderStringIcon = isSealed ? StringIcon : StringInactiveIcon;
-    const RenderDeliveryIcon = isDelivered
-      ? DeliveryIcon
-      : DeliveryInactiveIcon;
+    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
 
-    // 3. Define Colors
-    const lockColor = isLocked ? "#008000" : "#9CA3AF";
-    const verifyColor = isVerified ? "#008000" : "#9CA3AF";
+    if (isAssembled) {
+      // Disable assembly
+      setConfirmModalData({
+        title: "Disable Assembly",
+        message: "Are you sure you want to mark this as not assembled?",
+        actionType: "disable",
+        onConfirm: async () => {
+          setConfirmModalVisible(false);
+          const success = await updatePreparationFlag(
+            selectedFlight.id,
+            item.id,
+            {
+              action: "assembly",
+              assemblyProcessFlag: false,
+            },
+          );
+          if (success) {
+            Alert.alert("Success", "Assembly status updated");
+          }
+        },
+      });
+      setConfirmModalVisible(true);
+    } else {
+      // VALIDATION: Cannot turn on Assembly if not Sealed
+      if (!isSealed) {
+        setValidationMsg("Item must be sealed before assembly.");
+        setShowValidation(true);
+        return;
+      }
+
+      // Enable assembly
+      const success = await updatePreparationFlag(selectedFlight.id, item.id, {
+        action: "assembly",
+        assemblyProcessFlag: true,
+      });
+      if (success) {
+        Alert.alert("Success", "Marked as assembled");
+      }
+    }
+  };
+
+  const handleLoadAction = async (item: PreparationItem) => {
+    if (!selectedFlight?.id) return;
+
+    const isLoaded = item.loadedTruckFlag === "loaded";
+
+    if (isLoaded) {
+      // Disable load
+      setConfirmModalData({
+        title: "Unload Item",
+        message: "Are you sure you want to mark this as not loaded?",
+        actionType: "disable",
+        onConfirm: async () => {
+          setConfirmModalVisible(false);
+          const success = await updatePreparationFlag(
+            selectedFlight.id,
+            item.id,
+            {
+              action: "load",
+              loadedTruckFlag: false,
+            },
+          );
+          if (success) {
+            Alert.alert("Success", "Load status updated");
+          }
+        },
+      });
+      setConfirmModalVisible(true);
+    } else {
+      // Enable load
+      const success = await updatePreparationFlag(selectedFlight.id, item.id, {
+        action: "load",
+        loadedTruckFlag: true,
+      });
+      if (success) {
+        Alert.alert("Success", "Marked as loaded");
+      }
+    }
+  };
+
+  const renderItem = ({ item }: { item: PreparationItem }) => {
+    const isPrepared = !!item.isContentPrepared;
+    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+
+    const isAssembled = item.assemblyProcessFlag === "true";
+    const isLoaded = item.loadedTruckFlag === "true";
+
+    const PreparedIcon = isPrepared ? BoxIconTrue : BoxIcon;
+    const SealIcon = isSealed ? StringIconTrue : StringIcon;
+    const AssemblyIcon = isAssembled ? CheckIconTrue : CheckIcon;
+    const LoadIcon = isLoaded ? DeliveryIconTrue : DeliveryIcon;
 
     return (
       <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary bg-bg-surface">
         <View className="flex-[2] justify-center">
-          {/* UPDATED: Stowage mapping */}
           <Text className="text-lg text-text-primary font-semibold">
-            {item.stowage || item.position || "N/A"}
+            {item.stowage}
           </Text>
         </View>
         <View className="flex-[3] justify-center">
-          {/* UPDATED: Carrier mapping with fallbacks */}
           <Text className="text-lg text-text-primary">
             {item.carrier || item.name || item.nameDisplay || "N/A"}
           </Text>
         </View>
         <View className="flex-[4] flex-row justify-end items-center gap-5">
-          {/* UPDATED: Open PDF from URL */}
           <TouchableOpacity onPress={() => handleOpenPdf(item)}>
             <QrIcon height={30} width={30} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => handleSequenceCheck("prepared", item)}
+            onPress={() => handlePreparedAction(item)}
+            disabled={isUpdating}
           >
-            <RenderBoxIcon height={30} width={30} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => handleSequenceCheck("sealed", item)}>
-            <RenderStringIcon height={30} width={30} />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => handleSequenceCheck("locked", item)}>
-            <LockOpenIcon
-              height={30}
-              width={30}
-              color={lockColor}
-              style={{ opacity: isLocked ? 1 : 0.6 }}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => handleSequenceCheck("verify", item)}>
-            <CheckIcon
-              height={30}
-              width={30}
-              color={verifyColor}
-              style={{ opacity: isVerified ? 1 : 0.6 }}
-            />
+            <PreparedIcon height={30} width={30} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => handleSequenceCheck("delivery", item)}
+            onPress={() => handleSealAction(item)}
+            disabled={isUpdating}
           >
+            <SealIcon height={30} width={30} />
+          </TouchableOpacity>
+
+          <TouchableOpacity disabled={true}>
             <View style={{ position: "relative" }}>
-              <RenderDeliveryIcon height={30} width={30} />
-              <View
-                style={{
-                  position: "absolute",
-                  top: -6,
-                  right: -6,
-                  backgroundColor: isDelivered ? "#008000" : "#602AF3",
-                  borderRadius: 10,
-                  height: 18,
-                  minWidth: 18,
-                  paddingHorizontal: 3,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{ color: "white", fontSize: 10, fontWeight: "bold" }}
-                >
-                  n/a
-                </Text>
-              </View>
+              <LockOpenIcon
+                height={30}
+                width={30}
+                color={item.isLockRequired ? "#9CA3AF" : "#9CA3AF"}
+              />
+              {!item.isLockRequired && (
+                <View
+                  style={{
+                    position: "absolute",
+                    top: 14,
+                    left: 0,
+                    right: 0,
+                    height: 2,
+                    backgroundColor: "#EF4444",
+                    transform: [{ rotate: "-45deg" }],
+                  }}
+                />
+              )}
             </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handleAssemblyAction(item)}
+            disabled={isUpdating}
+          >
+            <AssemblyIcon height={30} width={30} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => handleLoadAction(item)}
+            disabled={isUpdating}
+          >
+            <LoadIcon height={30} width={30} />
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => handleOpenDetailModal(item)}>
@@ -488,7 +652,6 @@ export const PreparationsScreen: React.FC = () => {
         visible={pdfVisible}
         onClose={() => {
           setPdfVisible(false);
-          // Removed setPdfSource(null) to fix crash: [TypeError: Cannot read property 'uri' of null]
         }}
         source={pdfSource}
       />
@@ -497,6 +660,24 @@ export const PreparationsScreen: React.FC = () => {
         visible={showValidation}
         message={validationMsg}
         onClose={() => setShowValidation(false)}
+      />
+
+      <SealNumberModal
+        isOpen={sealModalVisible}
+        onClose={() => {
+          setSealModalVisible(false);
+          setCurrentActionItem(null);
+        }}
+        onSave={handleSaveSealNumber}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmModalVisible}
+        onClose={() => setConfirmModalVisible(false)}
+        onConfirm={confirmModalData.onConfirm}
+        title={confirmModalData.title}
+        message={confirmModalData.message}
+        actionType={confirmModalData.actionType}
       />
 
       <Modal
@@ -533,7 +714,6 @@ export const PreparationsScreen: React.FC = () => {
             setSelectedItem(null);
           }}
           preparationId={selectedItem.id}
-          // Use dynamic flight ID, fallback to empty string if not available
           flightId={selectedFlight?.id || ""}
           isLocked={selectedPrepStatus.isLocked}
           isSealed={selectedPrepStatus.isSealed}

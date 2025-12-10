@@ -7,7 +7,6 @@ import {
   PrintData,
 } from "../types/preparations";
 
-// Generic API Response wrapper
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -27,6 +26,7 @@ interface FlightPreparationState {
   isLoading: boolean;
   isPrinting: boolean;
   isPrepLoading: boolean;
+  isUpdating: boolean;
 
   error: string | null;
 
@@ -39,7 +39,7 @@ interface FlightPreparationState {
     flightId: string,
     preparationId: string,
     payload: PreparationFlagUpdatePayload,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   printPreparation: (
     flightId: string,
   ) => Promise<{ success: boolean; fileUrl?: string; error?: string }>;
@@ -52,11 +52,12 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     preparationDetail: null,
     isLoading: false,
     isPrepLoading: false,
+    isUpdating: false,
     error: null,
     isPrinting: false,
 
     fetchPreparations: async (flightId: string) => {
-      console.log("CALLED CALLED CALLED CALLED");
+      console.log("Fetching preparations for flight:", flightId);
       const callFlight =
         flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
           ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
@@ -93,7 +94,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       }
     },
 
-    // 2. Fetch Single Detail
     fetchPreparationById: async (flightId: string, preparationId: string) => {
       set({ isPrepLoading: true, error: null });
       const callFlight =
@@ -132,15 +132,20 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       }
     },
 
-    // 3. Update Flags
     updatePreparationFlag: async (
       flightId: string,
       preparationId: string,
       payload: PreparationFlagUpdatePayload,
-    ) => {
+    ): Promise<boolean> => {
+      set({ isUpdating: true, error: null });
+      const callFlight =
+        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+          : flightId;
       try {
+        console.log("Updating flag with payload:", payload);
         const response = await apiClient.patch<ApiResponse<PreparationItem>>(
-          `/flights/${flightId}/preparation-flags/${preparationId}`,
+          `/flights/${callFlight}/preparation-flags/${preparationId}`,
           payload,
           {
             baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
@@ -154,14 +159,23 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
             preparations: state.preparations.map((item) =>
               item.id === preparationId ? { ...item, ...updatedItem } : item,
             ),
+            isUpdating: false,
           }));
 
           console.log("Flag updated successfully");
+          return true;
         } else {
           console.error("Update failed:", response.data.message);
+          set({ isUpdating: false, error: response.data.message });
+          return false;
         }
       } catch (err: any) {
         console.error("Network error during patch:", err);
+        set({
+          isUpdating: false,
+          error: err.response?.data?.message || "Network error during update",
+        });
+        return false;
       }
     },
 
