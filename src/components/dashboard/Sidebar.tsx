@@ -29,8 +29,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
   const { selectedFlight } = useFlightData();
 
   const handleNavigate = (screen: SidebarScreenName) => {
-    if (screen === "SpotCheck" || screen === "Flights") {
+    if (screen === "Flights") {
       navigation.navigate(screen, { flightId: selectedFlight?.id });
+    } else if (screen === "SpotCheck") {
+      navigation.navigate("SpotCheckSelection");
     } else if (screen === "Memos" || screen === "Documents") {
       navigation.navigate(screen);
     }

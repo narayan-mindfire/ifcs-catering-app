@@ -14,6 +14,7 @@ import { Header } from "./src/components/dashboard/Header";
 import { ActivityIndicator } from "react-native";
 import MemoDetailScreen from "./src/screens/memos/MemoDetails";
 import CreateMemoScreen from "./src/screens/memos/CreateMemo";
+import SpotCheckSelectionScreen from "./src/screens/SpotCheckSelectionScreen";
 
 export type RootStackParamList = {
   Dashboard: undefined;
@@ -29,6 +30,7 @@ export type RootStackParamList = {
     route: string;
     date: string;
   };
+  SpotCheckSelection: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -39,7 +41,6 @@ const CustomHeader = () => {
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     // Arial: require("./assets/fonts/ARIAL.TTF"),
     Rubik: require("./assets/fonts/Rubik.ttf"),
     roboto: require("./assets/fonts/Roboto.ttf"),
@@ -65,6 +66,10 @@ export default function App() {
         <Stack.Screen name="MemoDetail" component={MemoDetailScreen} />
         <Stack.Screen name="Documents" component={DocumentsScreen} />
         <Stack.Screen name="FlightDetails" component={FlightDetailsScreen} />
+        <Stack.Screen
+          name="SpotCheckSelection"
+          component={SpotCheckSelectionScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
