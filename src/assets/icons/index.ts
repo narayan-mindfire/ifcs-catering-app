@@ -78,6 +78,10 @@ import CheckIconActive from "./checkActive.svg";
 import TrayIconActive from "./trayActive.svg";
 import FolderIcon from "./folder.svg";
 import VideoIcon from "./video.svg";
+import BoxIconTrue from "./packageTrue.svg";
+import StringIconTrue from "./signatureTrue.svg";
+import CheckIconTrue from "./checkTrue.svg";
+import DeliveryIconTrue from "./truckTrue.svg";
 // --- Export all icons together ---
 export {
   // Existing
@@ -161,4 +165,8 @@ export {
   CheckIconActive,
   TrayIconActive,
   NoFlightsIcon,
+  BoxIconTrue, // NEW
+  StringIconTrue, // NEW
+  CheckIconTrue, // NEW
+  DeliveryIconTrue,
 };

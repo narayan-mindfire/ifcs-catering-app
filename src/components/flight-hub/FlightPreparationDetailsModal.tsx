@@ -51,7 +51,6 @@ export const FlightPreparationDetailsModal: React.FC<
     null,
   );
 
-  // --- Image Preview State ---
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [previewItemName, setPreviewItemName] = useState<string>("");

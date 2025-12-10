@@ -16,7 +16,7 @@ export const StatusRow: React.FC<StatusRowProps> = ({
   const statuses = [
     { label: "Locked", icon: LockIcon, isActive: isLocked },
     { label: "Sealed", icon: StringIcon, isActive: isSealed },
-    { label: "Completed", icon: CheckIcon, isActive: isCompleted },
+    { label: "Prepared", icon: CheckIcon, isActive: isCompleted },
   ];
 
   return (
@@ -27,7 +27,6 @@ export const StatusRow: React.FC<StatusRowProps> = ({
           className={`flex-1 flex-row items-center justify-between border border-border-muted rounded-full px-3 py-2 bg-bg-tertiary`}
         >
           <View className="flex-row items-center gap-2">
-            {/* Render Icon Component or Image */}
             {typeof status.icon === "function" ? (
               <status.icon width={16} height={16} />
             ) : null}
