@@ -82,6 +82,8 @@ import BoxIconTrue from "./packageTrue.svg";
 import StringIconTrue from "./signatureTrue.svg";
 import CheckIconTrue from "./checkTrue.svg";
 import DeliveryIconTrue from "./truckTrue.svg";
+import SparkleIcon from "./sparkle.svg";
+import DocsIconDark from "./docsIconDark.svg";
 // --- Export all icons together ---
 export {
   // Existing
@@ -169,4 +171,6 @@ export {
   StringIconTrue, // NEW
   CheckIconTrue, // NEW
   DeliveryIconTrue,
+  SparkleIcon,
+  DocsIconDark,
 };

@@ -14,12 +14,12 @@ import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { useMemoStore } from "../store/useMemosStore";
 import { MemoTab } from "../types/memo";
 import {
-  ArrowIcon,
   CheckIcon,
   CheckIconActive,
-  StarIcon,
   TrayIcon,
   TrayIconActive,
+  DocsIconDark,
+  SparkleIcon,
 } from "../assets/icons";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
@@ -31,11 +31,21 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Use ref to store the timeout ID
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Debounce the search input
-  // This waits 500ms after the user stops typing before updating 'debouncedSearch'
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+    return date.toLocaleString("en-US", options);
+  };
+
   useEffect(() => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -43,7 +53,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
 
     debounceTimeout.current = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-    }, 500); // 500ms delay
+    }, 500);
 
     return () => {
       if (debounceTimeout.current) {
@@ -51,6 +61,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       }
     };
   }, [searchQuery]);
+
   useEffect(() => {
     fetchMemos(activeTab, debouncedSearch);
   }, [activeTab, debouncedSearch, fetchMemos]);
@@ -58,8 +69,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const onRefresh = useCallback(() => {
     fetchMemos(activeTab, debouncedSearch);
   }, [activeTab, debouncedSearch, fetchMemos]);
-
-  console.log("MEMOS LIST: ", memos);
 
   return (
     <View className="flex-1 bg-bg-quaternary z-0">
@@ -84,7 +93,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               className="flex-1 text-text-primary text-lg"
               placeholderTextColor="#A09CAB"
             />
-            {/* Clear Button */}
             {searchQuery.length > 0 && (
               <TouchableOpacity
                 onPress={() => setSearchQuery("")}
@@ -96,7 +104,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Visual feedback that search is "waiting" to trigger */}
         {searchQuery !== debouncedSearch && (
           <View className="absolute right-8 top-7">
             <ActivityIndicator size="small" color="#602AF3" />
@@ -114,12 +121,10 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                // Added 'flex-row' to align icon and text
                 className={`flex-1 flex-row py-2 mx-1 rounded-full items-center justify-center 
                   ${isActive ? "bg-bg-button" : ""}
                 `}
               >
-                {/* Icon Logic */}
                 <View className="mr-2">
                   {tab === "Inbox" ? (
                     isActive ? (
@@ -155,7 +160,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      {/* List Content */}
+      {/* Card Grid Content */}
       {isLoading && memos.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#602AF3" />
@@ -176,51 +181,80 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               </Text>
             </View>
           ) : (
-            // REMOVED filteredMemos, using memos directly from store
-            memos.map((memo) => {
-              const senderName = memo.sender
-                ? `${memo.sender.firstName} ${memo.sender.lastName}`
-                : "Unknown";
+            <View className="flex-row flex-wrap px-3 py-4">
+              {memos.map((memo) => {
+                const formattedDate = formatDate(memo.createdAt);
+                const isPriority = memo.priority === 3;
 
-              return (
-                <TouchableOpacity
-                  key={memo.id}
-                  onPress={() =>
-                    navigation.navigate("MemoDetail", {
-                      memoId: memo.id,
-                    })
-                  }
-                  className="flex-row items-center px-4 py-4 border-b border-border-muted bg-bg-surface"
-                >
-                  <View className="w-12 h-12 rounded-full bg-bg-tertiary items-center justify-center mr-3">
-                    <Text className="text-lg font-bold text-text-secondary">
-                      {senderName.charAt(0)}
-                    </Text>
-                  </View>
-
-                  <View className="flex-1">
-                    <Text className="text-lg font-bold text-text-primary">
-                      {senderName}
-                    </Text>
-                    <Text
-                      className="text-base text-text-tertiary mt-1"
-                      numberOfLines={1}
+                return (
+                  <TouchableOpacity
+                    key={memo.id}
+                    onPress={() =>
+                      navigation.navigate("MemoDetail", {
+                        memoId: memo.id,
+                      })
+                    }
+                    className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 p-2"
+                  >
+                    <View
+                      className={`rounded-xl p-4 ${
+                        isPriority
+                          ? "bg-[#FFDD99]/40 border-2 border-[#FFDD99]"
+                          : "bg-white border border-gray-200"
+                      }`}
                     >
-                      {memo.subject}
-                    </Text>
-                  </View>
+                      <View className="flex-row items-start justify-between mb-3">
+                        <View className="flex-row items-center flex-1">
+                          {isPriority ? (
+                            <View className="mr-2">
+                              <SparkleIcon />
+                            </View>
+                          ) : (
+                            <View className="mr-2">
+                              <DocsIconDark />
+                              {/* <SparkleIcon /> */}
+                            </View>
+                          )}
+                          <Text
+                            className="text-base font-semibold text-gray-900 flex-1"
+                            numberOfLines={1}
+                          >
+                            {memo.subject}
+                          </Text>
+                        </View>
 
-                  {memo.priority === 3 && (
-                    <View className="mr-2">
-                      <StarIcon />
+                        <View
+                          className={`px-3 py-1 rounded-md ml-2 ${
+                            memo.isRead ? "bg-green-100" : "bg-red-100"
+                          }`}
+                        >
+                          <Text
+                            className={`text-xs font-semibold ${
+                              memo.isRead ? "text-green-700" : "text-red-700"
+                            }`}
+                          >
+                            {memo.isRead ? "Read" : "Unread"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Note content */}
+                      <Text
+                        className="text-sm text-gray-600 mb-3 leading-5"
+                        numberOfLines={2}
+                      >
+                        {memo.note}
+                      </Text>
+
+                      {/* Date */}
+                      <Text className="text-xs text-gray-400">
+                        {formattedDate}
+                      </Text>
                     </View>
-                  )}
-                  <View className="w-8">
-                    <ArrowIcon />
-                  </View>
-                </TouchableOpacity>
-              );
-            })
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           )}
         </ScrollView>
       )}

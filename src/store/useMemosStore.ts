@@ -19,6 +19,7 @@ interface MemoState {
   fetchMemos: (tab: MemoTab, search?: string) => Promise<void>;
   fetchMemoById: (id: string) => Promise<void>;
   acknowledgeMemo: (id: string) => Promise<void>;
+  markAsRead: (id: string) => Promise<void>;
 }
 
 export const useMemoStore = create<MemoState>((set, get) => ({
@@ -43,11 +44,11 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         params,
         headers: { "x-user-id": CURRENT_USER_ID },
       });
-
       const flattenedMemos = response.data.data.map((item: any) => {
         if (item.memo) {
           return {
             ...item.memo,
+            isRead: item.isRead,
             sender: item.sender,
             recipients: item.recipients || [],
             isAcknowledged:
@@ -78,6 +79,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
       const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
         headers: { "x-user-id": CURRENT_USER_ID },
       });
+      console.log("MEMO: ", response.data.data);
       set({
         activeMemo: response.data.data,
         isLoading: false,
@@ -111,6 +113,34 @@ export const useMemoStore = create<MemoState>((set, get) => ({
     } catch (err: any) {
       console.error("Acknowledge Error:", err);
       throw err;
+    }
+  },
+
+  markAsRead: async (id: string) => {
+    try {
+      await apiClient.patch(
+        `/memos/${id}/read`,
+        { isRead: true },
+        { headers: { "x-user-id": CURRENT_USER_ID } },
+      );
+
+      // Update the active memo's read status
+      const currentActive = get().activeMemo;
+      if (currentActive && currentActive.id === id) {
+        set({
+          activeMemo: { ...currentActive, isRead: true },
+        });
+      }
+
+      // Update the memo in the memos list
+      set((state) => ({
+        memos: state.memos.map((m) =>
+          m.id === id ? { ...m, isRead: true } : m,
+        ),
+      }));
+    } catch (err: any) {
+      console.error("Mark as Read Error:", err);
+      // Don't throw - marking as read is not critical
     }
   },
 }));

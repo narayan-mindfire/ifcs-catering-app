@@ -51,7 +51,7 @@ export interface PreparationItem {
 export interface PreparationFlagUpdatePayload {
   action: "assembly" | "seal" | "load" | "prepared";
   assemblyProcessFlag?: boolean;
-  sealTagNumber?: number | string;
+  sealTagNumber?: number | string | null;
   loadedTruckFlag?: boolean;
   isContentPrepared?: boolean;
 }
@@ -367,3 +367,35 @@ export interface DynamicLoadingModalProps {
 }
 
 export type SelectedItemData = Meal | ProvisionItem;
+
+export interface UserSignature {
+  id: string;
+  userId: string;
+  deliveryId: string;
+  signature: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserSignatureResponse {
+  success: boolean;
+  message: string;
+  data: UserSignature[];
+  meta?: {
+    pagination: {
+      limit: number;
+      offset: number;
+    };
+  };
+}
+
+export interface AddUserSignaturePayload {
+  userId: string;
+  signature: string;
+}
+
+export interface AddUserSignatureResponse {
+  success: boolean;
+  message: string;
+  data: UserSignature;
+}

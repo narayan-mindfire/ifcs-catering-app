@@ -47,4 +47,5 @@ export interface Memo {
 
   // UI Helpers (derived properties)
   isAcknowledged?: boolean; // Derived from API logic
+  isRead?: boolean; // New property to track read/unread status
 }

@@ -26,7 +26,8 @@ interface FlightPreparationModalProps {
   preparationId: string;
   isLocked: boolean;
   isSealed: boolean;
-  isCompleted: boolean;
+  isPrepared: boolean;
+  lockRequired: boolean;
 }
 
 export const FlightPreparationDetailsModal: React.FC<
@@ -38,11 +39,13 @@ export const FlightPreparationDetailsModal: React.FC<
   preparationId,
   isLocked,
   isSealed,
-  isCompleted,
+  isPrepared,
+  lockRequired,
 }) => {
   const { preparationDetail, fetchPreparationById, isPrepLoading } =
     useFlightPreparationStore();
-
+  console.log("preparationDetail:", isPrepared);
+  console.log("lock required:", lockRequired);
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
     PackingStandardItem[]
   >([]);
@@ -168,7 +171,8 @@ export const FlightPreparationDetailsModal: React.FC<
               <StatusRow
                 isLocked={isLocked}
                 isSealed={isSealed}
-                isCompleted={isCompleted}
+                isPrepared={isPrepared}
+                lockRequired={lockRequired}
               />
 
               <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted flex-row flex-wrap gap-y-4">

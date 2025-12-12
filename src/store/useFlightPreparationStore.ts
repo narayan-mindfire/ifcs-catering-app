@@ -5,29 +5,41 @@ import {
   PreparationDetailData,
   PreparationFlagUpdatePayload,
   PrintData,
+  AddUserSignaturePayload,
+  AddUserSignatureResponse,
 } from "../types/preparations";
+
+// Define the shape based on your API response
+export interface UserSignature {
+  id: string;
+  deliveryId: string;
+  userId: string;
+  userFirstName: string;
+  userLastName: string;
+  userEmail: string;
+  userType: string;
+  userOrganization: string;
+  userBadgeNumber: string | null;
+  signature: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface ApiResponse<T> {
   success: boolean;
   data: T;
   message?: string;
-  meta?: {
-    timestamp: string;
-    limit?: number;
-    offset?: number;
-    total?: number;
-  };
 }
 
 interface FlightPreparationState {
   preparations: PreparationItem[];
   preparationDetail: PreparationDetailData | null;
+  userSignatures: UserSignature[]; // Added state to store the list
 
   isLoading: boolean;
   isPrinting: boolean;
   isPrepLoading: boolean;
   isUpdating: boolean;
-
   error: string | null;
 
   fetchPreparations: (flightId: string) => Promise<void>;
@@ -44,12 +56,26 @@ interface FlightPreparationState {
     flightId: string,
   ) => Promise<{ success: boolean; fileUrl?: string; error?: string }>;
   clearPreparationDetail: () => void;
+
+  // Signature methods
+  checkUserSignature: (
+    flightId: string,
+    deliveryId: string,
+    userId: string,
+  ) => Promise<boolean>;
+  addUserSignature: (
+    flightId: string,
+    deliveryId: string,
+    userId: string,
+    signature: string,
+  ) => Promise<boolean>;
 }
 
 export const useFlightPreparationStore = create<FlightPreparationState>(
   (set, get) => ({
     preparations: [],
     preparationDetail: null,
+    userSignatures: [], // Initialize empty
     isLoading: false,
     isPrepLoading: false,
     isUpdating: false,
@@ -67,7 +93,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
           `/flights/${callFlight}/preparations`,
           {
-            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
             params: { includeContent: true },
           },
         );
@@ -103,14 +128,8 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       try {
         const response = await apiClient.get<
           ApiResponse<PreparationDetailData>
-        >(`/flights/${callFlight}/preparations/${preparationId}`, {
-          baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
-        });
+        >(`/flights/${callFlight}/preparations/${preparationId}`);
         if (response.data.success) {
-          console.log(
-            "Preparation Detail Response:",
-            JSON.stringify(response.data.data, null, 2),
-          );
           set({
             preparationDetail: response.data.data,
             isPrepLoading: false,
@@ -132,45 +151,32 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       }
     },
 
-    updatePreparationFlag: async (
-      flightId: string,
-      preparationId: string,
-      payload: PreparationFlagUpdatePayload,
-    ): Promise<boolean> => {
+    updatePreparationFlag: async (flightId, preparationId, payload) => {
       set({ isUpdating: true, error: null });
       const callFlight =
         flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
           ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
           : flightId;
       try {
-        console.log("Updating flag with payload:", payload);
         const response = await apiClient.patch<ApiResponse<PreparationItem>>(
           `/flights/${callFlight}/preparation-flags/${preparationId}`,
           payload,
-          {
-            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
-          },
         );
 
         if (response.data.success) {
           const updatedItem = response.data.data;
-
           set((state) => ({
             preparations: state.preparations.map((item) =>
               item.id === preparationId ? { ...item, ...updatedItem } : item,
             ),
             isUpdating: false,
           }));
-
-          console.log("Flag updated successfully");
           return true;
         } else {
-          console.error("Update failed:", response.data.message);
           set({ isUpdating: false, error: response.data.message });
           return false;
         }
       } catch (err: any) {
-        console.error("Network error during patch:", err);
         set({
           isUpdating: false,
           error: err.response?.data?.message || "Network error during update",
@@ -188,10 +194,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       try {
         const response = await apiClient.post<ApiResponse<PrintData>>(
           `/flights/${callFlight}/preparations/print`,
-          {},
-          {
-            baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
-          },
         );
 
         set({ isPrinting: false });
@@ -205,7 +207,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           };
         }
       } catch (err: any) {
-        console.error("Print Error:", err);
         set({
           error:
             err.response?.data?.message || "Network error generating print",
@@ -217,6 +218,84 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
 
     clearPreparationDetail: () => {
       set({ preparationDetail: null });
+    },
+
+    // Check if user has signature for this delivery AND update state
+    checkUserSignature: async (
+      flightId: string,
+      deliveryId: string,
+      userId: string,
+    ): Promise<boolean> => {
+      try {
+        const callFlight =
+          flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+            ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+            : flightId;
+        console.log("flight id: ", callFlight);
+        console.log("delivery id: ", deliveryId);
+        console.log("user id: ", userId);
+
+        const response = await apiClient.get<any>(
+          `/flights/${callFlight}/deliveries/user/signatures`,
+          {
+            params: {
+              // deliveryId, // Commented out per your request
+              userId,
+            },
+          },
+        );
+
+        // Check success and update state with the array data
+        if (response.data.success && response.data.data) {
+          const dataArray = Array.isArray(response.data.data)
+            ? response.data.data
+            : [response.data.data];
+          console.log("User signature found, updating state:", dataArray);
+          set({ userSignatures: dataArray });
+          return true;
+        }
+
+        set({ userSignatures: [] });
+        return false;
+      } catch (err: any) {
+        console.error("Check User Signature Error:", err);
+        set({ userSignatures: [] });
+        return false;
+      }
+    },
+
+    // Add user signature
+    addUserSignature: async (
+      flightId: string,
+      deliveryId: string,
+      userId: string,
+      signature: string,
+    ): Promise<boolean> => {
+      try {
+        const payload: AddUserSignaturePayload = {
+          userId,
+          signature,
+        };
+        const callFlight =
+          flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
+            ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
+            : flightId;
+        const response = await apiClient.post<AddUserSignatureResponse>(
+          `/flights/${callFlight}/deliveries/${deliveryId}/user/signatures`,
+          payload,
+        );
+
+        if (response.data.success) {
+          console.log("User signature added successfully:", response.data.data);
+          // Optionally refresh list
+          await get().checkUserSignature(flightId, deliveryId, userId);
+          return true;
+        }
+        return false;
+      } catch (err: any) {
+        console.error("Add User Signature Error:", err);
+        return false;
+      }
     },
   }),
 );

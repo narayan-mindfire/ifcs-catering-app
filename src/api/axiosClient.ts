@@ -4,6 +4,8 @@ const apiClient = axios.create({
   // baseURL: "https://uniterative-nonvocally-retta.ngrok-free.dev/api/v1", //sagarika
   // baseURL: "https://caesural-antonina-apogeotropic.ngrok-free.dev/api/v1", //jyoti
   baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
+  // baseURL: "https://uniterative-nonvocally-retta.ngrok-free.dev/api/v1",
+  // baseURL: "http:localhost:3000/api/v1",
   // baseURL: "https://optimally-metazoal-jenae.ngrok-free.dev/api/v1",
 
   timeout: 15000,
