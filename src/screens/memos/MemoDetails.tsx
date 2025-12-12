@@ -95,14 +95,12 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     loadMemo();
   }, [memoId, fetchMemoById]);
 
-  // Mark as read after memo is loaded (only if it's unread)
   useEffect(() => {
     if (activeMemo && !activeMemo.isRead) {
       markAsRead(memoId);
     }
-  }, [activeMemo?.id]); // Only run when activeMemo.id changes
-
-  // --- Handlers ---
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMemo?.id]);
 
   const handleAcknowledge = async () => {
     if (isAcknowledged) return;

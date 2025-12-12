@@ -34,7 +34,7 @@ interface ApiResponse<T> {
 interface FlightPreparationState {
   preparations: PreparationItem[];
   preparationDetail: PreparationDetailData | null;
-  userSignatures: UserSignature[]; // Added state to store the list
+  userSignatures: UserSignature[];
 
   isLoading: boolean;
   isPrinting: boolean;
