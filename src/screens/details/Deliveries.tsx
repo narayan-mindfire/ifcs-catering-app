@@ -16,7 +16,6 @@ import SecurityComplianceTab from "../../components/flight-hub/SecurityComplianc
 import CrewComplianceTab from "../../components/flight-hub/CrewComplianceTab";
 import {
   Delivery,
-  ContentPreparer,
   SecurityCompliance,
   DriversDeclaration,
   CrewCompliance,
@@ -56,70 +55,6 @@ const DeliveriesScreen: React.FC = () => {
   }, [error]);
 
   const selectedDelivery = deliveries.find((d) => d.id === selectedDeliveryId);
-
-  const getContentPreparers = (d: Delivery): ContentPreparer[] => {
-    const list: ContentPreparer[] = [];
-
-    if (d.tsaName || d.tsaRacNumber) {
-      list.push({
-        id: `${d.id}-security`,
-        fieldPrefix: "security",
-        fullName: d.tsaName || "",
-        type: "Third Party Security Guard",
-        raicNumber: d.tsaRacNumber || "",
-        staffNumber: undefined,
-        signature: d.tsaSignature || null,
-        signedAt: d.tsaSignatureTimestampDisplay
-          ? new Date(d.tsaSignatureTimestampDisplay)
-          : null,
-      });
-    }
-    if (d.securityName || d.securityRacNumber) {
-      list.push({
-        id: `${d.id}-sec`,
-        fieldPrefix: "security",
-        fullName: d.securityName || d.fullName || "",
-        type: "Security Personnel",
-        raicNumber: d.securityRacNumber || "",
-        staffNumber: d.securityStaffNumber || undefined,
-        signature: d.securitySignature || null,
-        signedAt: d.securitySignatureTimestampDisplay
-          ? new Date(d.securitySignatureTimestampDisplay)
-          : null,
-      });
-    }
-    if (d.driverName || d.driverStaffId) {
-      list.push({
-        id: `${d.id}-driver`,
-        fieldPrefix: "driver",
-        fullName: d.driverName || "",
-        type: "Driver",
-        raicNumber: d.driverRacNumber || "",
-        staffNumber: d.driverStaffId || undefined,
-        signature: d.driverSignature || null,
-        signedAt: d.driverSignatureTimestampDisplay
-          ? new Date(d.driverSignatureTimestampDisplay)
-          : null,
-        note: undefined,
-      });
-    }
-    if (d.crewName || d.crewStaffNumber) {
-      list.push({
-        id: `${d.id}-crew`,
-        fieldPrefix: "crew",
-        fullName: d.crewName || "",
-        type: "Crew",
-        raicNumber: d.crewRacNumber || "",
-        staffNumber: d.crewStaffNumber || undefined,
-        signature: d.crewSignature || null,
-        signedAt: d.crewSignatureTimestampDisplay
-          ? new Date(d.crewSignatureTimestampDisplay)
-          : null,
-      });
-    }
-
-    return list;
-  };
 
   const getDriversDeclaration = (d: Delivery): DriversDeclaration => ({
     driverName: d.driverName || "",
@@ -466,7 +401,8 @@ const DeliveriesScreen: React.FC = () => {
 
               {activeTab === "preparers" && (
                 <ContentPreparersTab
-                  preparers={getContentPreparers(selectedDelivery)}
+                  flightId={flightId!}
+                  deliveryId={selectedDelivery.id}
                   onDeletePreparer={handleDeletePreparer}
                   onUpdateSignature={handleUpdatePreparerSignature}
                 />

@@ -1,37 +1,70 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, Image, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { SignatureModal } from "./SharedComponents";
-import { ContentPreparer } from "../../types/deliveries";
 import { DeleteIcon } from "../../assets/icons";
 import { formatDate } from "../../utils/dateFormatter";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 
 interface ContentPreparersTabProps {
-  preparers: ContentPreparer[];
-  onDeletePreparer: (id: string) => void;
-  onUpdateSignature: (id: string, signature: string) => void;
+  flightId: string;
+  deliveryId: string;
+  onDeletePreparer?: (id: string) => void;
+  onUpdateSignature?: (id: string, signature: string) => void;
 }
 
 const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
-  preparers,
+  flightId,
+  deliveryId,
   onDeletePreparer,
   onUpdateSignature,
 }) => {
-  const [showSignatureModal, setShowSignatureModal] = useState(false);
-  const [signingPreparerId, setSigningPreparerId] = useState<string | null>(
-    null,
-  );
+  const { userSignatures, checkUserSignature } = useFlightPreparationStore();
 
-  const handleSignClick = (preparerId: string) => {
-    setSigningPreparerId(preparerId);
+  const [loading, setLoading] = useState(false);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [signingUserId, setSigningUserId] = useState<string | null>(null);
+
+  // Hardcoded ID
+  const TARGET_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (flightId && deliveryId) {
+        setLoading(true);
+        await checkUserSignature(flightId, deliveryId, TARGET_USER_ID);
+        setLoading(false);
+      }
+    };
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flightId, deliveryId]);
+
+  const handleSignClick = (userId: string) => {
+    setSigningUserId(userId);
     setShowSignatureModal(true);
   };
 
   const handleSaveSignature = (signature: string) => {
-    if (signingPreparerId) {
-      onUpdateSignature(signingPreparerId, signature);
-      setSigningPreparerId(null);
+    if (signingUserId && onUpdateSignature) {
+      onUpdateSignature(signingUserId, signature);
+      setSigningUserId(null);
     }
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-bg-surface h-40">
+        <ActivityIndicator size="small" color="#000" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 border border-border-muted rounded-xl bg-bg-surface">
@@ -54,38 +87,38 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
       </View>
 
       <ScrollView className="flex-1">
-        {preparers.length > 0 ? (
-          preparers.map((preparer) => (
+        {userSignatures && userSignatures.length > 0 ? (
+          userSignatures.map((item) => (
             <View
-              key={preparer.id}
+              key={item.id}
               className="flex-row p-3 border-b border-border-muted items-center"
             >
               <Text className="flex-[2] text-text-primary text-lg">
-                {preparer.fullName}
+                {item.userFirstName} {item.userLastName}
               </Text>
               <Text className="flex-[2] text-text-primary text-lg">
-                {preparer.type}
+                {item.userType}
               </Text>
               <Text className="flex-1 text-text-primary text-lg">
-                {preparer.staffNumber || preparer.raicNumber || "-"}
+                {item.userBadgeNumber || "-"}
               </Text>
 
               <View className="flex-[2]">
-                {preparer.signature ? (
+                {item.signature ? (
                   <View className="p-1 border border-border-muted rounded-lg bg-bg-surface">
                     <Image
-                      source={{ uri: preparer.signature }}
+                      source={{ uri: item.signature }}
                       className="h-10 w-full"
                       resizeMode="contain"
                     />
-                    {preparer.signedAt && (
+                    {item.createdAt && (
                       <Text className="text-xs text-right text-text-tertiary mt-0.5">
-                        {formatDate(String(preparer.signedAt))}
+                        {formatDate(String(item.createdAt))}
                       </Text>
                     )}
                   </View>
                 ) : (
-                  <Pressable onPress={() => handleSignClick(preparer.id)}>
+                  <Pressable onPress={() => handleSignClick(item.userId)}>
                     <Text className="text-bg-button underline">
                       Click here to sign
                     </Text>
@@ -94,7 +127,9 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
               </View>
 
               <View className="flex-1 items-center">
-                <Pressable onPress={() => onDeletePreparer(preparer.id)}>
+                <Pressable
+                  onPress={() => onDeletePreparer && onDeletePreparer(item.id)}
+                >
                   {DeleteIcon ? (
                     <DeleteIcon width={24} height={24} />
                   ) : (

@@ -40,10 +40,9 @@ import { ConfirmationModal } from "../../components/common/ConfirmationModal";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { PreparationItem } from "../../types/preparations";
+import { SignatureModal } from "../../components/flight-hub/SharedComponents";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
 
-const hasUserSignature = true;
-
-// Helper to assign icons to dynamic names
 const getIconForPreparationType = (type: string) => {
   const lowerType = type?.toLowerCase() || "";
   if (lowerType.includes("bond")) return <ArchiveIcon width={20} height={20} />;
@@ -201,6 +200,10 @@ export const PreparationsScreen: React.FC = () => {
   const [currentActionItem, setCurrentActionItem] =
     useState<PreparationItem | null>(null);
 
+  // Signature Modal
+  const [signatureModalVisible, setSignatureModalVisible] = useState(false);
+  const [hasUserSignature, setHasUserSignature] = useState(false);
+
   // Confirmation Modal
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [confirmModalData, setConfirmModalData] = useState<{
@@ -232,15 +235,43 @@ export const PreparationsScreen: React.FC = () => {
     isPrinting,
     updatePreparationFlag,
     isUpdating,
+    checkUserSignature,
+    addUserSignature,
   } = useFlightPreparationStore();
+
+  const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
+    useDeliveryStore();
 
   useEffect(() => {
     if (selectedFlight?.id) {
       console.log("Fetching preparations for flight:", selectedFlight.id);
       fetchPreparations(selectedFlight.id);
+      fetchDeliveries(selectedFlight.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFlight?.id]);
+
+  // Check user signature once on component mount
+  const CURRENT_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+  useEffect(() => {
+    const checkSignature = async () => {
+      if (selectedFlight?.id && deliveries.length > 0) {
+        const deliveryId = selectedDeliveryId || deliveries[0].id;
+        const hasSignature = await checkUserSignature(
+          selectedFlight.id,
+          deliveryId,
+          CURRENT_USER_ID,
+        );
+        setHasUserSignature(hasSignature);
+        console.log("User signature check:", hasSignature);
+      }
+    };
+
+    if (deliveries.length > 0) {
+      checkSignature();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliveries, selectedFlight?.id, selectedDeliveryId]);
 
   const filterOptions = useMemo(() => {
     const uniqueNames = Array.from(
@@ -353,8 +384,18 @@ export const PreparationsScreen: React.FC = () => {
     if (!selectedFlight?.id) return;
 
     const isPrepared = !!item.isContentPrepared;
+    const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
 
     if (isPrepared) {
+      // Check if seal is active - cannot disable if next step is active
+      if (isSealed) {
+        setValidationMsg(
+          "Cannot disable preparation. Please remove seal first.",
+        );
+        setShowValidation(true);
+        return;
+      }
+
       // Disable preparation
       setConfirmModalData({
         title: "Disable Preparation",
@@ -377,7 +418,7 @@ export const PreparationsScreen: React.FC = () => {
       });
       setConfirmModalVisible(true);
     } else {
-      // Enable preparation
+      // Enable preparation - no prerequisite
       const success = await updatePreparationFlag(selectedFlight.id, item.id, {
         action: "prepared",
         isContentPrepared: true,
@@ -391,13 +432,17 @@ export const PreparationsScreen: React.FC = () => {
   const handleSealAction = async (item: PreparationItem) => {
     if (!selectedFlight?.id) return;
 
+    const isPrepared = !!item.isContentPrepared;
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
-    const isAssembled = item.assemblyProcessFlag === "true"; // Logic based on renderItem
+    const isLocked =
+      item.isLockRequired &&
+      (item.assemblyProcessFlag === "inprogress" ||
+        item.assemblyProcessFlag === "completed");
 
     if (isSealed) {
-      // VALIDATION: Cannot turn off Seal if Assembly is still active
-      if (isAssembled) {
-        setValidationMsg("Assembly must be undone before removing the seal.");
+      // Check if lock is active - cannot disable if next step is active
+      if (isLocked) {
+        setValidationMsg("Cannot remove seal. Please unlock first.");
         setShowValidation(true);
         return;
       }
@@ -414,7 +459,7 @@ export const PreparationsScreen: React.FC = () => {
             item.id,
             {
               action: "seal",
-              sealTagNumber: "",
+              sealTagNumber: null,
             },
           );
           if (success) {
@@ -424,16 +469,86 @@ export const PreparationsScreen: React.FC = () => {
       });
       setConfirmModalVisible(true);
     } else {
-      // Check if user has signature
-      if (!hasUserSignature) {
-        setValidationMsg("Please add your signature before sealing.");
+      if (!isPrepared) {
+        setValidationMsg("Please complete preparation first before sealing.");
         setShowValidation(true);
         return;
+      }
+
+      // Check if user has signature
+      if (!hasUserSignature) {
+        // --- CHANGED SECTION START ---
+        // Instead of showing validation error, we start the signature flow
+        setCurrentActionItem(item); // Store the item so we can resume sealing after signing
+        setSignatureModalVisible(true);
+        return;
+        // --- CHANGED SECTION END ---
       }
 
       // Show seal number modal
       setCurrentActionItem(item);
       setSealModalVisible(true);
+    }
+  };
+
+  const handleSaveSignature = async (signature: string) => {
+    setSignatureModalVisible(false);
+
+    if (!selectedFlight?.id) {
+      Alert.alert("Error", "No flight selected");
+      setCurrentActionItem(null);
+      return;
+    }
+    let deliveryId = selectedDeliveryId || deliveries[0]?.id;
+
+    // If no deliveries exist, create one
+    if (!deliveryId) {
+      console.log("No deliveries found, creating default delivery...");
+      try {
+        await createDelivery(selectedFlight.id, "Default Delivery");
+
+        // Wait a bit for the store to update
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        // Get the newly created delivery
+        const newDeliveries = useDeliveryStore.getState().deliveries;
+        deliveryId = newDeliveries[0]?.id;
+
+        if (!deliveryId) {
+          Alert.alert("Error", "Failed to create delivery");
+          setCurrentActionItem(null);
+          return;
+        }
+        console.log("Created delivery with ID:", deliveryId);
+      } catch (error) {
+        console.error("Error creating delivery:", error);
+        Alert.alert("Error", "Failed to create delivery");
+        setCurrentActionItem(null);
+        return;
+      }
+    }
+
+    console.log("Uploading signature to delivery:", deliveryId);
+
+    // Upload signature
+    const success = await addUserSignature(
+      selectedFlight.id,
+      deliveryId,
+      CURRENT_USER_ID,
+      signature,
+    );
+
+    if (success) {
+      setHasUserSignature(true);
+      Alert.alert("Success", "Signature saved successfully");
+
+      // Now show seal number modal
+      if (currentActionItem) {
+        setSealModalVisible(true);
+      }
+    } else {
+      Alert.alert("Error", "Failed to save signature. Please try again.");
+      setCurrentActionItem(null);
     }
   };
 
@@ -459,14 +574,18 @@ export const PreparationsScreen: React.FC = () => {
   const handleAssemblyAction = async (item: PreparationItem) => {
     if (!selectedFlight?.id) return;
 
-    const isAssembled =
-      item.assemblyProcessFlag === "inprogress" ||
-      item.assemblyProcessFlag === "completed" ||
-      item.assemblyProcessFlag === "true";
-
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+    const isAssembled = item.assemblyProcessFlag === "true";
+    const isLoaded = item.loadedTruckFlag === "true";
 
     if (isAssembled) {
+      // Check if load is active - cannot disable if next step is active
+      if (isLoaded) {
+        setValidationMsg("Cannot disable assembly. Please unload first.");
+        setShowValidation(true);
+        return;
+      }
+
       // Disable assembly
       setConfirmModalData({
         title: "Disable Assembly",
@@ -489,9 +608,9 @@ export const PreparationsScreen: React.FC = () => {
       });
       setConfirmModalVisible(true);
     } else {
-      // VALIDATION: Cannot turn on Assembly if not Sealed
+      // Check prerequisite - seal must be completed
       if (!isSealed) {
-        setValidationMsg("Item must be sealed before assembly.");
+        setValidationMsg("Please complete sealing first before assembly.");
         setShowValidation(true);
         return;
       }
@@ -510,10 +629,11 @@ export const PreparationsScreen: React.FC = () => {
   const handleLoadAction = async (item: PreparationItem) => {
     if (!selectedFlight?.id) return;
 
-    const isLoaded = item.loadedTruckFlag === "loaded";
+    const isAssembled = item.assemblyProcessFlag === "true";
+    const isLoaded = item.loadedTruckFlag === "true";
 
     if (isLoaded) {
-      // Disable load
+      // No next step after load, so we can disable freely
       setConfirmModalData({
         title: "Unload Item",
         message: "Are you sure you want to mark this as not loaded?",
@@ -535,6 +655,13 @@ export const PreparationsScreen: React.FC = () => {
       });
       setConfirmModalVisible(true);
     } else {
+      // Check prerequisite - assembly must be completed
+      if (!isAssembled) {
+        setValidationMsg("Please complete assembly first before loading.");
+        setShowValidation(true);
+        return;
+      }
+
       // Enable load
       const success = await updatePreparationFlag(selectedFlight.id, item.id, {
         action: "load",
@@ -549,10 +676,13 @@ export const PreparationsScreen: React.FC = () => {
   const renderItem = ({ item }: { item: PreparationItem }) => {
     const isPrepared = !!item.isContentPrepared;
     const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
-
     const isAssembled = item.assemblyProcessFlag === "true";
     const isLoaded = item.loadedTruckFlag === "true";
 
+    // Lock logic: if isLockRequired is true, the lock icon represents the assembly state
+    const isLockActive = item.isLockRequired && isAssembled;
+
+    // Dynamically select icons based on state
     const PreparedIcon = isPrepared ? BoxIconTrue : BoxIcon;
     const SealIcon = isSealed ? StringIconTrue : StringIcon;
     const AssemblyIcon = isAssembled ? CheckIconTrue : CheckIcon;
@@ -562,7 +692,7 @@ export const PreparationsScreen: React.FC = () => {
       <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary bg-bg-surface">
         <View className="flex-[2] justify-center">
           <Text className="text-lg text-text-primary font-semibold">
-            {item.stowage}
+            {item.stowage || item.position || "N/A"}
           </Text>
         </View>
         <View className="flex-[3] justify-center">
@@ -594,7 +724,8 @@ export const PreparationsScreen: React.FC = () => {
               <LockOpenIcon
                 height={30}
                 width={30}
-                color={item.isLockRequired ? "#9CA3AF" : "#9CA3AF"}
+                color={isLockActive ? "#008000" : "#9CA3AF"}
+                style={{ opacity: isLockActive ? 1 : 0.6 }}
               />
               {!item.isLockRequired && (
                 <View
@@ -662,6 +793,16 @@ export const PreparationsScreen: React.FC = () => {
         onClose={() => setShowValidation(false)}
       />
 
+      <SignatureModal
+        isOpen={signatureModalVisible}
+        onClose={() => {
+          setSignatureModalVisible(false);
+          setCurrentActionItem(null);
+        }}
+        onSave={handleSaveSignature}
+        title="Add Your Signature"
+      />
+
       <SealNumberModal
         isOpen={sealModalVisible}
         onClose={() => {
@@ -716,8 +857,12 @@ export const PreparationsScreen: React.FC = () => {
           preparationId={selectedItem.id}
           flightId={selectedFlight?.id || ""}
           isLocked={selectedPrepStatus.isLocked}
-          isSealed={selectedPrepStatus.isSealed}
-          isCompleted={selectedPrepStatus.isCompleted}
+          isSealed={
+            selectedItem.sealTagNumber !== null &&
+            selectedItem.sealTagNumber !== ""
+          }
+          isPrepared={selectedItem.assemblyProcessFlag === "true"}
+          lockRequired={selectedItem.isLockRequired}
         />
       )}
 
@@ -726,7 +871,7 @@ export const PreparationsScreen: React.FC = () => {
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
             <Text className="text-xl font-normal m-0.5 text-text-primary">
-              Prep Scan
+              Prep Scan what the hell
             </Text>
           </Pressable>
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">

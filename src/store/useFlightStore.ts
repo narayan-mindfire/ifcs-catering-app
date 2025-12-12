@@ -49,7 +49,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     const currentFilters = customFilters || get().filters;
 
     try {
-      // 1. Construct API Query Parameters from currentFilters (Dynamic)
       const params: Record<string, any> = {
         page: currentFilters.page,
         limit: currentFilters.limit,
@@ -85,8 +84,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
 
       // 4. Call API with Staging URL Override
       const response = await apiClient.get<FlightApiResponse>("/flights", {
-        // baseURL: "https://oman.stg.api.ifcs.aero/api/v1",
-        baseURL: "https://caesural-antonina-apogeotropic.ngrok-free.dev/api/v1", //jyoti
         params,
       });
 

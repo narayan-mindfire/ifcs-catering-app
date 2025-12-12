@@ -5,18 +5,20 @@ import { LockIcon, StringIcon, CheckIcon } from "../../assets/icons";
 interface StatusRowProps {
   isLocked: boolean;
   isSealed: boolean;
-  isCompleted: boolean;
+  isPrepared: boolean;
+  lockRequired: boolean;
 }
 
 export const StatusRow: React.FC<StatusRowProps> = ({
   isLocked,
   isSealed,
-  isCompleted,
+  isPrepared,
+  lockRequired,
 }) => {
   const statuses = [
     { label: "Locked", icon: LockIcon, isActive: isLocked },
     { label: "Sealed", icon: StringIcon, isActive: isSealed },
-    { label: "Prepared", icon: CheckIcon, isActive: isCompleted },
+    { label: "Prepared", icon: CheckIcon, isActive: isPrepared },
   ];
 
   return (
@@ -28,8 +30,27 @@ export const StatusRow: React.FC<StatusRowProps> = ({
         >
           <View className="flex-row items-center gap-2">
             {typeof status.icon === "function" ? (
-              <status.icon width={16} height={16} />
+              // 1. Create a wrapper View here to isolate the Icon context
+              <View className="relative items-center justify-center">
+                {status.label === "Locked" && !lockRequired && (
+                  <View
+                    className="absolute h-[2px] bg-red-500"
+                    style={{
+                      // 2. Center the line and make it slightly wider than the icon
+                      width: "140%",
+                      top: "50%",
+                      transform: [
+                        { translateY: -1 }, // Offset half the height (2px) to center perfectly
+                        { rotate: "-45deg" },
+                      ],
+                      zIndex: 10,
+                    }}
+                  />
+                )}
+                <status.icon width={16} height={16} />
+              </View>
             ) : null}
+
             <Text className="text-sm font-light text-text-primary">
               {status.label}
             </Text>

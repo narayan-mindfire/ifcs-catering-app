@@ -50,7 +50,7 @@ const getPriorityColor = (p: number) => {
 // ------------------------------------------------------
 const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { memoId } = route.params;
-  const { activeMemo, isLoading, fetchMemoById, acknowledgeMemo } =
+  const { activeMemo, isLoading, fetchMemoById, acknowledgeMemo, markAsRead } =
     useMemoStore();
 
   const [isRecipientModalVisible, setRecipientModalVisible] = useState(false);
@@ -87,11 +87,20 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const visibleRecipients = recipients.slice(0, 5);
   const remainingCount = recipients.length - 5;
 
+  // Fetch memo and mark as read when component mounts
   useEffect(() => {
-    fetchMemoById(memoId);
+    const loadMemo = async () => {
+      await fetchMemoById(memoId);
+    };
+    loadMemo();
   }, [memoId, fetchMemoById]);
 
-  // --- Handlers ---
+  useEffect(() => {
+    if (activeMemo && !activeMemo.isRead) {
+      markAsRead(memoId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMemo?.id]);
 
   const handleAcknowledge = async () => {
     if (isAcknowledged) return;
@@ -375,14 +384,12 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
                 {/* Recipient List */}
                 <FlatList
-                  data={sortedRecipients} // USING SORTED LIST
+                  data={sortedRecipients}
                   keyExtractor={(item) => item.userId}
                   showsVerticalScrollIndicator={false}
                   renderItem={({ item }) => {
                     const hasAck = item.isAcknowledge;
                     const timestamp = item.acknowledgedAt;
-
-                    // CHECK: Is this the current user?
                     const isCurrentUser = item.userId === CURRENT_USER_ID;
 
                     return (
