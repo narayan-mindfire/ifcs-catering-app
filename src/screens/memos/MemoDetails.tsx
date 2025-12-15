@@ -32,9 +32,14 @@ type MemoDetailScreenNavigationProp = StackNavigationProp<
 interface Props {
   route: MemoDetailScreenRouteProp;
   navigation: MemoDetailScreenNavigationProp;
+  showVersion?: boolean;
 }
 
-const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+const MemoDetailScreen: React.FC<Props> = ({
+  route,
+  navigation,
+  showVersion = false,
+}) => {
   const { memoId } = route.params;
   const { activeMemo, isLoading, fetchMemoById, acknowledgeMemo, markAsRead } =
     useMemoStore();
@@ -76,6 +81,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     if (activeMemo && !activeMemo.isRead) {
       markAsRead(memoId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMemo?.id]);
 
   const handleAcknowledge = async () => {
@@ -143,49 +149,40 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         ]}
       />
       <View className="flex-1 flex-row bg-white">
-        <View className="w-72 bg-gray-50 border-r border-gray-200 p-4">
-          <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-semibold text-gray-900">
-              Memos (4)
-            </Text>
-            <TouchableOpacity>
-              <Text className="text-sm text-gray-600 underline">Show All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View className="flex-row gap-2 mb-4">
-            <View className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
-              <TextInput
-                placeholder="Search..."
-                className="text-sm text-gray-600"
-                placeholderTextColor="#9CA3AF"
-              />
+        {showVersion && (
+          <View className="w-72 bg-gray-50 border-r border-gray-200 p-4">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-semibold text-gray-900">
+                Memos (4)
+              </Text>
+              <TouchableOpacity>
+                <Text className="text-sm text-gray-600 underline">
+                  Show All
+                </Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
-              <GearIcon width={20} height={20} />
-            </TouchableOpacity>
-            <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
-              <UploadIcon />
-            </TouchableOpacity>
-          </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <TouchableOpacity className="bg-bg-accent rounded-xl p-4 mb-2">
-              {/* <Text className="text-sm font-medium text-gray-900">
-                Memo xyz
-              </Text> */}
-            </TouchableOpacity>
-            {/* <TouchableOpacity className="p-4 mb-2">
-              <Text className="text-sm text-gray-500">Admin Memo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-4 mb-2">
-              <Text className="text-sm text-gray-500">Meal Planner Memo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="p-4 mb-2">
-              <Text className="text-sm text-gray-500">Loading Plan Change</Text>
-            </TouchableOpacity> */}
-          </ScrollView>
-        </View>
+            <View className="flex-row gap-2 mb-4">
+              <View className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
+                <TextInput
+                  placeholder="Search..."
+                  className="text-sm text-gray-600"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
+                <GearIcon width={20} height={20} />
+              </TouchableOpacity>
+              <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
+                <UploadIcon />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TouchableOpacity className="bg-bg-accent rounded-xl p-4 mb-2" />
+            </ScrollView>
+          </View>
+        )}
 
         <View className="flex-1">
           <ScrollView className="flex-1">
@@ -277,7 +274,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
               return (
                 <View key={item.userId} className="mb-6">
-                  <View className="flex-row items-center mb-3">
+                  <View className="flex-row items-center mb-1">
                     <View className="w-8 h-8 rounded-full bg-gray-200 items-center justify-center mr-3">
                       {item.picture ? (
                         <Text className="text-sm font-bold text-gray-700">
@@ -311,7 +308,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       )}
                     </TouchableOpacity>
                   ) : hasAck ? (
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row-reverse items-end gap-2">
                       <View className="w-5 h-5 bg-bg-button rounded-full items-center justify-center">
                         <Text className="text-white text-xs">✓</Text>
                       </View>
@@ -320,11 +317,9 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                       </Text>
                     </View>
                   ) : (
-                    <View className="py-3">
-                      <Text className="text-sm text-gray-400">
-                        Not yet acknowledged
-                      </Text>
-                    </View>
+                    <Text className="text-sm text-right text-gray-400">
+                      Not yet acknowledged
+                    </Text>
                   )}
                 </View>
               );

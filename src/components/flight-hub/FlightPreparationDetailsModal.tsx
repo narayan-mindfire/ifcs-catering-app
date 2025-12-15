@@ -95,7 +95,6 @@ export const FlightPreparationDetailsModal: React.FC<
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
     PackingStandardItem[]
   >([]);
-  const [activeDrawerName, setActiveDrawerName] = useState<string>("");
   const [activeDrawerIndex, setActiveDrawerIndex] = useState<number | null>(
     null,
   );
@@ -126,11 +125,9 @@ export const FlightPreparationDetailsModal: React.FC<
     onConfirm: () => {},
   });
 
-  // Validation Modal
   const [validationMsg, setValidationMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
 
-  // Local state for statuses
   const [isPrepared, setIsPrepared] = useState(initialIsPrepared);
   const [isSealed, setIsSealed] = useState(initialIsSealed);
   const [isLocked, setIsLocked] = useState(initialIsLocked);
@@ -144,7 +141,6 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [visible, flightId, preparationId]);
 
-  // Check user signature
   useEffect(() => {
     const checkSignature = async () => {
       if (flightId && deliveries.length > 0) {
@@ -162,11 +158,8 @@ export const FlightPreparationDetailsModal: React.FC<
       checkSignature();
     }
   }, [deliveries, flightId, selectedDeliveryId, visible]);
-
-  // Update local status when preparationDetail changes
   useEffect(() => {
     if (preparationDetail) {
-      setIsPrepared(!!preparationDetail.isContentPrepared);
       setIsSealed(
         !!preparationDetail.sealTagNumber &&
           preparationDetail.sealTagNumber !== "",
@@ -213,18 +206,15 @@ export const FlightPreparationDetailsModal: React.FC<
           JSON.stringify(firstContainer, null, 2),
         );
         setSelectedDrawerContents(firstContainer.items || []);
-        setActiveDrawerName(firstContainer.name);
         setActiveEquipmentName(firstContainer.name || "N/A");
         setActiveDrawerIndex(0);
       } else {
         setSelectedDrawerContents(rootItems);
-        setActiveDrawerName(parentName);
         setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
         setActiveDrawerIndex(null);
       }
     } else {
       setSelectedDrawerContents(rootItems);
-      setActiveDrawerName(parentName);
       setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
       setActiveDrawerIndex(null);
     }
@@ -241,7 +231,6 @@ export const FlightPreparationDetailsModal: React.FC<
 
     const packingStd = preparationDetail?.packingStandard;
     const rootItems = packingStd?.items || [];
-    const parentName = packingStd?.name || "Equipment Contents";
 
     setActiveDrawerIndex(drawerIndex);
 
@@ -256,13 +245,11 @@ export const FlightPreparationDetailsModal: React.FC<
         drawerData.equipmentItem?.name,
       );
       setSelectedDrawerContents(drawerData.items || []);
-      setActiveDrawerName(drawerData.name);
       setActiveEquipmentName(drawerData.name || "N/A");
       setActiveDrawerEquipmentItemName(drawerData.equipmentItem?.name || "N/A");
     } else {
       console.log("Setting root contents");
       setSelectedDrawerContents(rootItems);
-      setActiveDrawerName(parentName);
       setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
       setActiveDrawerEquipmentItemName("N/A");
     }
@@ -281,13 +268,10 @@ export const FlightPreparationDetailsModal: React.FC<
     setPreviewItemName("");
   };
 
-  // --- ACTION HANDLERS ---
-
   const handlePreparedAction = async () => {
     if (!flightId || !preparationDetail) return;
 
     if (isPrepared) {
-      // Check if seal is active
       if (isSealed) {
         setValidationMsg(
           "Cannot disable preparation. Please remove seal first.",
@@ -296,7 +280,6 @@ export const FlightPreparationDetailsModal: React.FC<
         return;
       }
 
-      // Disable preparation
       setConfirmModalData({
         title: "Disable Preparation",
         message: "Are you sure you want to mark this as not prepared?",

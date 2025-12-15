@@ -7,15 +7,12 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  Modal,
 } from "react-native";
 import { Checkbox } from "./SharedComponents";
 import { formatDate } from "../../utils/dateFormatter";
 import { PrintIcon } from "../../assets/icons";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
-
-// Make sure to import the PDF Viewer Modal
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
 
 interface ComplianceSignatureCardProps {
@@ -45,7 +42,6 @@ export const ComplianceSignatureCard: React.FC<
   const { selectedDeliveryId, printDeliverySecurityDeclaration } =
     useDeliveryStore();
 
-  // State for PDF Modal
   const [pdfVisible, setPdfVisible] = useState(false);
   const [pdfSource, setPdfSource] = useState<any>(null);
   const [isPrinting, setIsPrinting] = useState(false);
@@ -56,8 +52,6 @@ export const ComplianceSignatureCard: React.FC<
       return;
     }
 
-    // You might want to pass the deliveryId as a prop,
-    // or fallback to store's selectedDeliveryId
     if (!selectedDeliveryId) {
       Alert.alert("Error", "No delivery selected to print.");
       return;
@@ -85,7 +79,6 @@ export const ComplianceSignatureCard: React.FC<
 
   return (
     <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
-      {/* 1. Add the PDF Viewer Modal here */}
       <PdfViewerModal
         visible={pdfVisible}
         onClose={() => setPdfVisible(false)}
@@ -110,7 +103,6 @@ export const ComplianceSignatureCard: React.FC<
         {toPrint && (
           <TouchableOpacity onPress={handlePrintDelivery} disabled={isPrinting}>
             <View className="flex-row ml-2 items-center">
-              {/* 2. Show loading indicator while fetching PDF */}
               {isPrinting ? (
                 <ActivityIndicator
                   size="small"
@@ -158,7 +150,6 @@ export const ComplianceSignatureCard: React.FC<
           </View>
         </View>
       ) : (
-        /* Sign Placeholder */
         <Pressable
           className={`h-[250px] border-2 border-dashed rounded-xl justify-center items-center ${
             isCompliant
