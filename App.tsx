@@ -16,6 +16,7 @@ import { ActivityIndicator } from "react-native";
 import MemoDetailScreen from "./src/screens/memos/MemoDetails";
 import CreateMemoScreen from "./src/screens/memos/CreateMemo";
 import SpotCheckSelectionScreen from "./src/screens/spotCheck/SpotCheckSelectionScreen";
+import QRCodeScannerScreen from "./src/screens/QRCodeScannerScreen";
 
 export type RootStackParamList = {
   Dashboard: undefined;
@@ -33,6 +34,7 @@ export type RootStackParamList = {
     date: string;
   };
   SpotCheckSelection: undefined;
+  QRCodeScanner: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -74,6 +76,14 @@ export default function App() {
         <Stack.Screen
           name="SpotCheckSelection"
           component={SpotCheckSelectionScreen}
+        />
+        <Stack.Screen
+          name="QRCodeScanner"
+          component={QRCodeScannerScreen}
+          options={{
+            headerShown: false,
+            presentation: "modal",
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

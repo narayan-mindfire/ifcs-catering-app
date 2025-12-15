@@ -70,7 +70,10 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
           <TouchableOpacity
             className="flex-1 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
             activeOpacity={0.7}
-            onPress={() => console.log("Scan Flight Pressed")}
+            onPress={() => {
+              console.log("on to scanning");
+              navigation.navigate("QRCodeScanner");
+            }}
           >
             <QrIcon width={40} height={40} />
             <Text className="mt-3 text-gray-700 font-medium text-lg text-center">

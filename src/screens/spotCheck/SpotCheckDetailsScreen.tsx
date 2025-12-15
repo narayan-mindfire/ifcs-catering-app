@@ -153,14 +153,10 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
               ))}
             </View>
 
-            {/* Action Buttons Footer */}
             <View className="p-4 flex-row gap-4 border-t border-gray-100">
               <TouchableOpacity className="flex-1 bg-[#5046e5] rounded-xl py-3 flex-row items-center justify-center gap-2">
-                {/* <CheckCircleIcon color="white" width={20} height={20} /> */}
                 <Text className="text-white font-medium text-lg">Pass</Text>
               </TouchableOpacity>
-
-              {/* Fail Button - Triggers Modal */}
               <TouchableOpacity
                 onPress={() => setIsFailModalVisible(true)}
                 className="flex-1 bg-[#ef4444] rounded-xl py-3 flex-row items-center justify-center gap-2"
@@ -171,7 +167,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             </View>
           </View>
 
-          {/* Column 3: Galley Locations */}
           <View className="flex-[0.8] bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <Text className="text-lg font-medium text-text-primary mb-6">
               Galley Locations in Aircraft
@@ -223,18 +218,15 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
       </ScrollView>
 
-      {/* Render the Modal */}
       <FailReasonModal
         isVisible={isFailModalVisible}
         onClose={() => setIsFailModalVisible(false)}
         onConfirm={handleConfirmFail}
-        itemName={title || "B737 Holloware ISC-MEA"} // Pass the item name dynamically
+        itemName={title || "B737 Holloware ISC-MEA"}
       />
     </View>
   );
 };
-
-// Helper Components
 const InfoItem = ({ label, value }: { label: string; value: string }) => (
   <View className="flex-row items-center">
     <Text className="text-text-muted text-base mr-1">{label}:</Text>
