@@ -111,7 +111,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </View>
 
-      {/* Tabs */}
       <View className="flex-row items-center bg-bg-surface border-b border-border-muted">
         <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-3">
           {(["Inbox", "Acknowledged By Me"] as MemoTab[]).map((tab) => {
@@ -121,16 +120,16 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 key={tab}
                 onPress={() => setActiveTab(tab)}
-                className={`flex-1 flex-row py-2 mx-1 rounded-full items-center justify-center 
+                className={`flex-1 flex-row mx-1 rounded-full items-center justify-center 
                   ${isActive ? "bg-bg-button" : ""}
                 `}
               >
                 <View className="mr-2">
                   {tab === "Inbox" ? (
                     isActive ? (
-                      <TrayIconActive />
+                      <TrayIconActive height={40} width={40} />
                     ) : (
-                      <TrayIcon />
+                      <TrayIcon height={40} width={40} />
                     )
                   ) : isActive ? (
                     <CheckIconActive />
