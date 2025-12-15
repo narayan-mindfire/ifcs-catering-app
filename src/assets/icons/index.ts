@@ -1,4 +1,3 @@
-// --- Existing Icons ---
 import DocsIcon from "./docs.svg";
 import MemosIcon from "./memos.svg";
 import SpotIcon from "./spot.svg";
@@ -85,6 +84,7 @@ import DeliveryIconTrue from "./truckTrue.svg";
 import SparkleIcon from "./sparkle.svg";
 import DocsIconDark from "./docsIconDark.svg";
 import GearIcon from "./gear.svg";
+import NoMemoIcon from "./noMemo.svg";
 // --- Export all icons together ---
 export {
   // Existing
@@ -168,11 +168,12 @@ export {
   CheckIconActive,
   TrayIconActive,
   NoFlightsIcon,
-  BoxIconTrue, // NEW
-  StringIconTrue, // NEW
-  CheckIconTrue, // NEW
+  BoxIconTrue,
+  StringIconTrue,
+  CheckIconTrue,
   DeliveryIconTrue,
   SparkleIcon,
   DocsIconDark,
   GearIcon,
+  NoMemoIcon,
 };

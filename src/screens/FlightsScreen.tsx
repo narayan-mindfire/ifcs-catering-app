@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   ActivityIndicator,
@@ -8,7 +8,6 @@ import {
   Pressable,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -34,96 +33,98 @@ interface Props {
 }
 
 const FlightsScreen: React.FC<Props> = ({ navigation }) => {
-  const renderCount = React.useRef(0);
-  renderCount.current = renderCount.current + 1;
+  const { flightGroups, isLoading, error, fetchFlights, setFilters, filters } =
+    useFlightStore();
 
-  console.log(`FlightsScreen rendered: ${renderCount.current} times`);
-  const { flightGroups, isLoading, error, fetchFlights } = useFlightStore();
+  const [localFlightNum, setLocalFlightNum] = useState(filters.flight || "");
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(
+    filters.startDate ? new Date(filters.startDate) : new Date(),
+  );
+  const [endDate, setEndDate] = useState<Date | null>(
+    filters.endDate ? new Date(filters.endDate) : new Date(),
+  );
+
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [flightNumFilter, setFlightNumFilter] = useState("");
-  const [airlineFilter] = useState("");
+  const [activeDateField, setActiveDateField] = useState<
+    "start" | "end" | null
+  >(null);
 
   useEffect(() => {
     fetchFlights();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const formatDateToISO = (date: Date) => {
-    return date.toISOString().split("T")[0];
+  useEffect(() => {
+    const delayInput = setTimeout(() => {
+      if (localFlightNum !== filters.flight) {
+        setFilters({ flight: localFlightNum });
+      }
+    }, 500);
+    return () => clearTimeout(delayInput);
+  }, [localFlightNum, filters.flight, setFilters]);
+
+  const formatDateToISO = (date: Date) => date.toISOString().split("T")[0];
+
+  const openDatePicker = (field: "start" | "end") => {
+    setActiveDateField(field);
+    setShowDatePicker(true);
+  };
+
+  const clearDateFilter = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setFilters({ startDate: undefined, endDate: undefined });
   };
 
   const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
     if (Platform.OS === "android") {
       setShowDatePicker(false);
       if (event.type === "set" && date) {
-        setSelectedDate(date);
+        applyDateChange(date);
       }
     } else {
       if (date) {
-        setSelectedDate(date);
+        if (activeDateField === "start") setStartDate(date);
+        if (activeDateField === "end") setEndDate(date);
       }
     }
   };
 
-  const clearDate = () => {
-    setSelectedDate(null);
-    setShowDatePicker(false);
+  const applyDateChange = (date: Date) => {
+    let newStart = startDate;
+    let newEnd = endDate;
+
+    if (activeDateField === "start") {
+      setStartDate(date);
+      newStart = date;
+      if (newEnd && date > newEnd) {
+        setEndDate(date);
+        newEnd = date;
+      }
+    } else if (activeDateField === "end") {
+      setEndDate(date);
+      newEnd = date;
+      if (newStart && date < newStart) {
+        setStartDate(date);
+        newStart = date;
+      }
+    }
+    setFilters({
+      startDate: newStart ? formatDateToISO(newStart) : undefined,
+      endDate: newEnd ? formatDateToISO(newEnd) : undefined,
+    });
+
+    setActiveDateField(null);
   };
 
   const confirmDateIOS = () => {
     setShowDatePicker(false);
+    const targetDate = activeDateField === "start" ? startDate : endDate;
+    if (targetDate) {
+      applyDateChange(targetDate);
+    }
   };
-
-  // --- Filter Logic ---
-  const cleanedFlightGroups = useMemo(() => {
-    const idsInPairs = new Set<string>();
-    flightGroups.forEach((group) => {
-      if (group.length > 1) {
-        group.forEach((flight) => idsInPairs.add(flight.id));
-      }
-    });
-    return flightGroups.filter((group) => {
-      if (group.length > 1) return true;
-      const singleFlightId = group[0].id;
-      return !idsInPairs.has(singleFlightId);
-    });
-  }, [flightGroups]);
-
-  const filteredData = useMemo(() => {
-    if (!selectedDate && !flightNumFilter && !airlineFilter)
-      return cleanedFlightGroups;
-
-    const dateString = selectedDate ? formatDateToISO(selectedDate) : "";
-
-    return cleanedFlightGroups.filter((group) => {
-      return group.some((flight) => {
-        const fullFlightNum = `${flight.airline?.code || "WY"}${flight.flightNumber}`;
-        const matchesNum = flightNumFilter
-          ? fullFlightNum.toLowerCase().includes(flightNumFilter.toLowerCase())
-          : true;
-        console.log("SELECTED DATE: ", selectedDate);
-        console.log("DATE STRING: ", dateString);
-        const matchesDate = selectedDate
-          ? (flight.scheduledDeparture?.startsWith(dateString) ?? false)
-          : true;
-
-        console.log("MATCHES DATE: ", matchesDate);
-
-        const matchesAirline = airlineFilter
-          ? flight.airline?.name
-              ?.toLowerCase()
-              .includes(airlineFilter.toLowerCase()) ||
-            flight.airline?.code
-              ?.toLowerCase()
-              .includes(airlineFilter.toLowerCase())
-          : true;
-
-        return matchesNum && matchesDate && matchesAirline;
-      });
-    });
-  }, [cleanedFlightGroups, selectedDate, flightNumFilter, airlineFilter]);
 
   const renderFlightGroup = ({ item: group }: { item: Flight[] }) => {
     const isPaired = group.length > 1;
@@ -149,60 +150,64 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     { label: "Flights" },
   ];
 
-  if (isLoading && flightGroups.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
-        <ActivityIndicator size="large" color="#00529b" />
-      </SafeAreaView>
-    );
-  }
-
-  if (error && flightGroups.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 bg-bg-tertiary justify-center items-center">
-        <Text className="text-red-500 text-base">{error}</Text>
-      </SafeAreaView>
-    );
-  }
+  const showLoading = isLoading && flightGroups.length === 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-bg-tertiary">
+    <>
       <BreadCrumb items={breadcrumbItems} />
 
-      <View className="flex-row justify-between items-end px-4 py-3 bg-bg-tertiary">
-        <View>
+      <View className="px-4 py-3 bg-bg-tertiary">
+        <View className="flex-row items-center gap-2">
           <Text className="font-extrabold text-4xl text-text-primary">YUL</Text>
-        </View>
-        <View className="flex-row gap-2.5">
-          <Pressable
-            className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center"
-            onPress={() => setShowDatePicker(!showDatePicker)}
-          >
-            <Text
-              className={`px-2.5 text-base flex-1 ${
-                selectedDate ? "text-text-primary" : "text-text-tertiary"
-              }`}
+          <View className="flex-row items-center gap-2 ml-auto">
+            <Pressable
+              className="bg-bg-surface rounded-lg border border-border-secondary h-[40px] w-[120px] justify-center px-3"
+              onPress={() => openDatePicker("start")}
             >
-              {selectedDate ? formatDate(String(selectedDate)) : "Date"}
-            </Text>
-            {selectedDate && (
-              <Pressable
-                onPress={clearDate}
-                className="px-2.5 h-full justify-center"
+              <Text className="text-xs text-text-tertiary mb-0.5">From</Text>
+              <Text
+                className={`text-sm font-semibold ${
+                  startDate ? "text-text-primary" : "text-text-muted"
+                }`}
               >
-                <Text className="text-sm text-text-tertiary font-bold">✕</Text>
-              </Pressable>
-            )}
-          </Pressable>
+                {startDate ? formatDate(String(startDate)) : "Select"}
+              </Text>
+            </Pressable>
 
-          <View className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[45px] justify-center flex-row items-center">
-            <TextInput
-              className="px-2.5 text-base text-text-primary h-full flex-1"
-              placeholder="Flight #"
-              placeholderTextColor="#999"
-              value={flightNumFilter}
-              onChangeText={setFlightNumFilter}
-            />
+            <Pressable
+              className="bg-bg-surface rounded-lg border border-border-secondary h-[40px] w-[120px] justify-center px-3"
+              onPress={() => openDatePicker("end")}
+            >
+              <Text className="text-xs text-text-tertiary mb-0.5">To</Text>
+              <Text
+                className={`text-sm font-semibold ${
+                  endDate ? "text-text-primary" : "text-text-muted"
+                }`}
+              >
+                {endDate ? formatDate(String(endDate)) : "Select"}
+              </Text>
+            </Pressable>
+
+            {startDate || endDate ? (
+              <Pressable
+                className="bg-bg-button-secondary rounded-lg h-[40px] w-[40px] justify-center items-center border border-border-secondary"
+                onPress={clearDateFilter}
+              >
+                <Text className="text-text-primary font-bold">✕</Text>
+              </Pressable>
+            ) : (
+              <View className="h-[40px] w-[40px]"></View>
+            )}
+            <View className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[40px] flex-row items-center px-2">
+              <TextInput
+                className="flex-1 text-base text-text-primary h-full"
+                placeholder="Flight #"
+                placeholderTextColor="#999"
+                value={localFlightNum}
+                onChangeText={setLocalFlightNum}
+                autoCapitalize="characters"
+              />
+            </View>
           </View>
         </View>
       </View>
@@ -210,27 +215,32 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
       {showDatePicker && (
         <View className="bg-black/50 absolute top-0 left-0 right-0 bottom-0 z-[1000] justify-center items-center">
           <View className="bg-bg-surface rounded-xl p-4 shadow-lg min-w-[300px]">
+            <Text className="text-lg font-bold mb-4 text-center text-text-primary">
+              Select {activeDateField === "start" ? "Start" : "End"} Date
+            </Text>
+
             <DateTimePicker
               testID="dateTimePicker"
-              value={selectedDate || new Date()}
+              value={
+                (activeDateField === "start" ? startDate : endDate) ||
+                new Date()
+              }
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={onDateChange}
               accentColor="#602AF3"
               textColor="#602AF3"
-              style={{
-                width: "100%",
-                height: Platform.OS === "ios" ? 350 : "auto",
-              }}
+              style={{ height: Platform.OS === "ios" ? 300 : "auto" }}
             />
+
             {Platform.OS === "ios" && (
               <View className="flex-row justify-between mt-4 gap-3">
                 <Pressable
                   className="flex-1 py-3 rounded-lg items-center bg-bg-tertiary"
-                  onPress={clearDate}
+                  onPress={() => setShowDatePicker(false)}
                 >
                   <Text className="text-text-primary text-base font-semibold">
-                    Clear
+                    Cancel
                   </Text>
                 </Pressable>
                 <Pressable
@@ -247,27 +257,41 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       )}
 
-      <FlatList
-        style={{ flex: 1 }}
-        data={filteredData}
-        renderItem={renderFlightGroup}
-        keyExtractor={(group, index) => group[0]?.id || index.toString()}
-        ListHeaderComponent={<FlightListHeader />}
-        stickyHeaderIndices={[0]}
-        onRefresh={fetchFlights}
-        refreshing={isLoading}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        ListEmptyComponent={
-          !isLoading ? (
-            <View className="justify-center items-center">
-              <Text className="mt-5 text-text-muted text-base">
+      {showLoading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#00529b" />
+        </View>
+      ) : error ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-base">{error}</Text>
+          <Pressable
+            onPress={() => fetchFlights()}
+            className="mt-4 p-2 bg-blue-100 rounded"
+          >
+            <Text>Retry</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <FlatList
+          style={{ flex: 1 }}
+          data={flightGroups}
+          renderItem={renderFlightGroup}
+          keyExtractor={(group, index) => group[0]?.id || index.toString()}
+          ListHeaderComponent={<FlightListHeader />}
+          stickyHeaderIndices={[0]}
+          onRefresh={() => fetchFlights()}
+          refreshing={isLoading}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          ListEmptyComponent={
+            <View className="justify-center items-center mt-10">
+              <Text className="text-text-muted text-base">
                 No flights found matching filters.
               </Text>
             </View>
-          ) : null
-        }
-      />
-    </SafeAreaView>
+          }
+        />
+      )}
+    </>
   );
 };
 

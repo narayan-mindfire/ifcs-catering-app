@@ -2,12 +2,27 @@ export interface Aircraft {
   id: string;
   type: string;
   registration: string;
-  designator: string;
+  aircraftGroup: string | null;
+  designator: string | null;
+}
+
+export interface AircraftConfig {
+  id: string;
+  fmId: string;
+  lopa: string | null;
+  name: string;
+}
+
+export interface MealPlan {
+  id: string;
+  fmId: string;
+  name: string;
 }
 
 export interface Airline {
   id: string;
-  code: string;
+  fmId: string;
+  code: string | null;
   name: string;
   logo: string | null;
   designator: string | null;
@@ -26,19 +41,49 @@ export interface PreparationStatus {
   loadedTruckFlag: string;
 }
 
+export interface Gate {
+  id: string;
+  type: "Departure" | "Arrival" | string;
+  gateId: string | null;
+  gate: string | null;
+  gateFrom: string;
+  gateTo: string;
+  scheduledTime: string;
+  sequence: number;
+  stand: string | null;
+  standFrom: string;
+  standTo: string;
+}
+
 export interface LoadingPlan {
+  id: string;
+  fmId: string;
+  value: string;
   name: string;
-  status?: string;
-  version?: number;
+  isSetupRecord: boolean;
 }
 
 export interface Flight {
-  gate: string;
   id: string;
-  flightNumber: string;
+  fmId: string | null;
 
-  // Directions and Locations
-  direction: "ARR" | "DEP" | string | null; // Typed string union for better DX, fallback to string
+  // Flags
+  isCancelled: boolean;
+  isPrepared: boolean;
+
+  // Relations (IDs)
+  loadingPlanId: string | null;
+  menuId: string | null;
+  parentId: string | null;
+  aircraftConfigId: string | null;
+  aircraftId: string | null;
+  airlineId: string | null;
+
+  // Flight Info
+  flightNumber: string;
+  flightNumberSuffix: string | null;
+  direction: "ARR" | "DEP" | string | null;
+
   departureDestination: string;
   departureGate: string | null;
   arrivalDestination: string;
@@ -60,65 +105,72 @@ export interface Flight {
   estimatedArrivalUtc: string | null;
   actualArrivalUtc: string | null;
 
-  // Status and Flags
+  // Status & Pairing
   status: string | null;
-  isCancelled: boolean;
-  preparationStatus: PreparationStatus;
-
-  // Routes & Pairing
-  pairRoute: string | null;
   pairPosition: number;
+  pairRoute: string | null;
   pairType: string | null;
 
-  // Relations
-  aircraft: Aircraft | null;
-  airline: Airline | null;
-  passengers: PaxCounts | null; // Updated from 'any' to specific type
-  loadingPlan: LoadingPlan | null;
-
-  // Meta
+  cutoffTime: string | null;
   flightType: string | null;
   flightTypeIataCode: string | null;
-  cutoffTime: string | null;
+
+  // Nested Objects
+  departureStation: Station;
+  arrivalStation: Station;
+  aircraft: Aircraft | null;
+  aircraftConfig: AircraftConfig | null;
+  airline: Airline | null;
+  loadingPlan: LoadingPlan | null;
+  mealPlan: MealPlan | null;
+
+  passengers: any | null;
+  preparationStatus: PreparationStatus;
+  prepStatus: string;
+
+  gate: Gate | null;
+
   createdAt: string;
   updatedAt: string;
+  __sortIndex?: number;
 }
-
-// Filter Definition
 export interface FlightFilters {
-  // Search & Dates
   search?: string;
   startDate?: string;
   endDate?: string;
   isPrepared?: boolean;
 
-  // Core Attributes
   direction?: "ARR" | "DEP";
   status?: string[];
   airlineIds?: string[];
   hideCancelled?: boolean;
-  isCancelled?: boolean; // Added to match store usage
+  isCancelled?: boolean;
 
-  // Pagination
   page?: number;
   pageSize?: number;
-  limit?: number; // Added to match store usage
+  limit?: number;
 
-  // Sorting
   sortBy?: keyof Flight;
   sortOrder?: "asc" | "desc";
-  order?: "asc" | "desc"; // Added to match store usage
+  order?: "asc" | "desc";
 
-  // Specific Metadata Filters (Added from store usage)
   client?: string;
   station?: string;
   route?: string;
-  flight?: string; // for flightNumber search
+  flight?: string;
+}
+
+export interface Station {
+  code: string;
+  name: string;
+  city: string;
+  country: string;
+  timezone: string;
 }
 
 export interface FlightApiResponse {
   success: boolean;
-  data: Flight[][]; // Preserved user's structure (Array of Arrays)
+  data: Flight[][];
   meta: {
     total: number;
     page: number;

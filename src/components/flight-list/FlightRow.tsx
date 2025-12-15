@@ -4,7 +4,7 @@ import { NavigationProp } from "@react-navigation/native";
 import { Flight } from "../../types/flight";
 import { RootStackParamList } from "../../../App";
 import { ArrowIcon } from "../../assets/icons";
-import { formatDate, formatTime } from "../../utils/dateFormatter";
+import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
 import { EmairatesIcon } from "../../assets/logos";
 
 interface Props {
@@ -24,7 +24,10 @@ export const FlightRow: React.FC<Props> = ({
   isPaired,
   flightGroup = [],
 }) => {
-  // -------- FIX: Correctly compute routeText -------- //
+  // --- 1. EXTRACT TIMEZONES (Default to +00:00 if missing) ---
+  const depOffset = flight.departureStation?.timezone || "+00:00";
+  const arrOffset = flight.arrivalStation?.timezone || "+00:00";
+
   const getRouteDisplay = () => {
     if (isPaired && flightGroup.length > 1) {
       if (isFirstInGroup) {
@@ -43,12 +46,11 @@ export const FlightRow: React.FC<Props> = ({
 
   const routeText = getRouteDisplay();
 
-  // -------- FIX: Pass correct routeText + scheduledDeparture -------- //
   const handlePress = () => {
     navigation.navigate("FlightDetails", {
       flightNumber: flight.airline?.designator + flight.flightNumber,
       flightId: flight.id,
-      route: routeText, // UPDATED
+      route: routeText,
       date: flight.scheduledDeparture,
     });
   };
@@ -107,11 +109,6 @@ export const FlightRow: React.FC<Props> = ({
       </View>
 
       <View className="flex-[12] py-2.5 px-1 justify-center">
-        {/* {routeText ? (
-          <Text className="text-lg text-text-primary font-semibold">
-            {routeText}
-          </Text>
-          ) : null} */}
         <Text className="text-lg text-text-primary font-semibold">
           {flight.departureDestination} - {flight.arrivalDestination}
         </Text>
@@ -139,6 +136,7 @@ export const FlightRow: React.FC<Props> = ({
         </Text>
       </View>
 
+      {/* --- DEPARTURE COLUMN --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
         <Text
           className={`text-xs mb-0.5 uppercase ${departureData.colorClass}`}
@@ -146,24 +144,27 @@ export const FlightRow: React.FC<Props> = ({
           {departureData.label}
         </Text>
         <Text className="text-[17px] font-semibold text-black">
-          {formatTime(departureData.time)}
+          {/* Apply Departure Offset */}
+          {formatTimeWithOffset(departureData.time, depOffset)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
-          {flight.departureDestination} {flight.date}
+          {flight.departureDestination}
         </Text>
       </View>
 
+      {/* --- ARRIVAL COLUMN --- */}
       <View className="flex-[7] py-2.5 px-1 justify-center">
         <Text className={`text-xs mb-0.5 uppercase ${arrivalData.colorClass}`}>
           {arrivalData.label}
         </Text>
         <Text className="text-[17px] font-semibold text-black">
-          {formatTime(arrivalData.time)}
+          {/* Apply Arrival Offset */}
+          {formatTimeWithOffset(arrivalData.time, arrOffset)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
           {flight.arrivalDestination}{" "}
           <Text className="text-lg font-semibold text-green-500">
-            {flight.gate?.gate}
+            {flight.gate?.stand}
           </Text>
         </Text>
       </View>

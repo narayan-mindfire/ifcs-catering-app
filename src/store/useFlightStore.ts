@@ -2,18 +2,19 @@ import { create } from "zustand";
 import { Flight, FlightApiResponse, FlightFilters } from "../types/flight";
 import apiClient from "../api/axiosClient";
 
+const getTodayDateString = () => new Date().toISOString().split("T")[0];
+
 const INITIAL_FILTERS: FlightFilters = {
   page: 1,
   limit: 50,
   sortBy: "scheduledDeparture",
-  order: "desc",
-  // 1. Set main view to Today (13th)
-  startDate: "2025-12-13",
-  endDate: "2025-12-13",
+  order: "asc",
+  startDate: getTodayDateString(),
+  endDate: getTodayDateString(),
   client: "Oman Air",
-  // Remove 'flight' here so we get ALL flights for today
   isCancelled: false,
   isPrepared: false,
+  flight: "",
 };
 
 interface FlightStore {
@@ -23,9 +24,9 @@ interface FlightStore {
   isLoading: boolean;
   error: string | null;
 
-  fetchFlights: (newFilters?: FlightFilters) => Promise<void>;
-  setFilters: (newFilters: FlightFilters) => void;
-  selectFlightById: (id: string | number) => void;
+  fetchFlights: (newFilters?: Partial<FlightFilters>) => Promise<void>;
+  setFilters: (newFilters: Partial<FlightFilters>) => void;
+  selectFlightById: (id: string) => void;
 }
 
 export const useFlightStore = create<FlightStore>((set, get) => ({
@@ -35,111 +36,98 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  setFilters: (newFilters: FlightFilters) => {
-    set({ filters: newFilters });
-    get().fetchFlights(newFilters);
+  setFilters: (newFilters) => {
+    const currentFilters = get().filters;
+    const updatedFilters: FlightFilters = {
+      ...currentFilters,
+      ...newFilters,
+    };
+
+    // Reset pagination if search criteria change
+    const shouldResetPage =
+      (newFilters.startDate !== undefined &&
+        newFilters.startDate !== currentFilters.startDate) ||
+      (newFilters.endDate !== undefined &&
+        newFilters.endDate !== currentFilters.endDate) ||
+      (newFilters.flight !== undefined &&
+        newFilters.flight !== currentFilters.flight) ||
+      (newFilters.search !== undefined &&
+        newFilters.search !== currentFilters.search) ||
+      newFilters.status !== undefined ||
+      newFilters.station !== undefined ||
+      newFilters.route !== undefined ||
+      newFilters.client !== undefined;
+
+    if (shouldResetPage) {
+      updatedFilters.page = 1;
+    }
+
+    set({ filters: updatedFilters });
+    get().fetchFlights(updatedFilters);
   },
 
-  fetchFlights: async (customFilters?: FlightFilters) => {
+  fetchFlights: async (customFilters) => {
     set({ isLoading: true, error: null });
 
-    const currentFilters = customFilters || get().filters;
+    const currentFilters: FlightFilters = {
+      ...get().filters,
+      ...customFilters,
+    };
 
     try {
-      // --- PREPARE QUERY 1: Main List (Dec 13th) ---
-      const mainParams: Record<string, any> = {
+      const params: Record<string, any> = {
         page: currentFilters.page,
         limit: currentFilters.limit,
         sortBy: currentFilters.sortBy,
         order: currentFilters.order,
       };
 
-      if (currentFilters.search) mainParams.search = currentFilters.search;
-      if (currentFilters.startDate)
-        mainParams.fromDate = currentFilters.startDate;
-      if (currentFilters.endDate) mainParams.toDate = currentFilters.endDate;
-      if (currentFilters.flight)
-        mainParams.flightNumber = currentFilters.flight;
-      if (currentFilters.status) mainParams.status = currentFilters.status;
-      if (currentFilters.client) mainParams.client = currentFilters.client;
-      if (currentFilters.station) mainParams.station = currentFilters.station;
-      if (currentFilters.route) mainParams.route = currentFilters.route;
+      // ---- Map filters to API params ----
+      if (currentFilters.startDate) params.fromDate = currentFilters.startDate;
+      if (currentFilters.endDate) params.toDate = currentFilters.endDate;
+      if (currentFilters.flight) params.flightNumber = currentFilters.flight;
+      if (currentFilters.search) params.search = currentFilters.search;
+      if (currentFilters.client) params.client = currentFilters.client;
+      if (currentFilters.station) params.station = currentFilters.station;
+      if (currentFilters.route) params.route = currentFilters.route;
+      if (currentFilters.status) params.status = currentFilters.status;
 
       if (typeof currentFilters.isCancelled !== "undefined") {
-        mainParams.isCancelled = currentFilters.isCancelled;
+        params.isCancelled = currentFilters.isCancelled;
       }
+
       if (typeof currentFilters.isPrepared !== "undefined") {
-        mainParams.isPrepared = currentFilters.isPrepared;
+        params.isPrepared = currentFilters.isPrepared;
       }
 
-      // --- PREPARE QUERY 2: Specific Flight 211 (Dec 3rd) ---
-      // We only fetch this if we are on Page 1 to avoid duplicates on pagination
-      const shouldFetchSpecificFlight = currentFilters.page === 1;
-
-      const promises = [
-        apiClient.get<FlightApiResponse>("/flights", { params: mainParams }),
-      ];
-
-      if (shouldFetchSpecificFlight) {
-        promises.push(
-          apiClient.get<FlightApiResponse>("/flights", {
-            params: {
-              flightNumber: "211",
-              fromDate: "2025-12-04",
-              toDate: "2025-12-04",
-              client: "Oman Air", // Optional: keep consistency
-            },
-          }),
-        );
-      }
-
-      // --- EXECUTE ---
-      const responses = await Promise.all(promises);
-
-      const mainData = responses[0].data?.data || [];
-      const specificData = responses[1]?.data?.data || [];
-
-      // --- MERGE ---
-      // Put specific flight (211) at the END as requested
-      // We use a Set or check IDs to avoid duplicates if 211 happens to be in the main list too
-      const mergedData = [...mainData];
-
-      specificData.forEach((specialFlightGroup) => {
-        // Assuming flightGroup is Flight[] (paired) or single Flight object
-        // We check if this specific group is already in mainData to avoid duplication
-        const isDuplicate = mainData.some((mainGroup) => {
-          // Simple check: compare IDs of the first flight in the group
-          const mainId = Array.isArray(mainGroup)
-            ? mainGroup[0].id
-            : (mainGroup as any).id;
-          const specialId = Array.isArray(specialFlightGroup)
-            ? specialFlightGroup[0].id
-            : (specialFlightGroup as any).id;
-          return mainId === specialId;
-        });
-
-        if (!isDuplicate) {
-          mergedData.push(specialFlightGroup);
-        }
+      const response = await apiClient.get<FlightApiResponse>("/flights", {
+        params,
       });
 
-      console.log("Merged Flights:", mergedData);
+      const data = response.data?.data || [];
+
+      console.log("Fetched Flights:", {
+        groups: data.length,
+        params,
+      });
 
       set({
-        flightGroups: mergedData,
+        flightGroups: data,
         isLoading: false,
         filters: currentFilters,
       });
-    } catch (err: any) {
+    } catch (err) {
       console.error("Fetch Flights Error:", err);
-      set({ error: "Failed to fetch flights", isLoading: false });
+      set({
+        error: "Failed to fetch flights",
+        isLoading: false,
+      });
     }
   },
 
   selectFlightById: (id) => {
-    const { flightGroups } = get();
-    const allFlights = flightGroups.flat();
-    const foundFlight = allFlights.find((f) => f.id === id);
-    set({ selectedFlight: foundFlight || null });
+    const allFlights = get().flightGroups.flat();
+    const found = allFlights.find((f) => f.id === id) || null;
+    set({ selectedFlight: found });
   },
 }));

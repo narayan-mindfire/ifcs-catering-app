@@ -29,6 +29,7 @@ import {
   RotateRightIcon,
   ImageThinIcon,
   VideoThinIcon,
+  NoMemoIcon,
 } from "../assets/icons";
 
 const getActualMimeType = (file: DocumentFile): string => {
@@ -566,7 +567,8 @@ const MediaViewer: React.FC<{
   if (!file) {
     return (
       <View className="flex-1 bg-bg-surface rounded-xl justify-center items-center border border-border-muted ml-5">
-        <Text className="text-text-tertiary text-base">
+        <NoMemoIcon />
+        <Text className="text-text-tertiary mt-5 text-base">
           Select a document to view
         </Text>
       </View>

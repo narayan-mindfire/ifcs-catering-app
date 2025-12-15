@@ -20,6 +20,7 @@ import {
   TrayIconActive,
   DocsIconDark,
   SparkleIcon,
+  NoMemoIcon,
 } from "../assets/icons";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
@@ -172,8 +173,9 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
           }
         >
           {memos.length === 0 ? (
-            <View className="p-10 items-center">
-              <Text className="text-text-tertiary text-base">
+            <View className="p-10 mt-40 items-center">
+              <NoMemoIcon />
+              <Text className="text-text-tertiary mt-2 text-base">
                 {searchQuery
                   ? `No memos found matching "${searchQuery}"`
                   : "No Memos Found"}
