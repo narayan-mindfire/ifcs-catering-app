@@ -84,6 +84,7 @@ import CheckIconTrue from "./checkTrue.svg";
 import DeliveryIconTrue from "./truckTrue.svg";
 import SparkleIcon from "./sparkle.svg";
 import DocsIconDark from "./docsIconDark.svg";
+import GearIcon from "./gear.svg";
 // --- Export all icons together ---
 export {
   // Existing
@@ -173,4 +174,5 @@ export {
   DeliveryIconTrue,
   SparkleIcon,
   DocsIconDark,
+  GearIcon,
 };

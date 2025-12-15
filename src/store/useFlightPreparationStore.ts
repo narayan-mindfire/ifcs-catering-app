@@ -5,7 +5,6 @@ import {
   PreparationDetailData,
   PreparationFlagUpdatePayload,
   PrintData,
-  AddUserSignaturePayload,
   AddUserSignatureResponse,
 } from "../types/preparations";
 
@@ -23,6 +22,7 @@ export interface UserSignature {
   signature: string;
   createdAt: string;
   updatedAt: string;
+  raic: string | null;
 }
 
 interface ApiResponse<T> {
@@ -231,30 +231,28 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
             ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
             : flightId;
-        console.log("flight id: ", callFlight);
-        console.log("delivery id: ", deliveryId);
-        console.log("user id: ", userId);
 
         const response = await apiClient.get<any>(
           `/flights/${callFlight}/deliveries/user/signatures`,
           {
             params: {
-              // deliveryId, // Commented out per your request
               userId,
             },
           },
         );
 
-        // Check success and update state with the array data
         if (response.data.success && response.data.data) {
+          // Normalize to array
           const dataArray = Array.isArray(response.data.data)
             ? response.data.data
             : [response.data.data];
-          console.log("User signature found, updating state:", dataArray);
+
+          console.log("User signature response:", dataArray);
           set({ userSignatures: dataArray });
-          return true;
+          return dataArray.length > 0;
         }
 
+        // Fallback for no data/success: false
         set({ userSignatures: [] });
         return false;
       } catch (err: any) {
@@ -272,22 +270,29 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       signature: string,
     ): Promise<boolean> => {
       try {
-        const payload: AddUserSignaturePayload = {
+        // Clean the base64 prefix
+        const cleanSignature = signature.replace(
+          /^data:image\/[a-z]+;base64,/,
+          "",
+        );
+
+        const payload = {
           userId,
-          signature,
+          signature: cleanSignature,
         };
+
         const callFlight =
           flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
             ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
             : flightId;
+
         const response = await apiClient.post<AddUserSignatureResponse>(
-          `/flights/${callFlight}/deliveries/${deliveryId}/user/signatures`,
+          `/flights/${callFlight}/deliveries/user-signatures`,
           payload,
         );
 
         if (response.data.success) {
           console.log("User signature added successfully:", response.data.data);
-          // Optionally refresh list
           await get().checkUserSignature(flightId, deliveryId, userId);
           return true;
         }

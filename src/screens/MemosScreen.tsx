@@ -241,7 +241,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                       {/* Note content */}
                       <Text
                         className="text-sm text-gray-600 mb-3 leading-5"
-                        numberOfLines={2}
+                        numberOfLines={1}
                       >
                         {memo.note}
                       </Text>

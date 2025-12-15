@@ -33,6 +33,7 @@ export interface LoadingPlan {
 }
 
 export interface Flight {
+  gate: string;
   id: string;
   flightNumber: string;
 

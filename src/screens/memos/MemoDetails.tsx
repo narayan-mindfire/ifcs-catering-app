@@ -6,22 +6,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  Pressable,
-  Modal,
-  FlatList,
-  TouchableWithoutFeedback,
+  TextInput,
 } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { RootStackParamList } from "../../../App";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { useMemoStore } from "../../store/useMemosStore";
-import { StarIcon, UserIcon } from "../../assets/icons";
+import {
+  GearIcon,
+  SparkleIcon,
+  UploadIcon,
+  UserIcon,
+} from "../../assets/icons";
 import { formatDateDetail } from "../../utils/dateFormatter";
+import { BreadCrumb } from "../../components/common/BreadCrumbs";
 
-// --- Types ---
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -33,42 +34,22 @@ interface Props {
   navigation: MemoDetailScreenNavigationProp;
 }
 
-const getPriorityLabel = (p: number) => {
-  if (p === 3) return "High";
-  if (p === 2) return "Medium";
-  return "Low";
-};
-
-const getPriorityColor = (p: number) => {
-  if (p === 3) return "bg-red-100 text-red-700";
-  if (p === 2) return "bg-orange-100 text-orange-700";
-  return "bg-blue-100 text-blue-700";
-};
-
-// ------------------------------------------------------
-// MAIN SCREEN
-// ------------------------------------------------------
 const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { memoId } = route.params;
   const { activeMemo, isLoading, fetchMemoById, acknowledgeMemo, markAsRead } =
     useMemoStore();
 
-  const [isRecipientModalVisible, setRecipientModalVisible] = useState(false);
   const [isAckLoading, setIsAckLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
 
-  // Find current user's record
   const currentUserRecipientRecord = activeMemo?.recipients?.find(
     (r: { userId: string; isAcknowledge: boolean }) =>
       r.userId === CURRENT_USER_ID,
   );
 
   const isAcknowledged = currentUserRecipientRecord?.isAcknowledge || false;
-
-  const userAcknowledgementTime =
-    currentUserRecipientRecord?.acknowledgedAt || null;
 
   const recipients = useMemo(
     () => activeMemo?.recipients || [],
@@ -84,10 +65,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     });
   }, [recipients, CURRENT_USER_ID]);
 
-  const visibleRecipients = recipients.slice(0, 5);
-  const remainingCount = recipients.length - 5;
-
-  // Fetch memo and mark as read when component mounts
   useEffect(() => {
     const loadMemo = async () => {
       await fetchMemoById(memoId);
@@ -99,7 +76,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     if (activeMemo && !activeMemo.isRead) {
       markAsRead(memoId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMemo?.id]);
 
   const handleAcknowledge = async () => {
@@ -143,21 +119,19 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   if (isLoading || !activeMemo) {
     return (
-      <View className="flex-1 bg-bg-quaternary justify-center items-center">
+      <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#602AF3" />
       </View>
     );
   }
 
-  const senderName = activeMemo.sender
-    ? `${activeMemo.sender.firstName} ${activeMemo.sender.lastName}`
-    : "Unknown";
-  const priorityLabel = getPriorityLabel(activeMemo.priority);
-  const priorityStyle = getPriorityColor(activeMemo.priority);
-  const [bgClass, textClass] = priorityStyle.split(" ");
+  const createdTime = formatDateDetail(activeMemo.createdAt);
+  const modifiedTime = activeMemo.updatedAt
+    ? formatDateDetail(activeMemo.updatedAt)
+    : createdTime;
 
   return (
-    <View className="flex-1 bg-bg-quaternary">
+    <>
       <BreadCrumb
         items={[
           {
@@ -168,271 +142,197 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           { label: activeMemo.subject as string },
         ]}
       />
+      <View className="flex-1 flex-row bg-white">
+        <View className="w-72 bg-gray-50 border-r border-gray-200 p-4">
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="text-lg font-semibold text-gray-900">
+              Memos (4)
+            </Text>
+            <TouchableOpacity>
+              <Text className="text-sm text-gray-600 underline">Show All</Text>
+            </TouchableOpacity>
+          </View>
 
-      <ScrollView className="flex-1">
-        <Pressable className="p-5" onPress={() => {}}>
-          <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted">
-            <View className="flex-row items-start justify-between mb-4">
-              <View className="flex-row items-center flex-1">
-                <Text className="text-3xl font-bold text-text-primary mr-2">
-                  {activeMemo.subject}
-                </Text>
+          <View className="flex-row gap-2 mb-4">
+            <View className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
+              <TextInput
+                placeholder="Search..."
+                className="text-sm text-gray-600"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+            <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
+              <GearIcon width={20} height={20} />
+            </TouchableOpacity>
+            <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
+              <UploadIcon />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <TouchableOpacity className="bg-bg-accent rounded-xl p-4 mb-2">
+              {/* <Text className="text-sm font-medium text-gray-900">
+                Memo xyz
+              </Text> */}
+            </TouchableOpacity>
+            {/* <TouchableOpacity className="p-4 mb-2">
+              <Text className="text-sm text-gray-500">Admin Memo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity className="p-4 mb-2">
+              <Text className="text-sm text-gray-500">Meal Planner Memo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity className="p-4 mb-2">
+              <Text className="text-sm text-gray-500">Loading Plan Change</Text>
+            </TouchableOpacity> */}
+          </ScrollView>
+        </View>
+
+        <View className="flex-1">
+          <ScrollView className="flex-1">
+            <View className="p-8">
+              <View className="flex-row items-center justify-end mb-4">
                 {activeMemo.priority === 3 && (
-                  <View className="opacity-100">
-                    <StarIcon />
+                  <View className="bg-yellow-100 px-3 py-1.5 rounded-lg flex-row items-center gap-1.5">
+                    <SparkleIcon />
+                    <Text className="text-sm font-medium text-yellow-700">
+                      Important
+                    </Text>
                   </View>
                 )}
               </View>
 
-              <View className="ml-4 items-end">
-                {!isAcknowledged ? (
-                  <TouchableOpacity
-                    onPress={handleAcknowledge}
-                    disabled={isAckLoading}
-                    className="px-6 py-2 rounded-lg bg-bg-button"
-                  >
-                    {isAckLoading ? (
-                      <ActivityIndicator color="white" size="small" />
-                    ) : (
-                      <Text className="text-text-surface font-semibold text-base">
-                        Acknowledge
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                ) : (
-                  <View className="items-end">
-                    <View className="px-6 py-2 rounded-lg bg-bg-tertiary border border-border-muted">
-                      <Text className="text-text-tertiary font-semibold text-base">
-                        Acknowledged
-                      </Text>
-                    </View>
-                    {userAcknowledgementTime && (
-                      <Text className="text-xs text-text-tertiary mt-1.5 font-medium">
-                        On {formatDateDetail(userAcknowledgementTime)}
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-            </View>
+              <Text className="text-4xl font-bold text-gray-900 mb-3">
+                {activeMemo.subject}
+              </Text>
 
-            {/* Tags */}
-            <View className="flex-row items-center gap-2 flex-wrap mb-4">
-              <View className={`px-3 py-1 rounded-full ${bgClass}`}>
-                <Text className={`text-sm font-medium ${textClass}`}>
-                  {priorityLabel} Priority
+              <View className="flex-row items-center gap-4 mb-8">
+                <Text className="text-sm text-gray-500">
+                  Created {createdTime}
+                </Text>
+                <Text className="text-sm text-gray-400">•</Text>
+                <Text className="text-sm text-gray-500">
+                  Last Modified {modifiedTime}
                 </Text>
               </View>
-            </View>
-
-            <View className="border-t border-border-muted pt-4 mb-4">
-              <View className="flex-row items-center mb-2">
-                <Text className="text-text-tertiary text-base font-medium w-20">
-                  From:
+              <View className="mb-8">
+                <Text className="text-lg font-semibold text-gray-900 mb-4">
+                  Message
                 </Text>
-                <Text className="text-text-primary text-lg font-semibold">
-                  {senderName}
-                </Text>
-              </View>
-              <View className="flex-row items-center mb-2">
-                <Text className="text-text-tertiary text-base font-medium w-20">
-                  Date:
-                </Text>
-                <Text className="text-text-secondary text-lg">
-                  {formatDateDetail(activeMemo.createdAt)}
+                <Text className="text-base text-gray-700 leading-6">
+                  {activeMemo.note}
                 </Text>
               </View>
 
-              {/* ------------------------------------------------ */}
-              {/* ASSIGNED USERS (Triggers Modal)                  */}
-              {/* ------------------------------------------------ */}
-              <View className="flex-row items-center mt-2">
-                <Text className="text-text-tertiary text-base font-medium w-32">
-                  Assigned users:
-                </Text>
-
-                <TouchableOpacity
-                  onPress={() => setRecipientModalVisible(true)}
-                  className="flex-row items-center relative active:opacity-70"
-                >
-                  {visibleRecipients.map((rec, index) => (
-                    <View
-                      key={rec.userId || index}
-                      style={{
-                        marginLeft: index > 0 ? -12 : 0,
-                        zIndex: 10 - index,
-                      }}
-                      className="w-9 h-9 rounded-full bg-bg-accent border-2 border-bg-surface flex items-center justify-center overflow-hidden"
+              {activeMemo.attachments && activeMemo.attachments.length > 0 && (
+                <View>
+                  <Text className="text-lg font-semibold text-gray-900 mb-4">
+                    Attachments
+                  </Text>
+                  {activeMemo.attachments.map((attachment) => (
+                    <TouchableOpacity
+                      key={attachment.id}
+                      onPress={() =>
+                        handleDownload(
+                          attachment.fileUrl,
+                          attachment.fileName,
+                          attachment.id,
+                        )
+                      }
+                      className="flex-row items-center justify-between p-4 mb-3 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      {rec.picture ? (
-                        <Text className="text-xs font-bold text-text-primary">
-                          {rec.firstName.charAt(0)}
+                      <Text
+                        className="text-base text-gray-700 flex-1"
+                        numberOfLines={1}
+                      >
+                        {attachment.fileName}
+                      </Text>
+                      {downloadingId === attachment.id ? (
+                        <ActivityIndicator color="#602AF3" size="small" />
+                      ) : (
+                        <Text className="text-gray-400 text-xl ml-2">↗</Text>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        <View className="w-96 bg-white border-l border-gray-200 p-6">
+          <View className="flex-row items-center justify-between mb-6">
+            <Text className="text-lg font-semibold text-gray-900">
+              All Users
+            </Text>
+            <TouchableOpacity>
+              <Text className="text-gray-400 text-xl">⋮</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {sortedRecipients.map((item) => {
+              const hasAck = item.isAcknowledge;
+              const timestamp = item.acknowledgedAt;
+              const isCurrentUser = item.userId === CURRENT_USER_ID;
+
+              return (
+                <View key={item.userId} className="mb-6">
+                  <View className="flex-row items-center mb-3">
+                    <View className="w-8 h-8 rounded-full bg-gray-200 items-center justify-center mr-3">
+                      {item.picture ? (
+                        <Text className="text-sm font-bold text-gray-700">
+                          {item.firstName.charAt(0)}
                         </Text>
                       ) : (
                         <UserIcon />
                       )}
                     </View>
-                  ))}
+                    <Text className="text-base font-medium text-gray-900">
+                      {item.firstName} {item.lastName}
+                      {isCurrentUser ? " (You)" : ""}
+                    </Text>
+                  </View>
 
-                  {remainingCount > 0 && (
-                    <View
-                      className="w-9 h-9 rounded-full bg-bg-tertiary border-2 border-bg-surface flex items-center justify-center"
-                      style={{ marginLeft: -12, zIndex: 0 }}
+                  {isCurrentUser && !hasAck ? (
+                    <TouchableOpacity
+                      onPress={handleAcknowledge}
+                      disabled={isAckLoading}
+                      className="bg-bg-button py-3 rounded-lg flex-row items-center justify-center gap-2"
                     >
-                      <Text className="text-xs text-text-secondary font-bold">
-                        +{remainingCount}
+                      {isAckLoading ? (
+                        <ActivityIndicator color="white" size="small" />
+                      ) : (
+                        <>
+                          <Text className="text-white font-semibold text-base">
+                            Acknowledge
+                          </Text>
+                          <Text className="text-white text-lg">✓</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  ) : hasAck ? (
+                    <View className="flex-row items-center gap-2">
+                      <View className="w-5 h-5 bg-bg-button rounded-full items-center justify-center">
+                        <Text className="text-white text-xs">✓</Text>
+                      </View>
+                      <Text className="text-sm text-gray-600">
+                        {formatDateDetail(timestamp)}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View className="py-3">
+                      <Text className="text-sm text-gray-400">
+                        Not yet acknowledged
                       </Text>
                     </View>
                   )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          {/* --- Content Card --- */}
-          <View className="bg-bg-surface rounded-lg p-5 mb-4 border border-border-muted min-h-[200px]">
-            <Text className="text-xl font-bold text-text-primary mb-4">
-              Message Content
-            </Text>
-            <Text className="text-lg text-text-secondary leading-6">
-              {activeMemo.note}
-            </Text>
-          </View>
-
-          {/* --- Attachments Card --- */}
-          {activeMemo.attachments && activeMemo.attachments.length > 0 && (
-            <View className="bg-bg-surface rounded-lg p-5 border border-border-muted">
-              <Text className="text-xl font-bold text-text-primary mb-4">
-                Attachments ({activeMemo.attachments.length})
-              </Text>
-              {activeMemo.attachments.map((attachment) => (
-                <View
-                  key={attachment.id}
-                  className="flex-row items-center justify-between p-3 mb-2 bg-bg-tertiary rounded-lg border border-border-muted"
-                >
-                  <View className="flex-row items-center flex-1">
-                    <View className="w-10 h-10 bg-bg-accent rounded items-center justify-center mr-3">
-                      <Text className="text-xl">📎</Text>
-                    </View>
-                    <View className="flex-1">
-                      <Text
-                        className="text-lg font-medium text-text-primary"
-                        numberOfLines={1}
-                      >
-                        {attachment.fileName}
-                      </Text>
-                      <Text className="text-sm text-text-tertiary">
-                        {(parseInt(attachment.fileSize) / 1024).toFixed(1)} KB
-                      </Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    onPress={() =>
-                      handleDownload(
-                        attachment.fileUrl,
-                        attachment.fileName,
-                        attachment.id,
-                      )
-                    }
-                    disabled={downloadingId === attachment.id}
-                    className="bg-bg-button px-4 py-2 rounded-lg ml-2 min-w-[100px] items-center"
-                  >
-                    {downloadingId === attachment.id ? (
-                      <ActivityIndicator color="white" size="small" />
-                    ) : (
-                      <Text className="text-text-surface font-medium text-sm">
-                        Download
-                      </Text>
-                    )}
-                  </TouchableOpacity>
                 </View>
-              ))}
-            </View>
-          )}
-        </Pressable>
-      </ScrollView>
-
-      {/* ------------------------------------------------ */}
-      {/* RECIPIENT LIST MODAL                             */}
-      {/* ------------------------------------------------ */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isRecipientModalVisible}
-        onRequestClose={() => setRecipientModalVisible(false)}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => setRecipientModalVisible(false)}
-        >
-          <View className="flex-1 bg-black/50 justify-center items-center p-5">
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View className="bg-bg-surface w-full max-h-[80%] rounded-2xl p-5 shadow-xl">
-                {/* Modal Header */}
-                <View className="flex-row justify-between items-center mb-4 border-b border-border-muted pb-4">
-                  <Text className="text-xl font-bold text-text-primary">
-                    Assigned Users ({recipients.length})
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setRecipientModalVisible(false)}
-                    className="p-2 bg-bg-tertiary rounded-full"
-                  >
-                    <Text className="text-text-secondary font-bold text-xs">
-                      ✕
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Recipient List */}
-                <FlatList
-                  data={sortedRecipients}
-                  keyExtractor={(item) => item.userId}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={({ item }) => {
-                    const hasAck = item.isAcknowledge;
-                    const timestamp = item.acknowledgedAt;
-                    const isCurrentUser = item.userId === CURRENT_USER_ID;
-
-                    return (
-                      <View className="flex-row items-center py-3 border-b border-border-muted">
-                        {/* Avatar */}
-                        <View className="w-10 h-10 rounded-full bg-bg-accent items-center justify-center mr-3">
-                          {item.picture ? (
-                            <Text className="text-sm font-bold text-text-primary">
-                              {item.firstName.charAt(0)}
-                            </Text>
-                          ) : (
-                            <UserIcon />
-                          )}
-                        </View>
-
-                        {/* Details */}
-                        <View className="flex-1">
-                          <Text className="text-base font-bold text-text-primary">
-                            {item.firstName} {item.lastName}{" "}
-                            {isCurrentUser ? "(You)" : ""}
-                          </Text>
-                          <Text
-                            className={`text-sm mt-0.5 ${
-                              hasAck
-                                ? "text-green-600 font-medium"
-                                : "text-amber-600"
-                            }`}
-                          >
-                            {hasAck
-                              ? `Acknowledged: ${formatDateDetail(timestamp)}`
-                              : "Not yet acknowledged"}
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  }}
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+      </View>
+    </>
   );
 };
 

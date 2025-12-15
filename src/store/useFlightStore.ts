@@ -1,16 +1,17 @@
 import { create } from "zustand";
 import { Flight, FlightApiResponse, FlightFilters } from "../types/flight";
 import apiClient from "../api/axiosClient";
-// import { mockPreparations } from "../const/PreparationData"; // Removed as we are using real API
 
 const INITIAL_FILTERS: FlightFilters = {
   page: 1,
   limit: 50,
   sortBy: "scheduledDeparture",
   order: "desc",
-  startDate: "2025-12-03",
-  endDate: "2025-12-03",
+  // 1. Set main view to Today (13th)
+  startDate: "2025-12-13",
+  endDate: "2025-12-13",
   client: "Oman Air",
+  // Remove 'flight' here so we get ALL flights for today
   isCancelled: false,
   isPrepared: false,
 };
@@ -22,7 +23,6 @@ interface FlightStore {
   isLoading: boolean;
   error: string | null;
 
-  // Actions
   fetchFlights: (newFilters?: FlightFilters) => Promise<void>;
   setFilters: (newFilters: FlightFilters) => void;
   selectFlightById: (id: string | number) => void;
@@ -35,9 +35,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  preparations: [],
-  isPrepLoading: false,
-
   setFilters: (newFilters: FlightFilters) => {
     set({ filters: newFilters });
     get().fetchFlights(newFilters);
@@ -49,57 +46,92 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     const currentFilters = customFilters || get().filters;
 
     try {
-      const params: Record<string, any> = {
+      // --- PREPARE QUERY 1: Main List (Dec 13th) ---
+      const mainParams: Record<string, any> = {
         page: currentFilters.page,
         limit: currentFilters.limit,
         sortBy: currentFilters.sortBy,
         order: currentFilters.order,
       };
 
-      if (currentFilters.search) {
-        params.search = currentFilters.search;
-      }
+      if (currentFilters.search) mainParams.search = currentFilters.search;
+      if (currentFilters.startDate)
+        mainParams.fromDate = currentFilters.startDate;
+      if (currentFilters.endDate) mainParams.toDate = currentFilters.endDate;
+      if (currentFilters.flight)
+        mainParams.flightNumber = currentFilters.flight;
+      if (currentFilters.status) mainParams.status = currentFilters.status;
+      if (currentFilters.client) mainParams.client = currentFilters.client;
+      if (currentFilters.station) mainParams.station = currentFilters.station;
+      if (currentFilters.route) mainParams.route = currentFilters.route;
 
-      if (currentFilters.startDate) {
-        params.fromDate = currentFilters.startDate;
-      }
-
-      if (currentFilters.endDate) {
-        params.toDate = currentFilters.endDate;
-      }
-
-      if (currentFilters.flight) params.flightNumber = currentFilters.flight;
-      if (currentFilters.status) params.status = currentFilters.status;
-      if (currentFilters.client) params.client = currentFilters.client;
-      if (currentFilters.station) params.station = currentFilters.station;
-      if (currentFilters.route) params.route = currentFilters.route;
-
-      // 3. Handle Boolean Filters (explicit check for undefined)
       if (typeof currentFilters.isCancelled !== "undefined") {
-        params.isCancelled = currentFilters.isCancelled;
+        mainParams.isCancelled = currentFilters.isCancelled;
       }
       if (typeof currentFilters.isPrepared !== "undefined") {
-        params.isPrepared = currentFilters.isPrepared;
+        mainParams.isPrepared = currentFilters.isPrepared;
       }
 
-      // 4. Call API with Staging URL Override
-      const response = await apiClient.get<FlightApiResponse>("/flights", {
-        params,
+      // --- PREPARE QUERY 2: Specific Flight 211 (Dec 3rd) ---
+      // We only fetch this if we are on Page 1 to avoid duplicates on pagination
+      const shouldFetchSpecificFlight = currentFilters.page === 1;
+
+      const promises = [
+        apiClient.get<FlightApiResponse>("/flights", { params: mainParams }),
+      ];
+
+      if (shouldFetchSpecificFlight) {
+        promises.push(
+          apiClient.get<FlightApiResponse>("/flights", {
+            params: {
+              flightNumber: "211",
+              fromDate: "2025-12-04",
+              toDate: "2025-12-04",
+              client: "Oman Air", // Optional: keep consistency
+            },
+          }),
+        );
+      }
+
+      // --- EXECUTE ---
+      const responses = await Promise.all(promises);
+
+      const mainData = responses[0].data?.data || [];
+      const specificData = responses[1]?.data?.data || [];
+
+      // --- MERGE ---
+      // Put specific flight (211) at the END as requested
+      // We use a Set or check IDs to avoid duplicates if 211 happens to be in the main list too
+      const mergedData = [...mainData];
+
+      specificData.forEach((specialFlightGroup) => {
+        // Assuming flightGroup is Flight[] (paired) or single Flight object
+        // We check if this specific group is already in mainData to avoid duplication
+        const isDuplicate = mainData.some((mainGroup) => {
+          // Simple check: compare IDs of the first flight in the group
+          const mainId = Array.isArray(mainGroup)
+            ? mainGroup[0].id
+            : (mainGroup as any).id;
+          const specialId = Array.isArray(specialFlightGroup)
+            ? specialFlightGroup[0].id
+            : (specialFlightGroup as any).id;
+          return mainId === specialId;
+        });
+
+        if (!isDuplicate) {
+          mergedData.push(specialFlightGroup);
+        }
       });
 
-      const actualData = response.data?.data;
-      console.groupEnd();
+      console.log("Merged Flights:", mergedData);
 
       set({
-        flightGroups: actualData || [],
+        flightGroups: mergedData,
         isLoading: false,
         filters: currentFilters,
       });
     } catch (err: any) {
       console.error("Fetch Flights Error:", err);
-      if (err.response) {
-        console.error("Error Response Data:", err.response.data);
-      }
       set({ error: "Failed to fetch flights", isLoading: false });
     }
   },

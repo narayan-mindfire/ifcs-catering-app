@@ -797,7 +797,7 @@ export const PreparationsScreen: React.FC = () => {
         isOpen={signatureModalVisible}
         onClose={() => {
           setSignatureModalVisible(false);
-          setCurrentActionItem(null);
+          // setCurrentActionItem(null);
         }}
         onSave={handleSaveSignature}
         title="Add Your Signature"

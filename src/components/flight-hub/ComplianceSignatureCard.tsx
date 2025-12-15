@@ -1,8 +1,22 @@
-import React from "react";
-import { View, Text, Pressable, Image } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Modal,
+} from "react-native";
 import { Checkbox } from "./SharedComponents";
 import { formatDate } from "../../utils/dateFormatter";
 import { PrintIcon } from "../../assets/icons";
+import { useFlightStore } from "../../store/useFlightStore";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
+
+// Make sure to import the PDF Viewer Modal
+import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
 
 interface ComplianceSignatureCardProps {
   title: string;
@@ -27,8 +41,57 @@ export const ComplianceSignatureCard: React.FC<
   signedAt,
   onSign,
 }) => {
+  const flightId = useFlightStore((state) => state.selectedFlight?.id);
+  const { selectedDeliveryId, printDeliverySecurityDeclaration } =
+    useDeliveryStore();
+
+  // State for PDF Modal
+  const [pdfVisible, setPdfVisible] = useState(false);
+  const [pdfSource, setPdfSource] = useState<any>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrintDelivery = async () => {
+    if (!flightId) {
+      Alert.alert("Error", "Flight ID is missing.");
+      return;
+    }
+
+    // You might want to pass the deliveryId as a prop,
+    // or fallback to store's selectedDeliveryId
+    if (!selectedDeliveryId) {
+      Alert.alert("Error", "No delivery selected to print.");
+      return;
+    }
+
+    setIsPrinting(true);
+
+    const result = await printDeliverySecurityDeclaration(
+      flightId,
+      selectedDeliveryId,
+    );
+
+    setIsPrinting(false);
+
+    if (result.success && result.fileUrl) {
+      setPdfSource({ uri: result.fileUrl, cache: true });
+      setPdfVisible(true);
+    } else {
+      Alert.alert(
+        "Print Failed",
+        result.error || "Could not generate the Security Declaration PDF.",
+      );
+    }
+  };
+
   return (
     <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted p-4">
+      {/* 1. Add the PDF Viewer Modal here */}
+      <PdfViewerModal
+        visible={pdfVisible}
+        onClose={() => setPdfVisible(false)}
+        source={pdfSource}
+      />
+
       <View className="flex-row justify-between items-center mb-4 border-b border-border-muted pb-2.5">
         <Text className="text-base text-text-secondary font-semibold max-w-[80%]">
           {title}
@@ -45,10 +108,23 @@ export const ComplianceSignatureCard: React.FC<
         </View>
 
         {toPrint && (
-          <View className="flex-row ml-2">
-            <PrintIcon />
-            <Text className="text-xl text-text-primary">Print</Text>
-          </View>
+          <TouchableOpacity onPress={handlePrintDelivery} disabled={isPrinting}>
+            <View className="flex-row ml-2 items-center">
+              {/* 2. Show loading indicator while fetching PDF */}
+              {isPrinting ? (
+                <ActivityIndicator
+                  size="small"
+                  color="#602AF3"
+                  style={{ marginRight: 5 }}
+                />
+              ) : (
+                <PrintIcon />
+              )}
+              <Text className="text-xl text-text-primary ml-1">
+                {isPrinting ? "Printing..." : "Print"}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
       </View>
 

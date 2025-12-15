@@ -49,7 +49,7 @@ export const FlightRow: React.FC<Props> = ({
       flightNumber: flight.airline?.designator + flight.flightNumber,
       flightId: flight.id,
       route: routeText, // UPDATED
-      date: flight.scheduledDeparture, // UPDATED (exact date sent)
+      date: flight.scheduledDeparture,
     });
   };
 
@@ -107,11 +107,14 @@ export const FlightRow: React.FC<Props> = ({
       </View>
 
       <View className="flex-[12] py-2.5 px-1 justify-center">
-        {routeText ? (
+        {/* {routeText ? (
           <Text className="text-lg text-text-primary font-semibold">
             {routeText}
           </Text>
-        ) : null}
+          ) : null} */}
+        <Text className="text-lg text-text-primary font-semibold">
+          {flight.departureDestination} - {flight.arrivalDestination}
+        </Text>
       </View>
 
       <View className="flex-[8] py-2.5 px-1 justify-center">
@@ -146,7 +149,7 @@ export const FlightRow: React.FC<Props> = ({
           {formatTime(departureData.time)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
-          {flight.departureDestination}
+          {flight.departureDestination} {flight.date}
         </Text>
       </View>
 
@@ -158,7 +161,10 @@ export const FlightRow: React.FC<Props> = ({
           {formatTime(arrivalData.time)}
         </Text>
         <Text className="text-lg font-semibold text-bg-button">
-          {flight.arrivalDestination}
+          {flight.arrivalDestination}{" "}
+          <Text className="text-lg font-semibold text-green-500">
+            {flight.gate?.gate}
+          </Text>
         </Text>
       </View>
 
