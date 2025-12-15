@@ -4,7 +4,8 @@ import React from "react";
 import "./global.css";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import SpotCheckScreen from "./src/screens/SpotCheckScreen";
+import SpotCheckScreen from "./src/screens/spotCheck/SpotCheckScreen";
+import SpotCheckDetailsScreen from "./src/screens/spotCheck/SpotCheckDetailsScreen";
 import FlightsScreen from "./src/screens/FlightsScreen";
 import MemosScreen from "./src/screens/MemosScreen";
 import DocumentsScreen from "./src/screens/DocumentsScreen";
@@ -14,11 +15,12 @@ import { Header } from "./src/components/dashboard/Header";
 import { ActivityIndicator } from "react-native";
 import MemoDetailScreen from "./src/screens/memos/MemoDetails";
 import CreateMemoScreen from "./src/screens/memos/CreateMemo";
-import SpotCheckSelectionScreen from "./src/screens/SpotCheckSelectionScreen";
+import SpotCheckSelectionScreen from "./src/screens/spotCheck/SpotCheckSelectionScreen";
 
 export type RootStackParamList = {
   Dashboard: undefined;
   SpotCheck: { flightId: string };
+  SpotCheckDetails: { checkId: string; title: string };
   Flights: { flightId: string };
   Memos: undefined;
   MemoDetail: { memoId: string };
@@ -41,7 +43,6 @@ const CustomHeader = () => {
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    // Arial: require("./assets/fonts/ARIAL.TTF"),
     Rubik: require("./assets/fonts/Rubik.ttf"),
     roboto: require("./assets/fonts/Roboto.ttf"),
   });
@@ -62,6 +63,10 @@ export default function App() {
         <Stack.Screen name="CreateMemo" component={CreateMemoScreen} />
         <Stack.Screen name="Flights" component={FlightsScreen} />
         <Stack.Screen name="SpotCheck" component={SpotCheckScreen} />
+        <Stack.Screen
+          name="SpotCheckDetails"
+          component={SpotCheckDetailsScreen}
+        />
         <Stack.Screen name="Memos" component={MemosScreen} />
         <Stack.Screen name="MemoDetail" component={MemoDetailScreen} />
         <Stack.Screen name="Documents" component={DocumentsScreen} />
