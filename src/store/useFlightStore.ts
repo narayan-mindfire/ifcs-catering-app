@@ -89,6 +89,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         isLoading: false,
         isRefreshing: false,
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       set({
         error: "Failed to fetch flights",
