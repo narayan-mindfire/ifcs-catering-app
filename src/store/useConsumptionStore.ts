@@ -8,7 +8,6 @@ import {
 import { consumptionService } from "../services/consumptionService";
 
 interface ConsumptionTrackingStore {
-  // State
   records: ConsumptionTrackingRecord[];
   selectedRecord: ConsumptionTrackingRecord | null;
   isLoading: boolean;

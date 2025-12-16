@@ -14,7 +14,7 @@ const INITIAL_FILTERS: FlightFilters = {
   client: "Oman Air",
   isCancelled: false,
   isPrepared: false,
-  flight: "211",
+  flight: "",
 };
 
 interface FlightStore {
@@ -22,9 +22,14 @@ interface FlightStore {
   selectedFlight: Flight | null;
   filters: FlightFilters;
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
 
-  fetchFlights: (newFilters?: Partial<FlightFilters>) => Promise<void>;
+  fetchFlights: (
+    newFilters?: Partial<FlightFilters>,
+    isRefresh?: boolean,
+  ) => Promise<void>;
+
   setFilters: (newFilters: Partial<FlightFilters>) => void;
   selectFlightById: (id: string) => void;
 }
@@ -34,6 +39,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   selectedFlight: null,
   filters: INITIAL_FILTERS,
   isLoading: false,
+  isRefreshing: false,
   error: null,
 
   setFilters: (newFilters) => {
@@ -62,35 +68,32 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     }
 
     set({ filters: updatedFilters });
-    get().fetchFlights(updatedFilters);
+    get().fetchFlights(updatedFilters, false);
   },
 
-  fetchFlights: async (customFilters) => {
-    set({ isLoading: true, error: null });
-
-    const currentFilters: FlightFilters = {
-      ...get().filters,
-      ...customFilters,
-    };
+  fetchFlights: async (customFilters, isRefresh = false) => {
+    set({
+      isLoading: !isRefresh,
+      isRefreshing: isRefresh,
+      error: null,
+    });
 
     try {
-      const data = await flightService.getFlights(currentFilters);
-
-      console.log("Fetched Flights:", {
-        groups: data.length,
-        filters: currentFilters,
+      const data = await flightService.getFlights({
+        ...get().filters,
+        ...customFilters,
       });
 
       set({
         flightGroups: data,
         isLoading: false,
-        filters: currentFilters,
+        isRefreshing: false,
       });
-    } catch (err) {
-      console.error("Fetch Flights Error:", err);
+    } catch (e) {
       set({
         error: "Failed to fetch flights",
         isLoading: false,
+        isRefreshing: false,
       });
     }
   },

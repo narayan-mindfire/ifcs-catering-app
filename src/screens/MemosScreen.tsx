@@ -1,29 +1,51 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { StackScreenProps } from "@react-navigation/stack";
-import { RootStackParamList } from "../../App";
+
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { RootStackParamList } from "../navigation/AppNavigator";
 import { useMemoStore } from "../store/useMemosStore";
 import { MemoTab } from "../types/memo";
 import {
   CheckIcon,
   CheckIconActive,
+  DocsIconDark,
+  NoMemoIcon,
+  SparkleIcon,
   TrayIcon,
   TrayIconActive,
-  DocsIconDark,
-  SparkleIcon,
-  NoMemoIcon,
 } from "../assets/icons";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  };
+  return date.toLocaleString("en-US", options);
+};
+
+const TABS: MemoTab[] = ["Inbox", "Acknowledged By Me"];
 
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos, isLoading } = useMemoStore();
@@ -33,19 +55,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    };
-    return date.toLocaleString("en-US", options);
-  };
 
   useEffect(() => {
     if (debounceTimeout.current) {
@@ -71,19 +80,28 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
     fetchMemos(activeTab, debouncedSearch);
   }, [activeTab, debouncedSearch, fetchMemos]);
 
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+  }, []);
+
+  const handleTabChange = useCallback((tab: MemoTab) => {
+    setActiveTab(tab);
+  }, []);
+
+  const breadcrumbs = useMemo(
+    () => [
+      {
+        label: "Dashboard",
+        onPress: () => navigation.navigate("Dashboard"),
+      },
+      { label: "Memos" },
+    ],
+    [navigation],
+  );
+
   return (
     <View className="flex-1 bg-bg-quaternary z-0">
-      <BreadCrumb
-        items={[
-          {
-            label: "Dashboard",
-            onPress: () => navigation.navigate("Dashboard"),
-          },
-          { label: "Memos" },
-        ]}
-      />
-
-      {/* Search Bar */}
+      <BreadCrumb items={breadcrumbs} />
       <View className="px-5 py-4 bg-bg-surface z-10">
         <View className="flex-row items-center gap-3">
           <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-3">
@@ -95,10 +113,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               placeholderTextColor="#A09CAB"
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setSearchQuery("")}
-                className="ml-2"
-              >
+              <TouchableOpacity onPress={handleClearSearch} className="ml-2">
                 <Text className="text-text-tertiary text-xl">✕</Text>
               </TouchableOpacity>
             )}
@@ -114,13 +129,13 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
 
       <View className="flex-row items-center bg-bg-surface border-b border-border-muted">
         <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-3">
-          {(["Inbox", "Acknowledged By Me"] as MemoTab[]).map((tab) => {
+          {TABS.map((tab) => {
             const isActive = activeTab === tab;
 
             return (
               <TouchableOpacity
                 key={tab}
-                onPress={() => setActiveTab(tab)}
+                onPress={() => handleTabChange(tab)}
                 className={`flex-1 flex-row mx-1 rounded-full items-center justify-center 
                   ${isActive ? "bg-bg-button" : ""}
                 `}
@@ -160,7 +175,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Card Grid Content */}
       {isLoading && memos.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#602AF3" />
@@ -213,7 +227,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                           ) : (
                             <View className="mr-2">
                               <DocsIconDark />
-                              {/* <SparkleIcon /> */}
                             </View>
                           )}
                           <Text
@@ -239,7 +252,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                         </View>
                       </View>
 
-                      {/* Note content */}
                       <Text
                         className="text-sm text-gray-600 mb-3 leading-5"
                         numberOfLines={1}
@@ -247,7 +259,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                         {memo.note}
                       </Text>
 
-                      {/* Date */}
                       <Text className="text-xs text-gray-400">
                         {formattedDate}
                       </Text>
