@@ -194,15 +194,30 @@ export interface PackingStandardContainer {
 
 export interface PackingStandardItem {
   id: string;
-  itemId: string;
-  name: string;
-  code: string;
-  picture?: string | null;
-  description: string | null;
-  quantity: number;
+
+  fmId?: string | null;
+
+  packingStandardId?: string | null;
+  provisionId?: string | null;
+  nestedPackingStandardId?: string | null;
+  mealItemId?: string | null;
+
+  name?: string | null;
+
+  isContainer: boolean;
   isDynamic: boolean;
+  isTrackConsumption: boolean;
+
+  quantity?: number | null;
+
   isFront: boolean;
   isRear: boolean;
+
+  position?: string | null;
+  picture?: string | null;
+
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AircraftConfigGalleyPosition {

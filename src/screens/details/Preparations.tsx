@@ -871,7 +871,7 @@ export const PreparationsScreen: React.FC = () => {
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
             <ScanIcon height={28} width={28} />
             <Text className="text-xl font-normal m-0.5 text-text-primary">
-              Prep Scan what the hell
+              Prep Scan
             </Text>
           </Pressable>
           <Pressable className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3">
