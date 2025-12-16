@@ -410,7 +410,7 @@ export const FlightPreparationDetailsModal: React.FC<
           return;
         }
       } catch (error) {
-        Alert.alert("Error", "Failed to create delivery");
+        Alert.alert("Error", "Failed to create delivery", error as any);
         return;
       }
     }
