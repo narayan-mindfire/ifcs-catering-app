@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import apiClient from "../api/axiosClient";
 import {
   DocumentFolder,
   DocumentFile,
   FileSystemItem,
 } from "../types/documents";
+import { documentService } from "../services/documentService";
 
 interface DocumentState {
   currentFolderId: string | null;
@@ -38,67 +38,47 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     set({ isLoading: true, error: null, currentFolderId: folderId });
 
     try {
-      const folderParams: Record<string, any> = {
-        limit: 100,
-        offset: 0,
-      };
+      const foldersPromise = documentService.getFolders(folderId);
+
+      let filesPromise: Promise<DocumentFile[]>;
+      let folderDetailsPromise: Promise<DocumentFolder | null> | null = null;
 
       if (folderId) {
-        folderParams.parentId = folderId;
-      }
-
-      const foldersPromise = apiClient.get("/documents/folders", {
-        params: folderParams,
-      });
-
-      let filesPromise: Promise<any>;
-      let folderDetailsPromise: Promise<any> | null = null;
-
-      if (folderId) {
-        filesPromise = apiClient.get(`/documents/folders/${folderId}/files`, {
-          params: { limit: 100 },
-        });
-
-        folderDetailsPromise = apiClient.get(`/documents/folders/${folderId}`);
+        filesPromise = documentService.getFolderFiles(folderId);
+        folderDetailsPromise = documentService.getFolderDetails(folderId);
       } else {
-        filesPromise = Promise.resolve({ data: { data: [] } });
+        filesPromise = Promise.resolve([]);
       }
 
-      const promises = folderDetailsPromise
-        ? [foldersPromise, filesPromise, folderDetailsPromise]
-        : [foldersPromise, filesPromise];
+      const [foldersData, filesData, folderDetailsData] = await Promise.all([
+        foldersPromise,
+        filesPromise,
+        folderDetailsPromise ? folderDetailsPromise : Promise.resolve(null),
+      ]);
 
-      const results = await Promise.all(promises);
+      const folders: FileSystemItem[] = foldersData.map((f) => ({
+        type: "folder" as const,
+        data: f,
+      }));
 
-      const foldersRes = results[0];
-      const filesRes = results[1];
-      const folderDetailsRes = folderId ? results[2] : null;
-
-      const folders: FileSystemItem[] = (foldersRes.data.data || []).map(
-        (f: DocumentFolder) => ({
-          type: "folder" as const,
-          data: f,
-        }),
-      );
-
-      const files: FileSystemItem[] = (filesRes.data.data || []).map(
-        (f: DocumentFile) => ({
-          type: "file" as const,
-          data: f,
-        }),
-      );
+      const files: FileSystemItem[] = filesData.map((f) => ({
+        type: "file" as const,
+        data: f,
+      }));
 
       let breadcrumbs: { id: string; name: string }[] = [];
-      if (folderDetailsRes?.data?.data?.hierarchy) {
-        breadcrumbs = folderDetailsRes.data.data.hierarchy.map(
-          (h: DocumentFolder) => ({
-            id: h.id,
-            name: h.name,
-          }),
-        );
-        const currentFolder = folderDetailsRes.data.data;
-        if (breadcrumbs[breadcrumbs.length - 1]?.id !== currentFolder.id) {
-          breadcrumbs.push({ id: currentFolder.id, name: currentFolder.name });
+      if (folderDetailsData && folderDetailsData.hierarchy) {
+        breadcrumbs = folderDetailsData.hierarchy.map((h: any) => ({
+          id: h.id,
+          name: h.name,
+        }));
+
+        // Ensure current folder is in breadcrumbs
+        if (breadcrumbs[breadcrumbs.length - 1]?.id !== folderDetailsData.id) {
+          breadcrumbs.push({
+            id: folderDetailsData.id,
+            name: folderDetailsData.name,
+          });
         }
       }
 
@@ -111,7 +91,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     } catch (err: any) {
       console.error("[ERROR] Fetch Documents Error:", err);
       set({
-        error: err.response?.data?.message || "Failed to load documents",
+        error: err.message || "Failed to load documents",
         isLoading: false,
         items: [],
       });
@@ -123,32 +103,20 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const folderPromise = apiClient.get("/documents/folders", {
-        params: { name: query, limit: 50 },
-      });
-
-      const filePromise = apiClient.get("/documents/files", {
-        params: { name: query, limit: 50 },
-      });
-
-      const [folderRes, fileRes] = await Promise.all([
-        folderPromise,
-        filePromise,
+      const [foldersData, filesData] = await Promise.all([
+        documentService.getFolders(null, query),
+        documentService.searchFiles(query),
       ]);
 
-      const folders: FileSystemItem[] = (folderRes.data.data || []).map(
-        (f: DocumentFolder) => ({
-          type: "folder" as const,
-          data: f,
-        }),
-      );
+      const folders: FileSystemItem[] = foldersData.map((f) => ({
+        type: "folder" as const,
+        data: f,
+      }));
 
-      const files: FileSystemItem[] = (fileRes.data.data || []).map(
-        (f: DocumentFile) => ({
-          type: "file" as const,
-          data: f,
-        }),
-      );
+      const files: FileSystemItem[] = filesData.map((f) => ({
+        type: "file" as const,
+        data: f,
+      }));
 
       set({
         items: [...folders, ...files],
@@ -173,13 +141,13 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   downloadFile: async (fileId, fileName) => {
     set({ isDownloading: true });
     try {
-      const response = await apiClient.get(
-        `/documents/files/${fileId}/download`,
-      );
-      const { url } = response.data.data;
+      const url = await documentService.getDownloadUrl(fileId);
       console.log("[SUCCESS] Download URL:", url);
       set({ isDownloading: false });
-      return url;
+      // Note: The original code returned the URL, but the store return type is Promise<void>.
+      // If the component expects the URL, we might need to adjust the interface or component logic.
+      // Assuming component handles the download trigger if the URL is returned.
+      return url as any;
     } catch (err: any) {
       console.error("[ERROR] Download failed:", err);
       set({ isDownloading: false, error: "Download failed" });

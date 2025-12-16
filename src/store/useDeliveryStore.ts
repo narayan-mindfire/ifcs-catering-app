@@ -1,17 +1,6 @@
 import { create } from "zustand";
-import apiClient from "../api/axiosClient";
 import { Delivery } from "../types/deliveries";
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  meta?: {
-    timestamp: string;
-    limit?: number;
-    offset?: number;
-    total?: number;
-  };
-}
+import { deliveryService } from "../services/deliveryService";
 
 interface DeliveryStore {
   deliveries: Delivery[];
@@ -48,16 +37,9 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
   error: null,
 
   fetchDeliveries: async (flightId: string) => {
-    const callFlight =
-      flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-        ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-        : flightId;
     set({ isLoading: true, error: null });
     try {
-      const response = await apiClient.get<ApiResponse<Delivery[]>>(
-        `/flights/${callFlight}/deliveries`,
-      );
-      const deliveriesArray = response.data.data || [];
+      const deliveriesArray = await deliveryService.getDeliveries(flightId);
       console.log("DELIVEREES: ", deliveriesArray);
       set({
         deliveries: deliveriesArray,
@@ -82,18 +64,11 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
 
   createDelivery: async (flightId: string, deliveryName: string) => {
     set({ isLoading: true, error: null });
-    const callFlight =
-      flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-        ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-        : flightId;
     try {
-      const response = await apiClient.post<ApiResponse<Delivery>>(
-        `/flights/${callFlight}/deliveries`,
-        { deliveryName },
+      const newDelivery = await deliveryService.createDelivery(
+        flightId,
+        deliveryName,
       );
-
-      console.log("NEW DELIVERY CREATED RESPONSE:", response.data);
-      const newDelivery = response.data.data;
 
       set((state) => ({
         deliveries: [...state.deliveries, newDelivery],
@@ -112,15 +87,11 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     payload: Partial<Delivery>,
   ) => {
     try {
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
-      const response = await apiClient.put<ApiResponse<Delivery>>(
-        `/flights/${callFlight}/deliveries/${deliveryId}`,
+      const updatedDelivery = await deliveryService.updateDelivery(
+        flightId,
+        deliveryId,
         payload,
       );
-      const updatedDelivery = response.data.data;
 
       set((state) => ({
         deliveries: state.deliveries.map((d) =>
@@ -141,36 +112,14 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     comment?: string,
   ) => {
     try {
-      const cleanSignature = signature.replace(
-        /^data:image\/[a-z]+;base64,/,
-        "",
+      const updatedDelivery = await deliveryService.addSignature(
+        flightId,
+        deliveryId,
+        type,
+        signature,
+        comment,
       );
 
-      const requestPayload = {
-        signature: cleanSignature,
-        comment: comment || "",
-      };
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
-
-      const url = `/flights/${callFlight}/deliveries/${deliveryId}/signatures?type=${type}`;
-      console.log("\n================= REQUEST DEBUG START =================");
-      console.log("URL:", url);
-      console.log("COMMENT:", requestPayload.comment);
-      console.log(
-        "SIGNATURE START (Check for prefix):",
-        requestPayload.signature.substring(0, 50) + "...",
-      );
-      console.log("================= REQUEST DEBUG END ===================\n");
-      const response = await apiClient.post<ApiResponse<Delivery>>(
-        url,
-        requestPayload,
-      );
-      console.log("RESPONSE DATA =================", response.data.data);
-
-      const updatedDelivery = response.data.data;
       set((state) => ({
         deliveries: state.deliveries.map((d) =>
           d.id === deliveryId ? updatedDelivery : d,
@@ -184,13 +133,10 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
       }
     }
   },
+
   deleteDelivery: async (flightId: string, deliveryId: string) => {
     try {
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
-      await apiClient.delete(`/flights/${callFlight}/deliveries/${deliveryId}`);
+      await deliveryService.deleteDelivery(flightId, deliveryId);
       set((state) => ({
         deliveries: state.deliveries.filter((d) => d.id !== deliveryId),
         selectedDeliveryId:
@@ -203,30 +149,22 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
       set({ error: "Failed to delete delivery" });
     }
   },
+
   printDeliverySecurityDeclaration: async (flightId, deliveryId) => {
     try {
-      // Construct the URL based on your API documentation
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
-      const response = await apiClient.get(
-        `/flights/${callFlight}/deliveries/${deliveryId}/print`,
+      const fileUrl = await deliveryService.printDeliverySecurityDeclaration(
+        flightId,
+        deliveryId,
       );
-
-      if (response.data.success && response.data.data?.url) {
-        return { success: true, fileUrl: response.data.data.url };
-      } else {
-        return {
-          success: false,
-          error: response.data.message || "Failed to generate PDF",
-        };
-      }
+      return { success: true, fileUrl };
     } catch (err: any) {
       console.error("Print Delivery Error:", err);
       return {
         success: false,
-        error: err.response?.data?.message || "Network error generating print",
+        error:
+          err.response?.data?.message ||
+          err.message ||
+          "Network error generating print",
       };
     }
   },

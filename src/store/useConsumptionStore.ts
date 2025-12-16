@@ -4,10 +4,8 @@ import {
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
   ConsumptionTrackingFilters,
-  ConsumptionTrackingListResponse,
-  ConsumptionTrackingResponse,
 } from "../types/consumption";
-import apiClient from "../api/axiosClient";
+import { consumptionService } from "../services/consumptionService";
 
 interface ConsumptionTrackingStore {
   // State
@@ -65,35 +63,21 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
       set({ isLoading: true, error: null, currentFilters: filters });
 
       try {
-        const params: any = {};
-        if (filters.mealId) params.mealId = filters.mealId;
-        if (filters.foodOrderItemId)
-          params.foodOrderItemId = filters.foodOrderItemId;
-        if (filters.flightPreparationId)
-          params.flightPreparationId = filters.flightPreparationId;
-        if (filters.limit) params.limit = filters.limit;
-        if (filters.offset) params.offset = filters.offset;
-
-        const response = await apiClient.get<ConsumptionTrackingListResponse>(
-          `/flights/${flightId}/consumption-tracking`,
-          { params },
+        const { data, total } = await consumptionService.getRecords(
+          flightId,
+          filters,
         );
 
-        if (response.data.success) {
-          set({
-            records: response.data.data,
-            total: response.data.total,
-            isLoading: false,
-          });
-          return true;
-        } else {
-          throw new Error("Failed to fetch consumption records");
-        }
+        set({
+          records: data,
+          total: total,
+          isLoading: false,
+        });
+        return true;
       } catch (error: any) {
         const errorMessage =
-          error.response?.data?.message ||
           error.message ||
-          "Unknown error occurred";
+          (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isLoading: false, records: [] });
         console.error("Error fetching consumption records:", error);
         return false;
@@ -105,24 +89,20 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
       set({ isLoading: true, error: null });
 
       try {
-        const response = await apiClient.get<ConsumptionTrackingResponse>(
-          `/flights/${flightId}/consumption-tracking/${recordId}`,
+        const record = await consumptionService.getRecordById(
+          flightId,
+          recordId,
         );
 
-        if (response.data.success) {
-          set({
-            selectedRecord: response.data.data,
-            isLoading: false,
-          });
-          return true;
-        } else {
-          throw new Error("Failed to fetch consumption record");
-        }
+        set({
+          selectedRecord: record,
+          isLoading: false,
+        });
+        return true;
       } catch (error: any) {
         const errorMessage =
-          error.response?.data?.message ||
           error.message ||
-          "Unknown error occurred";
+          (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isLoading: false, selectedRecord: null });
         console.error("Error fetching consumption record:", error);
         return false;
@@ -134,32 +114,19 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
       set({ isCreating: true, error: null });
 
       try {
-        const response = await apiClient.post<ConsumptionTrackingResponse>(
-          `/flights/${flightId}/consumption-tracking`,
-          data,
-        );
+        const newRecord = await consumptionService.createRecord(flightId, data);
 
-        if (response.data.success) {
-          // Add the new record to the list
-          set((state) => ({
-            records: [response.data.data, ...state.records],
-            total: state.total + 1,
-            isCreating: false,
-          }));
+        set((state) => ({
+          records: [newRecord, ...state.records],
+          total: state.total + 1,
+          isCreating: false,
+        }));
 
-          console.log(
-            "Consumption record created successfully:",
-            response.data.data,
-          );
-          return { success: true, record: response.data.data };
-        } else {
-          throw new Error("Failed to create consumption record");
-        }
+        return { success: true, record: newRecord };
       } catch (error: any) {
         const errorMessage =
-          error.response?.data?.message ||
           error.message ||
-          "Unknown error occurred";
+          (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isCreating: false });
         console.error("Error creating consumption record:", error);
         return { success: false };
@@ -171,34 +138,28 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
       set({ isUpdating: true, error: null });
 
       try {
-        const response = await apiClient.put<ConsumptionTrackingResponse>(
-          `/flights/${flightId}/consumption-tracking/${recordId}`,
+        const updatedRecord = await consumptionService.updateRecord(
+          flightId,
+          recordId,
           data,
         );
 
-        if (response.data.success) {
-          // Update the record in the list
-          set((state) => ({
-            records: state.records.map((record) =>
-              record.id === recordId ? response.data.data : record,
-            ),
-            selectedRecord:
-              state.selectedRecord?.id === recordId
-                ? response.data.data
-                : state.selectedRecord,
-            isUpdating: false,
-          }));
+        set((state) => ({
+          records: state.records.map((record) =>
+            record.id === recordId ? updatedRecord : record,
+          ),
+          selectedRecord:
+            state.selectedRecord?.id === recordId
+              ? updatedRecord
+              : state.selectedRecord,
+          isUpdating: false,
+        }));
 
-          console.log("Consumption record updated successfully");
-          return true;
-        } else {
-          throw new Error("Failed to update consumption record");
-        }
+        return true;
       } catch (error: any) {
         const errorMessage =
-          error.response?.data?.message ||
           error.message ||
-          "Unknown error occurred";
+          (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isUpdating: false });
         console.error("Error updating consumption record:", error);
         return false;
@@ -210,11 +171,8 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
       set({ isDeleting: true, error: null });
 
       try {
-        await apiClient.delete(
-          `/flights/${flightId}/consumption-tracking/${recordId}`,
-        );
+        await consumptionService.deleteRecord(flightId, recordId);
 
-        // Remove the record from the list
         set((state) => ({
           records: state.records.filter((record) => record.id !== recordId),
           total: state.total - 1,
@@ -223,13 +181,11 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           isDeleting: false,
         }));
 
-        console.log("Consumption record deleted successfully");
         return true;
       } catch (error: any) {
         const errorMessage =
-          error.response?.data?.message ||
           error.message ||
-          "Unknown error occurred";
+          (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isDeleting: false });
         console.error("Error deleting consumption record:", error);
         return false;

@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { Flight, FlightApiResponse, FlightFilters } from "../types/flight";
-import apiClient from "../api/axiosClient";
+import { Flight, FlightFilters } from "../types/flight";
+import { flightService } from "../services/flightService";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
 
@@ -14,7 +14,7 @@ const INITIAL_FILTERS: FlightFilters = {
   client: "Oman Air",
   isCancelled: false,
   isPrepared: false,
-  flight: "",
+  flight: "211",
 };
 
 interface FlightStore {
@@ -43,7 +43,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       ...newFilters,
     };
 
-    // Reset pagination if search criteria change
     const shouldResetPage =
       (newFilters.startDate !== undefined &&
         newFilters.startDate !== currentFilters.startDate) ||
@@ -75,40 +74,11 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     };
 
     try {
-      const params: Record<string, any> = {
-        page: currentFilters.page,
-        limit: currentFilters.limit,
-        sortBy: currentFilters.sortBy,
-        order: currentFilters.order,
-      };
-
-      // ---- Map filters to API params ----
-      if (currentFilters.startDate) params.fromDate = currentFilters.startDate;
-      if (currentFilters.endDate) params.toDate = currentFilters.endDate;
-      if (currentFilters.flight) params.flightNumber = currentFilters.flight;
-      if (currentFilters.search) params.search = currentFilters.search;
-      if (currentFilters.client) params.client = currentFilters.client;
-      if (currentFilters.station) params.station = currentFilters.station;
-      if (currentFilters.route) params.route = currentFilters.route;
-      if (currentFilters.status) params.status = currentFilters.status;
-
-      if (typeof currentFilters.isCancelled !== "undefined") {
-        params.isCancelled = currentFilters.isCancelled;
-      }
-
-      if (typeof currentFilters.isPrepared !== "undefined") {
-        params.isPrepared = currentFilters.isPrepared;
-      }
-
-      const response = await apiClient.get<FlightApiResponse>("/flights", {
-        params,
-      });
-
-      const data = response.data?.data || [];
+      const data = await flightService.getFlights(currentFilters);
 
       console.log("Fetched Flights:", {
         groups: data.length,
-        params,
+        filters: currentFilters,
       });
 
       set({
