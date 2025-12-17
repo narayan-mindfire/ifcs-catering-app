@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TextInput, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { CrewCompliance } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
