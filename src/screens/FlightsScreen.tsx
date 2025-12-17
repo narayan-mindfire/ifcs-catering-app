@@ -149,6 +149,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   }, [fetchFlights]);
 
   const handleLoadMore = useCallback(() => {
+    console.log("LOADING MORE");
     if (!isLoadingMore && hasNextPage) {
       loadMoreFlights();
     }
@@ -338,7 +339,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           }
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={3}
           ListFooterComponent={renderFooter}
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
