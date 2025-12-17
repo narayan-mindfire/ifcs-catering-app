@@ -37,13 +37,17 @@ interface Props {
 type DateFieldType = "start" | "end" | null;
 
 const formatDateToISO = (date: Date) => date.toISOString().split("T")[0];
+
 const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   const {
     flightGroups,
     isLoading,
     isRefreshing,
+    isLoadingMore,
+    hasNextPage,
     error,
     fetchFlights,
+    loadMoreFlights,
     setFilters,
     filters,
   } = useFlightStore();
@@ -144,9 +148,17 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     fetchFlights();
   }, [fetchFlights]);
 
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasNextPage) {
+      loadMoreFlights();
+    }
+  }, [isLoadingMore, hasNextPage, loadMoreFlights]);
+
   const renderFlightGroup: ListRenderItem<Flight[]> = useCallback(
-    ({ item: group, index }) => {
+    ({ item: group }) => {
       const isPaired = group.length > 1;
+      const groupLength = group.length;
+
       return (
         <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
           {group.map((flight, flightIndex) => (
@@ -154,7 +166,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               key={flight.id}
               flight={flight}
               navigation={navigation}
-              isLastInGroup={flightIndex === group.length - 1}
+              isLastInGroup={flightIndex === groupLength - 1}
               isFirstInGroup={flightIndex === 0}
               isPaired={isPaired}
               flightGroup={group}
@@ -165,6 +177,15 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     },
     [navigation],
   );
+
+  const renderFooter = useCallback(() => {
+    if (!isLoadingMore) return null;
+    return (
+      <View className="py-4">
+        <ActivityIndicator size="small" color="#00529b" />
+      </View>
+    );
+  }, [isLoadingMore]);
 
   const breadcrumbs = useMemo(
     () => [
@@ -300,7 +321,10 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
           style={{ flex: 1 }}
           data={flightGroups}
           renderItem={renderFlightGroup}
-          keyExtractor={(group, index) => group[0]?.id || index.toString()}
+          keyExtractor={(group, index) => {
+            const groupKey = group.map((f) => f.id).join("-");
+            return groupKey || `group-${index}`;
+          }}
           ListHeaderComponent={<FlightListHeader />}
           stickyHeaderIndices={[0]}
           onRefresh={() => fetchFlights(undefined, true)}
@@ -313,6 +337,15 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               </Text>
             </View>
           }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={10}
+          windowSize={10}
+          getItemLayout={undefined}
         />
       )}
     </>

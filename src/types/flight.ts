@@ -170,11 +170,16 @@ export interface Station {
 
 export interface FlightApiResponse {
   success: boolean;
+  message: string;
   data: Flight[][];
   meta: {
-    total: number;
-    page: number;
-    last_page: number;
-    per_page: number;
+    pagination: {
+      page: number;
+      limit: number;
+      total: string;
+      pages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
   };
 }

@@ -23,6 +23,8 @@ interface FlightStore {
   filters: FlightFilters;
   isLoading: boolean;
   isRefreshing: boolean;
+  isLoadingMore: boolean;
+  hasNextPage: boolean;
   error: string | null;
 
   fetchFlights: (
@@ -30,6 +32,7 @@ interface FlightStore {
     isRefresh?: boolean,
   ) => Promise<void>;
 
+  loadMoreFlights: () => Promise<void>;
   setFilters: (newFilters: Partial<FlightFilters>) => void;
   selectFlightById: (id: string) => void;
 }
@@ -40,6 +43,8 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   filters: INITIAL_FILTERS,
   isLoading: false,
   isRefreshing: false,
+  isLoadingMore: false,
+  hasNextPage: true,
   error: null,
 
   setFilters: (newFilters) => {
@@ -79,15 +84,19 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     });
 
     try {
-      const data = await flightService.getFlights({
+      const mergedFilters = {
         ...get().filters,
         ...customFilters,
-      });
+      };
+
+      const response = await flightService.getFlights(mergedFilters);
 
       set({
-        flightGroups: data,
+        flightGroups: response.data,
         isLoading: false,
         isRefreshing: false,
+        hasNextPage: response.meta.hasNextPage,
+        filters: mergedFilters,
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
@@ -95,6 +104,46 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         error: "Failed to fetch flights",
         isLoading: false,
         isRefreshing: false,
+      });
+    }
+  },
+
+  loadMoreFlights: async () => {
+    const { isLoadingMore, hasNextPage, filters, flightGroups } = get();
+
+    // Prevent duplicate requests
+    if (isLoadingMore || !hasNextPage) return;
+
+    set({ isLoadingMore: true, error: null });
+
+    try {
+      const nextPage = (filters.page || 1) + 1;
+      const response = await flightService.getFlights({
+        ...filters,
+        page: nextPage,
+      });
+
+      // Create a Set of existing flight IDs to check for duplicates
+      const existingIds = new Set(
+        flightGroups.flat().map((flight) => flight.id),
+      );
+
+      // Filter out flight groups that contain flights we already have
+      const newGroups = response.data.filter((group) =>
+        group.every((flight) => !existingIds.has(flight.id)),
+      );
+
+      set({
+        flightGroups: [...flightGroups, ...newGroups],
+        isLoadingMore: false,
+        hasNextPage: response.meta.hasNextPage,
+        filters: { ...filters, page: nextPage },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      set({
+        error: "Failed to load more flights",
+        isLoadingMore: false,
       });
     }
   },

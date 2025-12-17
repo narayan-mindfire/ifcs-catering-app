@@ -1,8 +1,19 @@
 import apiClient from "../api/axiosClient";
 import { FlightApiResponse, FlightFilters, Flight } from "../types/flight";
 
+interface FlightServiceResponse {
+  data: Flight[][];
+  meta: {
+    hasNextPage: boolean;
+    page: number;
+    total: number;
+  };
+}
+
 export const flightService = {
-  getFlights: async (filters: FlightFilters): Promise<Flight[][]> => {
+  getFlights: async (
+    filters: FlightFilters,
+  ): Promise<FlightServiceResponse> => {
     const params: Record<string, any> = {
       page: filters.page,
       limit: filters.limit,
@@ -31,6 +42,13 @@ export const flightService = {
       params,
     });
 
-    return response.data?.data || [];
+    return {
+      data: response.data?.data || [],
+      meta: {
+        hasNextPage: response.data?.meta?.pagination?.hasNextPage ?? false,
+        page: response.data?.meta?.pagination?.page ?? 1,
+        total: Number(response.data?.meta?.pagination?.total) || 0,
+      },
+    };
   },
 };
