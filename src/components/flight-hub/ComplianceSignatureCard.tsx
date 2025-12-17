@@ -14,6 +14,7 @@ import { PrintIcon } from "../../assets/icons";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
+import { AppButton } from "../common/AppButton";
 
 interface ComplianceSignatureCardProps {
   title: string;
@@ -139,14 +140,22 @@ export const ComplianceSignatureCard: React.FC<
               Signed: {signedAt ? formatDate(String(signedAt)) : "Pending Save"}
             </Text>
 
-            <Pressable
+            <AppButton
+              title="Update Signature"
               onPress={onSign}
-              className="bg-bg-tertiary px-4 py-2 rounded-lg border border-border-muted"
-            >
-              <Text className="text-text-primary font-medium text-sm">
-                Update Signature
-              </Text>
-            </Pressable>
+              type="secondary"
+              style={{
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "var(--border-muted)",
+              }}
+              textStyle={{
+                fontSize: 14,
+                fontWeight: "500",
+              }}
+            />
           </View>
         </View>
       ) : (

@@ -5,16 +5,18 @@ import {
   View,
   ViewStyle,
   TextStyle,
+  ActivityIndicator,
 } from "react-native";
 
 interface AppButtonProps {
   title: string;
   onPress: () => void;
-  type?: "primary" | "secondary" | "danger";
+  type?: "primary" | "secondary" | "danger" | "tertiary";
   disabled?: boolean;
   IconComponent?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  loading?: boolean;
 }
 
 export const AppButton: React.FC<AppButtonProps> = ({
@@ -25,6 +27,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   IconComponent,
   style,
   textStyle,
+  loading,
 }) => {
   const baseButton =
     "flex-row items-center justify-center rounded-xl py-3 px-4";
@@ -35,7 +38,9 @@ export const AppButton: React.FC<AppButtonProps> = ({
       ? "bg-bg-button"
       : type === "secondary"
         ? "bg-bg-secondary"
-        : "bg-red-600";
+        : type === "tertiary"
+          ? "bg-bg-tertiary"
+          : "bg-red-600";
 
   const textClass =
     type === "secondary" ? "text-text-primary" : "text-text-surface";
@@ -43,15 +48,27 @@ export const AppButton: React.FC<AppButtonProps> = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       activeOpacity={0.8}
       className={`${baseButton} ${backgroundClass}`}
       style={style}
     >
-      {IconComponent && <View className="mr-2">{IconComponent}</View>}
-      <Text className={`text-lg font-semibold ${textClass}`} style={textStyle}>
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator
+          color={type === "secondary" ? "#000" : "#fff"}
+          size="small"
+        />
+      ) : (
+        <>
+          {IconComponent && <View className="mr-2">{IconComponent}</View>}
+          <Text
+            className={`text-lg font-semibold ${textClass}`}
+            style={textStyle}
+          >
+            {title}
+          </Text>
+        </>
+      )}
     </TouchableOpacity>
   );
 };

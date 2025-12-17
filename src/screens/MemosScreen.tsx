@@ -29,6 +29,7 @@ import {
   TrayIcon,
   TrayIconActive,
 } from "../assets/icons";
+import { AppButton } from "../components/common/AppButton";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
 
@@ -131,37 +132,37 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-3">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
+            const icon =
+              tab === "Inbox" ? (
+                isActive ? (
+                  <TrayIconActive height={40} width={40} />
+                ) : (
+                  <TrayIcon height={40} width={40} />
+                )
+              ) : isActive ? (
+                <CheckIconActive height={40} width={40} />
+              ) : (
+                <CheckIcon height={40} width={40} />
+              );
 
             return (
-              <TouchableOpacity
+              <AppButton
                 key={tab}
+                title={tab}
                 onPress={() => handleTabChange(tab)}
-                className={`flex-1 flex-row mx-1 rounded-full items-center justify-center 
-                  ${isActive ? "bg-bg-button" : ""}
-                `}
-              >
-                <View className="mr-2">
-                  {tab === "Inbox" ? (
-                    isActive ? (
-                      <TrayIconActive height={40} width={40} />
-                    ) : (
-                      <TrayIcon height={40} width={40} />
-                    )
-                  ) : isActive ? (
-                    <CheckIconActive />
-                  ) : (
-                    <CheckIcon height={40} width={40} />
-                  )}
-                </View>
-
-                <Text
-                  className={`text-base font-semibold py-1
-                    ${isActive ? "text-white" : "text-text-tertiary"}
-                  `}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
+                type={isActive ? "primary" : "secondary"}
+                IconComponent={icon}
+                style={{
+                  flex: 1,
+                  marginHorizontal: 4,
+                  borderRadius: 999,
+                }}
+                textStyle={{
+                  fontSize: 14,
+                  fontWeight: "600",
+                  color: isActive ? "#fff" : undefined,
+                }}
+              />
             );
           })}
         </View>

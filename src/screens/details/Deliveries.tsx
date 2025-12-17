@@ -22,6 +22,7 @@ import {
   DriversDeclaration,
   SecurityCompliance,
 } from "../../types/deliveries";
+import { AppButton } from "../../components/common/AppButton";
 
 // --- Types ---
 
@@ -401,20 +402,27 @@ const DeliveriesScreen: React.FC = () => {
           <Text className="text-lg font-semibold text-text-primary mb-3">
             Deliveries ({deliveries.length})
           </Text>
-          <Pressable
+          <AppButton
+            title="Add New Delivery"
             onPress={handleAddNewDelivery}
             disabled={isLoading}
-            className={`flex-row items-center justify-center bg-bg-tertiary p-2.5 rounded-lg gap-2 ${
-              isLoading ? "opacity-50" : ""
-            }`}
-          >
-            {AddIcon ? (
-              <AddIcon width={16} height={16} />
-            ) : (
-              <Text className="text-lg">+</Text>
-            )}
-            <Text className="text-lg text-text-primary">Add New Delivery</Text>
-          </Pressable>
+            type="secondary"
+            IconComponent={
+              AddIcon ? (
+                <AddIcon width={16} height={16} />
+              ) : (
+                <Text className="text-lg">+</Text>
+              )
+            }
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 10,
+              borderRadius: 8,
+            }}
+            textStyle={{
+              fontSize: 14,
+            }}
+          />
         </View>
 
         <ScrollView className="flex-1">

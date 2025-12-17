@@ -10,6 +10,7 @@ import {
 import { SignatureModal } from "./SharedComponents";
 import { DriversDeclaration } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
+import { AppButton } from "../common/AppButton";
 
 interface DriversDeclarationTabProps {
   driversDeclaration: DriversDeclaration | null;
@@ -163,29 +164,24 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           placeholderTextColor="#A09CAB"
         />
 
-        <Pressable
+        <AppButton
+          title={hasChanges ? "Save Changes" : "No Changes to Save"}
           onPress={handleSave}
-          disabled={!hasChanges || isSaving || !isFormValid}
-          className={`mt-6 py-3 rounded-xl items-center ${
-            !hasChanges || isSaving || !isFormValid
-              ? "bg-bg-tertiary opacity-50"
-              : "bg-bg-button"
-          }`}
-        >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text
-              className={`font-semibold text-lg ${
-                !hasChanges || isSaving || !isFormValid
-                  ? "text-text-tertiary"
-                  : "text-text-surface"
-              }`}
-            >
-              {hasChanges ? "Save Changes" : "No Changes to Save"}
-            </Text>
-          )}
-        </Pressable>
+          loading={isSaving}
+          disabled={!hasChanges || !isFormValid}
+          type={!hasChanges || !isFormValid ? "secondary" : "primary"}
+          style={{
+            marginTop: 24,
+            paddingVertical: 12,
+            borderRadius: 12,
+            opacity: !hasChanges || !isFormValid ? 0.5 : 1,
+          }}
+          textStyle={{
+            fontSize: 14,
+            fontWeight: "600",
+            color: !hasChanges || !isFormValid ? undefined : "#fff",
+          }}
+        />
 
         {!hasChanges && driver && (
           <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">

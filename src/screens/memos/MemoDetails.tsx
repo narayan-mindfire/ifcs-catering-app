@@ -261,9 +261,6 @@ const MemoDetailScreen: React.FC<Props> = ({
             <Text className="text-lg font-semibold text-gray-900">
               All Users
             </Text>
-            <TouchableOpacity>
-              <Text className="text-gray-400 text-xl">⋮</Text>
-            </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>

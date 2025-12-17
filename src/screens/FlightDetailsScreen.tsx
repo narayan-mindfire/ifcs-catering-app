@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import {
   createMaterialTopTabNavigator,
   MaterialTopTabBarProps,
@@ -12,6 +12,7 @@ import { PreparationsScreen } from "./details/Preparations";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { formatDate } from "../utils/dateFormatter";
+import { AppButton } from "../components/common/AppButton";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -51,20 +52,21 @@ const CustomTabBar = ({
         };
 
         return (
-          <Pressable
+          <AppButton
             key={route.key}
+            title={label}
             onPress={onPress}
-            className={`flex-1 py-4 rounded-lg flex-row items-center justify-center ${
-              isFocused ? "bg-bg-button" : "bg-bg-tertiary"
-            }`}
-          >
-            <Text
-              className="text-xl font-medium"
-              style={{ color: isFocused ? "#fff" : inactiveColor }}
-            >
-              {label}
-            </Text>
-          </Pressable>
+            type={isFocused ? "primary" : "secondary"}
+            style={{
+              flex: 1,
+              paddingVertical: 16,
+            }}
+            textStyle={{
+              fontSize: 20,
+              fontWeight: "500",
+              color: isFocused ? "#fff" : inactiveColor,
+            }}
+          />
         );
       })}
     </View>

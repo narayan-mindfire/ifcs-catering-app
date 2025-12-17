@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { ImageIcon, InfoIcon } from "../../assets/icons";
+import { AppButton } from "../common/AppButton";
 
 interface ItemData {
   id: number;
@@ -75,18 +76,12 @@ export const SpotCheckItemListPanel: React.FC<SpotCheckItemListPanelProps> =
         </View>
 
         <View className="p-4 flex-row gap-4 border-t border-gray-100">
-          <TouchableOpacity
-            onPress={onPass}
-            className="flex-1 bg-[#5046e5] rounded-xl py-3 flex-row items-center justify-center gap-2"
-          >
-            <Text className="text-white font-medium text-lg">Pass</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          <AppButton style={{ flex: 1 }} title={"Pass"} onPress={onPass} />
+          <AppButton
+            style={{ flex: 1, backgroundColor: "red" }}
+            title={"Fail"}
             onPress={onFail}
-            className="flex-1 bg-[#ef4444] rounded-xl py-3 flex-row items-center justify-center gap-2"
-          >
-            <Text className="text-white font-medium text-lg">Fail</Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     );
