@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import { Flight, FlightApiResponse, FlightFilters } from "../types/flight";
-import apiClient from "../api/axiosClient";
+import { Flight, FlightFilters } from "../types/flight";
+import { flightService } from "../services/flightService";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
 
@@ -22,9 +22,17 @@ interface FlightStore {
   selectedFlight: Flight | null;
   filters: FlightFilters;
   isLoading: boolean;
+  isRefreshing: boolean;
+  isLoadingMore: boolean;
+  hasNextPage: boolean;
   error: string | null;
 
-  fetchFlights: (newFilters?: Partial<FlightFilters>) => Promise<void>;
+  fetchFlights: (
+    newFilters?: Partial<FlightFilters>,
+    isRefresh?: boolean,
+  ) => Promise<void>;
+
+  loadMoreFlights: () => Promise<void>;
   setFilters: (newFilters: Partial<FlightFilters>) => void;
   selectFlightById: (id: string) => void;
 }
@@ -34,6 +42,9 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
   selectedFlight: null,
   filters: INITIAL_FILTERS,
   isLoading: false,
+  isRefreshing: false,
+  isLoadingMore: false,
+  hasNextPage: true,
   error: null,
 
   setFilters: (newFilters) => {
@@ -43,7 +54,6 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
       ...newFilters,
     };
 
-    // Reset pagination if search criteria change
     const shouldResetPage =
       (newFilters.startDate !== undefined &&
         newFilters.startDate !== currentFilters.startDate) ||
@@ -63,64 +73,77 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     }
 
     set({ filters: updatedFilters });
-    get().fetchFlights(updatedFilters);
+    get().fetchFlights(updatedFilters, false);
   },
 
-  fetchFlights: async (customFilters) => {
-    set({ isLoading: true, error: null });
-
-    const currentFilters: FlightFilters = {
-      ...get().filters,
-      ...customFilters,
-    };
+  fetchFlights: async (customFilters, isRefresh = false) => {
+    set({
+      isLoading: !isRefresh,
+      isRefreshing: isRefresh,
+      error: null,
+    });
 
     try {
-      const params: Record<string, any> = {
-        page: currentFilters.page,
-        limit: currentFilters.limit,
-        sortBy: currentFilters.sortBy,
-        order: currentFilters.order,
+      const mergedFilters = {
+        ...get().filters,
+        ...customFilters,
       };
 
-      // ---- Map filters to API params ----
-      if (currentFilters.startDate) params.fromDate = currentFilters.startDate;
-      if (currentFilters.endDate) params.toDate = currentFilters.endDate;
-      if (currentFilters.flight) params.flightNumber = currentFilters.flight;
-      if (currentFilters.search) params.search = currentFilters.search;
-      if (currentFilters.client) params.client = currentFilters.client;
-      if (currentFilters.station) params.station = currentFilters.station;
-      if (currentFilters.route) params.route = currentFilters.route;
-      if (currentFilters.status) params.status = currentFilters.status;
-
-      if (typeof currentFilters.isCancelled !== "undefined") {
-        params.isCancelled = currentFilters.isCancelled;
-      }
-
-      if (typeof currentFilters.isPrepared !== "undefined") {
-        params.isPrepared = currentFilters.isPrepared;
-      }
-
-      const response = await apiClient.get<FlightApiResponse>("/flights", {
-        params,
-      });
-
-      const data = response.data?.data || [];
-
-      console.log("Fetched Flights:", {
-        groups: data.length,
-        params,
-      });
+      const response = await flightService.getFlights(mergedFilters);
 
       set({
-        flightGroups: data,
+        flightGroups: response.data,
         isLoading: false,
-        filters: currentFilters,
+        isRefreshing: false,
+        hasNextPage: response.meta.hasNextPage,
+        filters: mergedFilters,
       });
-    } catch (err) {
-      console.error("Fetch Flights Error:", err);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
       set({
         error: "Failed to fetch flights",
         isLoading: false,
+        isRefreshing: false,
+      });
+    }
+  },
+
+  loadMoreFlights: async () => {
+    const { isLoadingMore, hasNextPage, filters, flightGroups } = get();
+
+    // Prevent duplicate requests
+    if (isLoadingMore || !hasNextPage) return;
+
+    set({ isLoadingMore: true, error: null });
+
+    try {
+      const nextPage = (filters.page || 1) + 1;
+      const response = await flightService.getFlights({
+        ...filters,
+        page: nextPage,
+      });
+
+      // Create a Set of existing flight IDs to check for duplicates
+      const existingIds = new Set(
+        flightGroups.flat().map((flight) => flight.id),
+      );
+
+      // Filter out flight groups that contain flights we already have
+      const newGroups = response.data.filter((group) =>
+        group.every((flight) => !existingIds.has(flight.id)),
+      );
+
+      set({
+        flightGroups: [...flightGroups, ...newGroups],
+        isLoadingMore: false,
+        hasNextPage: response.meta.hasNextPage,
+        filters: { ...filters, page: nextPage },
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      set({
+        error: "Failed to load more flights",
+        isLoadingMore: false,
       });
     }
   },

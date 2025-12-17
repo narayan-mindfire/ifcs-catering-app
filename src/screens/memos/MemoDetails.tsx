@@ -12,7 +12,7 @@ import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useMemoStore } from "../../store/useMemosStore";
 import {
   GearIcon,
@@ -261,9 +261,6 @@ const MemoDetailScreen: React.FC<Props> = ({
             <Text className="text-lg font-semibold text-gray-900">
               All Users
             </Text>
-            <TouchableOpacity>
-              <Text className="text-gray-400 text-xl">⋮</Text>
-            </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false}>

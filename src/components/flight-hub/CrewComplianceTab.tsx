@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  ScrollView,
-  Pressable,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TextInput, ScrollView } from "react-native";
 import { SignatureModal } from "./SharedComponents";
 import { CrewCompliance } from "../../types/deliveries";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
+import { AppButton } from "../common/AppButton";
 
 interface CrewComplianceTabProps {
   crewCompliance: CrewCompliance | null;
@@ -146,29 +140,24 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         </View>
 
         <View>
-          <Pressable
+          <AppButton
+            title={hasChanges ? "Save Changes" : "No Changes to Save"}
             onPress={handleSave}
-            disabled={!hasChanges || isSaving || !isFormValid}
-            className={`mt-6 py-3 rounded-xl items-center ${
-              !hasChanges || isSaving || !isFormValid
-                ? "bg-bg-tertiary opacity-50"
-                : "bg-bg-button"
-            }`}
-          >
-            {isSaving ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text
-                className={`font-semibold text-lg ${
-                  !hasChanges || isSaving || !isFormValid
-                    ? "text-text-tertiary"
-                    : "text-text-surface"
-                }`}
-              >
-                {hasChanges ? "Save Changes" : "No Changes to Save"}
-              </Text>
-            )}
-          </Pressable>
+            loading={isSaving}
+            disabled={!hasChanges || !isFormValid}
+            type={!hasChanges || !isFormValid ? "secondary" : "primary"}
+            style={{
+              marginTop: 24,
+              borderRadius: 12,
+              paddingVertical: 12,
+              opacity: !hasChanges || !isFormValid ? 0.5 : 1,
+            }}
+            textStyle={{
+              fontSize: 18,
+              fontWeight: "600",
+              color: !hasChanges || !isFormValid ? undefined : "#fff",
+            }}
+          />
 
           {!hasChanges && crewName && (
             <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">

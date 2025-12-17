@@ -19,7 +19,8 @@
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "NSCameraUsageDescription": "We need camera access to scan flight QR codes."
       }
     },
     "android": {
@@ -34,7 +35,15 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-       "bundler": "metro"
-    }
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "We need camera access to scan flight QR codes."
+        }
+      ]
+    ]
   }
 }

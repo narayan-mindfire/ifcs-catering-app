@@ -1,14 +1,6 @@
 import { create } from "zustand";
 import { Memo, MemoTab } from "../types/memo";
-import apiClient from "../api/axiosClient";
-
-const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  meta?: any;
-}
+import { memoService } from "../services/memoService";
 
 interface MemoState {
   memos: Memo[];
@@ -31,34 +23,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
   fetchMemos: async (tab: MemoTab, search?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const viewParam = tab === "Inbox" ? "Inbox" : "Acknowledged";
-      const params: Record<string, any> = {
-        view: viewParam,
-        limit: 100,
-        offset: 0,
-      };
-      if (search && search.trim()) {
-        params.search = search.trim();
-      }
-      const response = await apiClient.get("/memos", {
-        params,
-        headers: { "x-user-id": CURRENT_USER_ID },
-      });
-      const flattenedMemos = response.data.data.map((item: any) => {
-        if (item.memo) {
-          return {
-            ...item.memo,
-            isRead: item.isRead,
-            sender: item.sender,
-            recipients: item.recipients || [],
-            isAcknowledged:
-              item.memo.status === "Sent" && tab === "Acknowledged By Me",
-          };
-        }
-
-        return item;
-      });
-
+      const flattenedMemos = await memoService.getMemos(tab, search);
       set({
         memos: flattenedMemos,
         isLoading: false,
@@ -76,12 +41,9 @@ export const useMemoStore = create<MemoState>((set, get) => ({
   fetchMemoById: async (id: string) => {
     set({ isLoading: true, error: null, activeMemo: null });
     try {
-      const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
-        headers: { "x-user-id": CURRENT_USER_ID },
-      });
-      console.log("MEMO: ", response.data.data);
+      const memo = await memoService.getMemoById(id);
       set({
-        activeMemo: response.data.data,
+        activeMemo: memo,
         isLoading: false,
       });
     } catch (err: any) {
@@ -95,11 +57,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
   acknowledgeMemo: async (id: string) => {
     try {
-      await apiClient.patch(
-        `/memos/${id}/acknowledge`,
-        { isAcknowledge: true },
-        { headers: { "x-user-id": CURRENT_USER_ID } },
-      );
+      await memoService.acknowledgeMemo(id);
 
       const currentActive = get().activeMemo;
       if (currentActive && currentActive.id === id) {
@@ -118,11 +76,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
   markAsRead: async (id: string) => {
     try {
-      await apiClient.patch(
-        `/memos/${id}/read`,
-        { isRead: true },
-        { headers: { "x-user-id": CURRENT_USER_ID } },
-      );
+      await memoService.markAsRead(id);
 
       // Update the active memo's read status
       const currentActive = get().activeMemo;

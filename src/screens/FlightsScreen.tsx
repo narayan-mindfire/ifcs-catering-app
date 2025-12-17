@@ -1,22 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import {
-  FlatList,
   ActivityIndicator,
-  View,
+  FlatList,
+  Platform,
+  Pressable,
   Text,
   TextInput,
-  Pressable,
-  Platform,
+  View,
+  ListRenderItem,
 } from "react-native";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../App";
+
 import { BreadCrumb } from "../components/common/BreadCrumbs";
-import { FlightRow } from "../components/flight-list/FlightRow";
 import { FlightListHeader } from "../components/flight-list/FlightListHeader";
+import { FlightRow } from "../components/flight-list/FlightRow";
+import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { Flight } from "../types/flight";
 import { formatDate } from "../utils/dateFormatter";
@@ -32,12 +34,25 @@ interface Props {
   route: FlightsScreenRouteProp;
 }
 
+type DateFieldType = "start" | "end" | null;
+
+const formatDateToISO = (date: Date) => date.toISOString().split("T")[0];
+
 const FlightsScreen: React.FC<Props> = ({ navigation }) => {
-  const { flightGroups, isLoading, error, fetchFlights, setFilters, filters } =
-    useFlightStore();
+  const {
+    flightGroups,
+    isLoading,
+    isRefreshing,
+    isLoadingMore,
+    hasNextPage,
+    error,
+    fetchFlights,
+    loadMoreFlights,
+    setFilters,
+    filters,
+  } = useFlightStore();
 
   const [localFlightNum, setLocalFlightNum] = useState(filters.flight || "");
-
   const [startDate, setStartDate] = useState<Date | null>(
     filters.startDate ? new Date(filters.startDate) : new Date(),
   );
@@ -46,9 +61,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [activeDateField, setActiveDateField] = useState<
-    "start" | "end" | null
-  >(null);
+  const [activeDateField, setActiveDateField] = useState<DateFieldType>(null);
 
   useEffect(() => {
     fetchFlights();
@@ -64,98 +77,129 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     return () => clearTimeout(delayInput);
   }, [localFlightNum, filters.flight, setFilters]);
 
-  const formatDateToISO = (date: Date) => date.toISOString().split("T")[0];
-
-  const openDatePicker = (field: "start" | "end") => {
+  const openDatePicker = useCallback((field: "start" | "end") => {
     setActiveDateField(field);
     setShowDatePicker(true);
-  };
+  }, []);
 
-  const clearDateFilter = () => {
+  const clearDateFilter = useCallback(() => {
     setStartDate(null);
     setEndDate(null);
     setFilters({ startDate: undefined, endDate: undefined });
-  };
+  }, [setFilters]);
 
-  const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
-    if (Platform.OS === "android") {
-      setShowDatePicker(false);
-      if (event.type === "set" && date) {
-        applyDateChange(date);
-      }
-    } else {
-      if (date) {
-        if (activeDateField === "start") setStartDate(date);
-        if (activeDateField === "end") setEndDate(date);
-      }
-    }
-  };
+  const applyDateChange = useCallback(
+    (date: Date) => {
+      let newStart = startDate;
+      let newEnd = endDate;
 
-  const applyDateChange = (date: Date) => {
-    let newStart = startDate;
-    let newEnd = endDate;
-
-    if (activeDateField === "start") {
-      setStartDate(date);
-      newStart = date;
-      if (newEnd && date > newEnd) {
-        setEndDate(date);
-        newEnd = date;
-      }
-    } else if (activeDateField === "end") {
-      setEndDate(date);
-      newEnd = date;
-      if (newStart && date < newStart) {
+      if (activeDateField === "start") {
         setStartDate(date);
         newStart = date;
+        if (newEnd && date > newEnd) {
+          setEndDate(date);
+          newEnd = date;
+        }
+      } else if (activeDateField === "end") {
+        setEndDate(date);
+        newEnd = date;
+        if (newStart && date < newStart) {
+          setStartDate(date);
+          newStart = date;
+        }
       }
-    }
-    setFilters({
-      startDate: newStart ? formatDateToISO(newStart) : undefined,
-      endDate: newEnd ? formatDateToISO(newEnd) : undefined,
-    });
 
-    setActiveDateField(null);
-  };
+      setFilters({
+        startDate: newStart ? formatDateToISO(newStart) : undefined,
+        endDate: newEnd ? formatDateToISO(newEnd) : undefined,
+      });
 
-  const confirmDateIOS = () => {
+      setActiveDateField(null);
+    },
+    [activeDateField, startDate, endDate, setFilters],
+  );
+
+  const onDateChange = useCallback(
+    (event: DateTimePickerEvent, date?: Date) => {
+      if (Platform.OS === "android") {
+        setShowDatePicker(false);
+        if (event.type === "set" && date) {
+          applyDateChange(date);
+        }
+      } else {
+        if (date) {
+          if (activeDateField === "start") setStartDate(date);
+          if (activeDateField === "end") setEndDate(date);
+        }
+      }
+    },
+    [activeDateField, applyDateChange],
+  );
+
+  const confirmDateIOS = useCallback(() => {
     setShowDatePicker(false);
     const targetDate = activeDateField === "start" ? startDate : endDate;
     if (targetDate) {
       applyDateChange(targetDate);
     }
-  };
+  }, [activeDateField, startDate, endDate, applyDateChange]);
 
-  const renderFlightGroup = ({ item: group }: { item: Flight[] }) => {
-    const isPaired = group.length > 1;
+  const handleRetry = useCallback(() => {
+    fetchFlights();
+  }, [fetchFlights]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoadingMore && hasNextPage) {
+      loadMoreFlights();
+    }
+  }, [isLoadingMore, hasNextPage, loadMoreFlights]);
+
+  const renderFlightGroup: ListRenderItem<Flight[]> = useCallback(
+    ({ item: group }) => {
+      const isPaired = group.length > 1;
+      const groupLength = group.length;
+
+      return (
+        <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
+          {group.map((flight, flightIndex) => (
+            <FlightRow
+              key={flight.id}
+              flight={flight}
+              navigation={navigation}
+              isLastInGroup={flightIndex === groupLength - 1}
+              isFirstInGroup={flightIndex === 0}
+              isPaired={isPaired}
+              flightGroup={group}
+            />
+          ))}
+        </View>
+      );
+    },
+    [navigation],
+  );
+
+  const renderFooter = useCallback(() => {
+    if (!isLoadingMore) return null;
     return (
-      <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
-        {group.map((flight, index) => (
-          <FlightRow
-            key={flight.id}
-            flight={flight}
-            navigation={navigation}
-            isLastInGroup={index === group.length - 1}
-            isFirstInGroup={index === 0}
-            isPaired={isPaired}
-            flightGroup={group}
-          />
-        ))}
+      <View className="py-4">
+        <ActivityIndicator size="small" color="#00529b" />
       </View>
     );
-  };
+  }, [isLoadingMore]);
 
-  const breadcrumbItems = [
-    { label: "Dashboard", onPress: () => navigation.navigate("Dashboard") },
-    { label: "Flights" },
-  ];
+  const breadcrumbs = useMemo(
+    () => [
+      { label: "Dashboard", onPress: () => navigation.navigate("Dashboard") },
+      { label: "Flights" },
+    ],
+    [navigation],
+  );
 
   const showLoading = isLoading && flightGroups.length === 0;
 
   return (
     <>
-      <BreadCrumb items={breadcrumbItems} />
-
+      <BreadCrumb items={breadcrumbs} />
       <View className="px-4 py-3 bg-bg-tertiary">
         <View className="flex-row items-center gap-2">
           <Text className="font-extrabold text-4xl text-text-primary">YUL</Text>
@@ -196,8 +240,9 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
                 <Text className="text-text-primary font-bold">✕</Text>
               </Pressable>
             ) : (
-              <View className="h-[40px] w-[40px]"></View>
+              <View className="h-[40px] w-[40px]" />
             )}
+
             <View className="bg-bg-surface rounded-lg border border-border-secondary w-[140px] h-[40px] flex-row items-center px-2">
               <TextInput
                 className="flex-1 text-base text-text-primary h-full"
@@ -265,7 +310,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-base">{error}</Text>
           <Pressable
-            onPress={() => fetchFlights()}
+            onPress={handleRetry}
             className="mt-4 p-2 bg-blue-100 rounded"
           >
             <Text>Retry</Text>
@@ -276,11 +321,14 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
           style={{ flex: 1 }}
           data={flightGroups}
           renderItem={renderFlightGroup}
-          keyExtractor={(group, index) => group[0]?.id || index.toString()}
+          keyExtractor={(group, index) => {
+            const groupKey = group.map((f) => f.id).join("-");
+            return groupKey || `group-${index}`;
+          }}
           ListHeaderComponent={<FlightListHeader />}
           stickyHeaderIndices={[0]}
-          onRefresh={() => fetchFlights()}
-          refreshing={isLoading}
+          onRefresh={() => fetchFlights(undefined, true)}
+          refreshing={isRefreshing}
           contentContainerStyle={{ paddingBottom: 20 }}
           ListEmptyComponent={
             <View className="justify-center items-center mt-10">
@@ -289,6 +337,15 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               </Text>
             </View>
           }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={10}
+          windowSize={10}
+          getItemLayout={undefined}
         />
       )}
     </>

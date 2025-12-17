@@ -1,5 +1,3 @@
-// src/types/memo.ts
-
 export type MemoTab = "Inbox" | "Acknowledged By Me";
 
 export interface MemoAttachment {

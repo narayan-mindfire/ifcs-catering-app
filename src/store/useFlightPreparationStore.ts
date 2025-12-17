@@ -1,14 +1,11 @@
 import { create } from "zustand";
-import apiClient from "../api/axiosClient";
 import {
   PreparationItem,
   PreparationDetailData,
   PreparationFlagUpdatePayload,
-  PrintData,
-  AddUserSignatureResponse,
 } from "../types/preparations";
+import { flightPreparationService } from "../services/flightPreparationService";
 
-// Define the shape based on your API response
 export interface UserSignature {
   id: string;
   deliveryId: string;
@@ -23,12 +20,6 @@ export interface UserSignature {
   createdAt: string;
   updatedAt: string;
   raic: string | null;
-}
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
 }
 
 interface FlightPreparationState {
@@ -57,7 +48,6 @@ interface FlightPreparationState {
   ) => Promise<{ success: boolean; fileUrl?: string; error?: string }>;
   clearPreparationDetail: () => void;
 
-  // Signature methods
   checkUserSignature: (
     flightId: string,
     deliveryId: string,
@@ -75,7 +65,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
   (set, get) => ({
     preparations: [],
     preparationDetail: null,
-    userSignatures: [], // Initialize empty
+    userSignatures: [],
     isLoading: false,
     isPrepLoading: false,
     isUpdating: false,
@@ -83,36 +73,19 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     isPrinting: false,
 
     fetchPreparations: async (flightId: string) => {
-      console.log("Fetching preparations for flight:", flightId);
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
       set({ isLoading: true, error: null });
       try {
-        const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
-          `/flights/${callFlight}/preparations`,
-          {
-            params: { includeContent: true },
-          },
-        );
-
-        if (response.data.success) {
-          set({
-            preparations: response.data.data || [],
-            isLoading: false,
-          });
-        } else {
-          set({
-            error: response.data.message || "Failed to fetch preparations",
-            isLoading: false,
-          });
-        }
+        const data = await flightPreparationService.getPreparations(flightId);
+        set({
+          preparations: data,
+          isLoading: false,
+        });
       } catch (err: any) {
         console.error("Fetch Preparations Error:", err);
         set({
           error:
             err.response?.data?.message ||
+            err.message ||
             "Network error fetching preparations",
           isLoading: false,
         });
@@ -121,31 +94,22 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
 
     fetchPreparationById: async (flightId: string, preparationId: string) => {
       set({ isPrepLoading: true, error: null });
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
       try {
-        const response = await apiClient.get<
-          ApiResponse<PreparationDetailData>
-        >(`/flights/${callFlight}/preparations/${preparationId}`);
-        if (response.data.success) {
-          set({
-            preparationDetail: response.data.data,
-            isPrepLoading: false,
-          });
-        } else {
-          set({
-            error:
-              response.data.message || "Failed to fetch preparation details",
-            isPrepLoading: false,
-          });
-        }
+        const data = await flightPreparationService.getPreparationById(
+          flightId,
+          preparationId,
+        );
+        set({
+          preparationDetail: data,
+          isPrepLoading: false,
+        });
       } catch (err: any) {
         console.error("Fetch Detail Error:", err);
         set({
           error:
-            err.response?.data?.message || "Network error fetching details",
+            err.response?.data?.message ||
+            err.message ||
+            "Network error fetching details",
           isPrepLoading: false,
         });
       }
@@ -153,63 +117,46 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
 
     updatePreparationFlag: async (flightId, preparationId, payload) => {
       set({ isUpdating: true, error: null });
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
       try {
-        const response = await apiClient.patch<ApiResponse<PreparationItem>>(
-          `/flights/${callFlight}/preparation-flags/${preparationId}`,
-          payload,
-        );
+        const updatedItem =
+          await flightPreparationService.updatePreparationFlag(
+            flightId,
+            preparationId,
+            payload,
+          );
 
-        if (response.data.success) {
-          const updatedItem = response.data.data;
-          set((state) => ({
-            preparations: state.preparations.map((item) =>
-              item.id === preparationId ? { ...item, ...updatedItem } : item,
-            ),
-            isUpdating: false,
-          }));
-          return true;
-        } else {
-          set({ isUpdating: false, error: response.data.message });
-          return false;
-        }
+        set((state) => ({
+          preparations: state.preparations.map((item) =>
+            item.id === preparationId ? { ...item, ...updatedItem } : item,
+          ),
+          isUpdating: false,
+        }));
+        return true;
       } catch (err: any) {
         set({
           isUpdating: false,
-          error: err.response?.data?.message || "Network error during update",
+          error:
+            err.response?.data?.message ||
+            err.message ||
+            "Network error during update",
         });
         return false;
       }
     },
 
     printPreparation: async (flightId: string) => {
-      const callFlight =
-        flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-          ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-          : flightId;
       set({ isPrinting: true, error: null });
       try {
-        const response = await apiClient.post<ApiResponse<PrintData>>(
-          `/flights/${callFlight}/preparations/print`,
-        );
-
+        const fileUrl =
+          await flightPreparationService.printPreparation(flightId);
         set({ isPrinting: false });
-
-        if (response.data.success && response.data.data?.fileUrl) {
-          return { success: true, fileUrl: response.data.data.fileUrl };
-        } else {
-          return {
-            success: false,
-            error: response.data.message || "Failed to generate print file",
-          };
-        }
+        return { success: true, fileUrl };
       } catch (err: any) {
         set({
           error:
-            err.response?.data?.message || "Network error generating print",
+            err.response?.data?.message ||
+            err.message ||
+            "Network error generating print",
           isPrinting: false,
         });
         return { success: false, error: err.message };
@@ -220,41 +167,19 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       set({ preparationDetail: null });
     },
 
-    // Check if user has signature for this delivery AND update state
     checkUserSignature: async (
       flightId: string,
       deliveryId: string,
       userId: string,
     ): Promise<boolean> => {
       try {
-        const callFlight =
-          flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-            ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-            : flightId;
-
-        const response = await apiClient.get<any>(
-          `/flights/${callFlight}/deliveries/user/signatures`,
-          {
-            params: {
-              userId,
-            },
-          },
+        const signatures = await flightPreparationService.getUserSignatures(
+          flightId,
+          userId,
         );
-
-        if (response.data.success && response.data.data) {
-          // Normalize to array
-          const dataArray = Array.isArray(response.data.data)
-            ? response.data.data
-            : [response.data.data];
-
-          console.log("User signature response:", dataArray);
-          set({ userSignatures: dataArray });
-          return dataArray.length > 0;
-        }
-
-        // Fallback for no data/success: false
-        set({ userSignatures: [] });
-        return false;
+        console.log("User signature response:", signatures);
+        set({ userSignatures: signatures });
+        return signatures.length > 0;
       } catch (err: any) {
         console.error("Check User Signature Error:", err);
         set({ userSignatures: [] });
@@ -262,7 +187,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       }
     },
 
-    // Add user signature
     addUserSignature: async (
       flightId: string,
       deliveryId: string,
@@ -270,33 +194,20 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
       signature: string,
     ): Promise<boolean> => {
       try {
-        // Clean the base64 prefix
         const cleanSignature = signature.replace(
           /^data:image\/[a-z]+;base64,/,
           "",
         );
 
-        const payload = {
+        await flightPreparationService.addUserSignature(
+          flightId,
           userId,
-          signature: cleanSignature,
-        };
-
-        const callFlight =
-          flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-            ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-            : flightId;
-
-        const response = await apiClient.post<AddUserSignatureResponse>(
-          `/flights/${callFlight}/deliveries/user-signatures`,
-          payload,
+          cleanSignature,
         );
 
-        if (response.data.success) {
-          console.log("User signature added successfully:", response.data.data);
-          await get().checkUserSignature(flightId, deliveryId, userId);
-          return true;
-        }
-        return false;
+        // Refresh signatures to update state
+        await get().checkUserSignature(flightId, deliveryId, userId);
+        return true;
       } catch (err: any) {
         console.error("Add User Signature Error:", err);
         return false;

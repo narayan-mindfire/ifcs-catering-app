@@ -2,10 +2,10 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../App";
-import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { RootStackParamList } from "../../navigation/AppNavigator";
+import { BreadCrumb } from "../../components/common/BreadCrumbs";
 
-import { NoFlightsIcon, PlaneIcon, QrIcon } from "../assets/icons";
+import { NoFlightsIcon, PlaneIcon, QrIcon } from "../../assets/icons";
 
 type SpotCheckSelectionScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -48,11 +48,14 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
           <TouchableOpacity
             className="flex-1 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
             activeOpacity={0.7}
-            onPress={() => console.log("Select Flight Pressed")}
+            onPress={() =>
+              navigation.push("SpotCheck", { flightId: "abc@123" })
+            }
           >
             <PlaneIcon />
             <TouchableOpacity
               onPress={() => {
+                console.log("Navigate to flight selection");
                 navigation.push("SpotCheck", { flightId: "abc@123" });
               }}
             >
@@ -67,7 +70,10 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
           <TouchableOpacity
             className="flex-1 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
             activeOpacity={0.7}
-            onPress={() => console.log("Scan Flight Pressed")}
+            onPress={() => {
+              console.log("on to scanning");
+              navigation.navigate("QRCodeScanner");
+            }}
           >
             <QrIcon width={40} height={40} />
             <Text className="mt-3 text-gray-700 font-medium text-lg text-center">
