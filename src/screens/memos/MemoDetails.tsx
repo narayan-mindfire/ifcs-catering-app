@@ -12,7 +12,7 @@ import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useMemoStore } from "../../store/useMemosStore";
 import {
   GearIcon,

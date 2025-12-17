@@ -4,7 +4,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { Header } from "../components/dashboard/Header";
 
 import DashboardScreen from "../screens/DashboardScreen";
-import CreateMemoScreen from "../screens/memos/CreateMemo";
 import DocumentsScreen from "../screens/DocumentsScreen";
 import FlightsScreen from "../screens/FlightsScreen";
 import FlightDetailsScreen from "../screens/FlightDetailsScreen";
@@ -51,7 +50,6 @@ export const AppNavigator = () => {
       }}
     >
       <Stack.Screen name="Dashboard" component={DashboardScreen} />
-      <Stack.Screen name="CreateMemo" component={CreateMemoScreen} />
       <Stack.Screen name="Flights" component={FlightsScreen} />
       <Stack.Screen name="SpotCheck" component={SpotCheckScreen} />
       <Stack.Screen

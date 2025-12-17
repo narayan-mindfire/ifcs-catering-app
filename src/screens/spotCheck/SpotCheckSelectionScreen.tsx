@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
 
 import { NoFlightsIcon, PlaneIcon, QrIcon } from "../../assets/icons";
