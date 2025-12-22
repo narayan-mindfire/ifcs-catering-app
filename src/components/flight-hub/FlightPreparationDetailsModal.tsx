@@ -18,6 +18,7 @@ import {
   PackingStandardContainer,
 } from "../../types/preparations";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
 import { ImageIcon } from "../../assets/icons";
 import { SealNumberModal } from "../preparation/SealNumberModal";
 import { SignatureModal } from "./SharedComponents";
@@ -34,6 +35,9 @@ interface FlightPreparationModalProps {
   isSealed: boolean;
   isPrepared: boolean;
   lockRequired: boolean;
+  // Consumption Flow Props
+  isConsumptionMode?: boolean;
+  onFinishConsumption?: () => void;
 }
 
 const ValidationModal = ({
@@ -79,6 +83,8 @@ export const FlightPreparationDetailsModal: React.FC<
   isSealed: initialIsSealed,
   isPrepared: initialIsPrepared,
   lockRequired,
+  // isConsumptionMode,
+  // onFinishConsumption,
 }) => {
   const {
     preparationDetail,
@@ -88,7 +94,14 @@ export const FlightPreparationDetailsModal: React.FC<
     isUpdating,
     checkUserSignature,
     addUserSignature,
+    // provisions, // Required for flag workaround
   } = useFlightPreparationStore();
+
+  const {
+    records: consumptionRecords,
+    fetchConsumptionRecords,
+    // createConsumptionRecord,
+  } = useConsumptionTrackingStore();
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
     useDeliveryStore();
@@ -109,7 +122,7 @@ export const FlightPreparationDetailsModal: React.FC<
     string | null | undefined
   >("");
 
-  // Seal and Signature modals
+  // Modals State
   const [sealModalVisible, setSealModalVisible] = useState(false);
   const [signatureModalVisible, setSignatureModalVisible] = useState(false);
   const [hasUserSignature, setHasUserSignature] = useState(false);
@@ -118,7 +131,6 @@ export const FlightPreparationDetailsModal: React.FC<
   const [consumptionItem, setConsumptionItem] =
     useState<PackingStandardItem | null>(null);
 
-  // Confirmation Modal
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [confirmModalData, setConfirmModalData] = useState<{
     title: string;
@@ -145,6 +157,7 @@ export const FlightPreparationDetailsModal: React.FC<
     if (visible && flightId && preparationId) {
       fetchPreparationById(flightId, preparationId);
       fetchDeliveries(flightId);
+      fetchConsumptionRecords(flightId);
     }
   }, [visible, flightId, preparationId]);
 
@@ -256,7 +269,6 @@ export const FlightPreparationDetailsModal: React.FC<
         setShowValidation(true);
         return;
       }
-
       setConfirmModalData({
         title: "Disable Preparation",
         message: "Are you sure you want to mark this as not prepared?",
@@ -266,10 +278,7 @@ export const FlightPreparationDetailsModal: React.FC<
           const success = await updatePreparationFlag(
             flightId,
             preparationDetail.id,
-            {
-              action: "prepared",
-              isContentPrepared: false,
-            },
+            { action: "prepared", isContentPrepared: false },
           );
           if (success) {
             setIsPrepared(false);
@@ -282,10 +291,7 @@ export const FlightPreparationDetailsModal: React.FC<
       const success = await updatePreparationFlag(
         flightId,
         preparationDetail.id,
-        {
-          action: "prepared",
-          isContentPrepared: true,
-        },
+        { action: "prepared", isContentPrepared: true },
       );
       if (success) {
         setIsPrepared(true);
@@ -303,7 +309,6 @@ export const FlightPreparationDetailsModal: React.FC<
         setShowValidation(true);
         return;
       }
-
       setConfirmModalData({
         title: "Remove Seal",
         message: "Are you sure you want to remove the seal from this item?",
@@ -313,10 +318,7 @@ export const FlightPreparationDetailsModal: React.FC<
           const success = await updatePreparationFlag(
             flightId,
             preparationDetail.id,
-            {
-              action: "seal",
-              sealTagNumber: null,
-            },
+            { action: "seal", sealTagNumber: null },
           );
           if (success) {
             setIsSealed(false);
@@ -331,12 +333,10 @@ export const FlightPreparationDetailsModal: React.FC<
         setShowValidation(true);
         return;
       }
-
       if (!hasUserSignature) {
         setSignatureModalVisible(true);
         return;
       }
-
       setSealModalVisible(true);
     }
   };
@@ -354,10 +354,7 @@ export const FlightPreparationDetailsModal: React.FC<
           const success = await updatePreparationFlag(
             flightId,
             preparationDetail.id,
-            {
-              action: "assembly",
-              assemblyProcessFlag: false,
-            },
+            { action: "assembly", assemblyProcessFlag: false },
           );
           if (success) {
             setIsLocked(false);
@@ -372,14 +369,10 @@ export const FlightPreparationDetailsModal: React.FC<
         setShowValidation(true);
         return;
       }
-
       const success = await updatePreparationFlag(
         flightId,
         preparationDetail.id,
-        {
-          action: "assembly",
-          assemblyProcessFlag: true,
-        },
+        { action: "assembly", assemblyProcessFlag: true },
       );
       if (success) {
         setIsLocked(true);
@@ -390,21 +383,17 @@ export const FlightPreparationDetailsModal: React.FC<
 
   const handleSaveSignature = async (signature: string) => {
     setSignatureModalVisible(false);
-
     if (!flightId) {
       Alert.alert("Error", "No flight selected");
       return;
     }
-
     let deliveryId = selectedDeliveryId || deliveries[0]?.id;
-
     if (!deliveryId) {
       try {
         await createDelivery(flightId, "Default Delivery");
         await new Promise((resolve) => setTimeout(resolve, 500));
         const newDeliveries = useDeliveryStore.getState().deliveries;
         deliveryId = newDeliveries[0]?.id;
-
         if (!deliveryId) {
           Alert.alert("Error", "Failed to create delivery");
           return;
@@ -414,14 +403,12 @@ export const FlightPreparationDetailsModal: React.FC<
         return;
       }
     }
-
     const success = await addUserSignature(
       flightId,
       deliveryId,
       CURRENT_USER_ID,
       signature,
     );
-
     if (success) {
       setHasUserSignature(true);
       Alert.alert("Success", "Signature saved successfully");
@@ -434,16 +421,11 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSaveSealNumber = async (sealNumber: number) => {
     setSealModalVisible(false);
     if (!flightId || !preparationDetail) return;
-
     const success = await updatePreparationFlag(
       flightId,
       preparationDetail.id,
-      {
-        action: "seal",
-        sealTagNumber: sealNumber,
-      },
+      { action: "seal", sealTagNumber: sealNumber },
     );
-
     if (success) {
       setIsSealed(true);
       Alert.alert("Success", `Seal applied with tag number: ${sealNumber}`);
@@ -464,26 +446,17 @@ export const FlightPreparationDetailsModal: React.FC<
         transparent
         onRequestClose={onClose}
       >
-        <ConsumptionModal
-          visible={consumptionModalVisible}
-          onClose={() => {
-            setConsumptionModalVisible(false);
-            setConsumptionItem(null);
-          }}
-          item={consumptionItem}
-          flightId={flightId}
-          preparationId={preparationId}
-          packingStandardId={preparationDetail?.packingStandard?.id}
-          packingStandardItemId={consumptionItem?.id}
-          locationInfo={{
-            galley: preparationDetail?.galleyPosition || "N/A",
-            stowage: preparationDetail?.position || "N/A",
-            carrier: preparationDetail?.name || "N/A",
-          }}
-        />
         <View className="flex-1 bg-black/60 justify-center items-center px-4">
           <View className="w-full max-w-[1000px] h-[80%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
-            <View className="p-4 border-b border-border-muted flex-row justify-between items-center bg-bg-surface z-10">
+            {/* Header: Change color if in Consumption Mode */}
+            <View
+              className={`p-4 border-b border-border-muted flex-row justify-between items-cente z-10`}
+            >
+              {/* <Text className="text-xl font-medium text-text-secondary">
+                {isConsumptionMode
+                  ? "📦 Record Leftovers (Old Flight)"
+                  : "Flight Preparation Plan Details"}
+              </Text> */}
               <Text className="text-xl font-medium text-text-secondary">
                 Flight Preparation Plan Details
               </Text>
@@ -540,7 +513,6 @@ export const FlightPreparationDetailsModal: React.FC<
                       </Text>
                     </View>
                   </View>
-
                   <View className="flex-1">
                     <View>
                       <Text className="text-text-secondary text-xs">
@@ -551,7 +523,6 @@ export const FlightPreparationDetailsModal: React.FC<
                       </Text>
                     </View>
                   </View>
-
                   <View className="flex-1">
                     <View>
                       <Text className="text-text-secondary text-xs">Name</Text>
@@ -563,6 +534,7 @@ export const FlightPreparationDetailsModal: React.FC<
                 </View>
 
                 <View className="flex-row gap-4 mt-6 h-[500px]">
+                  {/* Visualizer Column */}
                   <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
                     <View className="flex-1 items-center justify-center">
                       {positionImage ? (
@@ -577,7 +549,6 @@ export const FlightPreparationDetailsModal: React.FC<
                         </Text>
                       )}
                     </View>
-
                     <View className="flex-1 items-center justify-center">
                       {equipmentType === "Container" ? (
                         <ContainerVisualizer
@@ -585,13 +556,11 @@ export const FlightPreparationDetailsModal: React.FC<
                           numberOfDrawers={containers.length}
                           drawersData={containers}
                           defaultOpenDrawer={activeDrawerIndex}
-                          onDrawerClick={(idx: any) => {
-                            if (idx !== null && containers[idx]) {
-                              handleDrawerClick(idx, containers[idx]);
-                            } else {
-                              handleDrawerClick(null, null);
-                            }
-                          }}
+                          onDrawerClick={(idx: any) =>
+                            idx !== null && containers[idx]
+                              ? handleDrawerClick(idx, containers[idx])
+                              : handleDrawerClick(null, null)
+                          }
                         />
                       ) : equipmentType === "Cart" ? (
                         <CartVisualizer
@@ -613,6 +582,7 @@ export const FlightPreparationDetailsModal: React.FC<
                     </View>
                   </View>
 
+                  {/* List Column */}
                   <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
                     <View className="p-3 border-b border-border-muted bg-bg-secondary">
                       <View className="mb-2">
@@ -633,44 +603,84 @@ export const FlightPreparationDetailsModal: React.FC<
                         Item
                       </Text>
                       <Text className="flex-1 text-xs font-bold text-text-secondary text-center">
-                        Track
+                        Img
                       </Text>
                     </View>
 
                     <ScrollView>
                       {selectedDrawerContents.length > 0 ? (
-                        selectedDrawerContents.map((item, index) => (
-                          <TouchableOpacity
-                            key={item.id || index}
-                            className="flex-row p-3 border-b border-border-muted items-center"
-                            onPress={() =>
-                              handleImagePress(item.picture, item.name)
-                            }
-                          >
-                            <Text className="flex-1 text-sm text-text-primary text-center">
-                              {item.quantity}
-                            </Text>
+                        selectedDrawerContents.map((item, index) => {
+                          // --- TRACKING LOGIC ---
+                          const isTrackable =
+                            !item.isTrackConsumption ||
+                            // provisions?.find(
+                            //   (p) =>
+                            //     p.id === item.itemId ||
+                            //     p.id === item.provisionId,
+                            // )?.isTrackConsumption ||
+                            true;
 
-                            <Text className="flex-[3] text-sm text-text-primary pl-2">
-                              {item.name}
-                            </Text>
-                            <View className="flex-1 items-center">
-                              {!item.isTrackConsumption && (
+                          const isTracked = consumptionRecords.some(
+                            (r) =>
+                              r.flightPrepPackingStandardItemId === item.id,
+                          );
+
+                          // Blue = Done, Red = Pending (Only applies in Consumption Mode)
+                          let rowStyle =
+                            "bg-bg-surface border-b border-border-muted";
+                          if (isTrackable) {
+                            if (isTracked) {
+                              // Blue Style (Done)
+                              rowStyle =
+                                "bg-blue-50 border-b border-blue-200 border-l-[4px] border-l-blue-500";
+                            } else {
+                              // Red Style (Pending)
+                              rowStyle =
+                                "bg-red-50 border-b border-red-200 border-l-[4px] border-l-red-500";
+                            }
+                          }
+
+                          return (
+                            <TouchableOpacity
+                              key={item.id || index}
+                              className={`flex-row p-3 items-center ${rowStyle}`}
+                              onPress={() => {
+                                if (isTrackable) {
+                                  handleOpenConsumptionModal(item);
+                                } else {
+                                  handleImagePress(item.picture, item.name);
+                                }
+                              }}
+                            >
+                              <Text className="flex-1 text-sm text-text-primary text-center">
+                                {item.quantity}
+                              </Text>
+
+                              <Text className="flex-[3] text-sm text-text-primary pl-2">
+                                {item.name}
+                              </Text>
+
+                              <View className="flex-1 items-center">
                                 <TouchableOpacity
                                   onPress={(e) => {
                                     e.stopPropagation();
-                                    handleOpenConsumptionModal(item);
+                                    handleImagePress(item.picture, item.name);
                                   }}
-                                  className="w-8 h-8 rounded-full bg-blue-100 border border-blue-300 items-center justify-center"
                                 >
-                                  <Text className="text-blue-600 font-bold text-lg">
-                                    I
-                                  </Text>
+                                  {item.picture ? (
+                                    <Image
+                                      source={{ uri: item.picture }}
+                                      className="w-8 h-8 rounded"
+                                      resizeMode="cover"
+                                    />
+                                  ) : (
+                                    <ImageIcon width={25} height={25} />
+                                  )}
                                 </TouchableOpacity>
-                              )}
-                            </View>
-                          </TouchableOpacity>
-                        ))
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })
                       ) : (
                         <View className="p-4 items-center">
                           <Text className="text-text-muted text-sm">
@@ -684,7 +694,7 @@ export const FlightPreparationDetailsModal: React.FC<
               </ScrollView>
             )}
 
-            <View className="p-4 border-t border-border-muted items-end bg-bg-surface">
+            <View className="p-4 border-t border-border-muted items-end bg-bg-surface flex-row justify-end gap-3">
               <TouchableOpacity
                 onPress={onClose}
                 className="bg-bg-button py-3 px-8 rounded-xl"
@@ -693,8 +703,48 @@ export const FlightPreparationDetailsModal: React.FC<
               </TouchableOpacity>
             </View>
           </View>
-        </View>
 
+          <ConsumptionModal
+            presentationStyle="overlay"
+            visible={consumptionModalVisible}
+            onClose={() => {
+              setConsumptionModalVisible(false);
+              setConsumptionItem(null);
+            }}
+            item={consumptionItem}
+            locationInfo={{
+              galley: preparationDetail?.galleyPosition || "N/A",
+              stowage: preparationDetail?.position || "N/A",
+              carrier: preparationDetail?.name || "N/A",
+            }}
+            flightId={flightId}
+            preparationId={preparationId}
+          />
+          <SealNumberModal
+            isOpen={sealModalVisible}
+            onClose={() => setSealModalVisible(false)}
+            onSave={handleSaveSealNumber}
+          />
+          <SignatureModal
+            isOpen={signatureModalVisible}
+            onClose={() => setSignatureModalVisible(false)}
+            onSave={handleSaveSignature}
+            title="Add Your Signature"
+          />
+          <ConfirmationModal
+            isOpen={confirmModalVisible}
+            onClose={() => setConfirmModalVisible(false)}
+            onConfirm={confirmModalData.onConfirm}
+            title={confirmModalData.title}
+            message={confirmModalData.message}
+            actionType={confirmModalData.actionType}
+          />
+          <ValidationModal
+            visible={showValidation}
+            message={validationMsg}
+            onClose={() => setShowValidation(false)}
+          />
+        </View>
         <Modal
           visible={isPreviewVisible}
           animationType="fade"
@@ -716,7 +766,6 @@ export const FlightPreparationDetailsModal: React.FC<
                   </Text>
                 </TouchableOpacity>
               </View>
-
               <View className="w-full h-80 bg-bg-quaternary rounded-xl justify-center items-center overflow-hidden border border-border-muted">
                 {previewImageUrl ? (
                   <Image
@@ -733,7 +782,6 @@ export const FlightPreparationDetailsModal: React.FC<
                   </View>
                 )}
               </View>
-
               <View className="mt-4 flex-row justify-end">
                 <TouchableOpacity
                   onPress={closeImagePreview}
@@ -748,34 +796,6 @@ export const FlightPreparationDetailsModal: React.FC<
           </View>
         </Modal>
       </Modal>
-
-      <SealNumberModal
-        isOpen={sealModalVisible}
-        onClose={() => setSealModalVisible(false)}
-        onSave={handleSaveSealNumber}
-      />
-
-      <SignatureModal
-        isOpen={signatureModalVisible}
-        onClose={() => setSignatureModalVisible(false)}
-        onSave={handleSaveSignature}
-        title="Add Your Signature"
-      />
-
-      <ConfirmationModal
-        isOpen={confirmModalVisible}
-        onClose={() => setConfirmModalVisible(false)}
-        onConfirm={confirmModalData.onConfirm}
-        title={confirmModalData.title}
-        message={confirmModalData.message}
-        actionType={confirmModalData.actionType}
-      />
-
-      <ValidationModal
-        visible={showValidation}
-        message={validationMsg}
-        onClose={() => setShowValidation(false)}
-      />
     </>
   );
 };

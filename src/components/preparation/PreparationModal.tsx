@@ -2,6 +2,7 @@ import React, { lazy } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 import { ConfirmationModal } from "../common/ConfirmationModal";
 
+// Lazy load heavy components
 const FlightPreparationDetailsModal = lazy(() =>
   import("../flight-hub/FlightPreparationDetailsModal").then((m) => ({
     default: m.FlightPreparationDetailsModal,
@@ -29,10 +30,14 @@ const ValidationModal = lazy(() =>
 );
 
 interface PreparationsModalsProps {
-  modals: any;
+  modals: any; // Ideally use the return type of usePreparationModals
   selectedFlight: any;
   onSaveSignature: (signature: string) => void;
   onSaveSealNumber: (sealNumber: number) => void;
+  // NEW: Props for consumption flow
+  isConsumptionMode?: boolean;
+  consumptionFlightId?: string; // ID of the old flight
+  onFinishConsumption?: () => void;
 }
 
 export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
@@ -40,7 +45,17 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
   selectedFlight,
   onSaveSignature,
   onSaveSealNumber,
+  isConsumptionMode = false,
+  consumptionFlightId,
+  onFinishConsumption,
 }) => {
+  // Determine which flight ID to use
+  // If in consumption mode, use the scanned old flight ID. Otherwise, use current selected flight.
+  const activeFlightId =
+    isConsumptionMode && consumptionFlightId
+      ? consumptionFlightId
+      : selectedFlight?.id || "";
+
   return (
     <>
       <PdfViewerModal
@@ -111,14 +126,15 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
           visible={modals.detailModalVisible}
           onClose={modals.closeDetailModal}
           preparationId={modals.selectedItem.id}
-          flightId={selectedFlight?.id || ""}
+          flightId={activeFlightId} // Use the resolved ID
+          // Use status from hook state
           isLocked={modals.selectedPrepStatus.isLocked}
-          isSealed={
-            modals.selectedItem.sealTagNumber !== null &&
-            modals.selectedItem.sealTagNumber !== ""
-          }
-          isPrepared={modals.selectedItem.assemblyProcessFlag === "true"}
+          isSealed={modals.selectedPrepStatus.isSealed}
+          isPrepared={modals.selectedPrepStatus.isCompleted} // mapped to isCompleted in hook
           lockRequired={modals.selectedItem.isLockRequired}
+          // Consumption Props
+          // isConsumptionMode={isConsumptionMode}
+          // onFinishConsumption={onFinishConsumption}
         />
       )}
     </>

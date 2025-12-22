@@ -46,7 +46,7 @@ const formatDate = (dateString: string) => {
   return date.toLocaleString("en-US", options);
 };
 
-const TABS: MemoTab[] = ["Inbox", "Acknowledged By Me"];
+const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos, isLoading } = useMemoStore();
@@ -129,20 +129,20 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       <View className="flex-row items-center bg-bg-surface border-b border-border-muted">
-        <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-3">
+        <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-0">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
             const icon =
               tab === "Inbox" ? (
                 isActive ? (
-                  <TrayIconActive height={40} width={40} />
+                  <TrayIconActive height={30} width={30} />
                 ) : (
-                  <TrayIcon height={40} width={40} />
+                  <TrayIcon height={30} width={30} />
                 )
               ) : isActive ? (
-                <CheckIconActive height={40} width={40} />
+                <CheckIconActive height={30} width={30} />
               ) : (
-                <CheckIcon height={40} width={40} />
+                <CheckIcon height={30} width={30} />
               );
 
             return (
@@ -155,6 +155,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 style={{
                   flex: 1,
                   marginHorizontal: 4,
+                  paddingVertical: 0,
                   borderRadius: 999,
                 }}
                 textStyle={{
@@ -167,10 +168,10 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
           })}
         </View>
 
-        <View className="pr-5">
+        <View className="pr-5 hidden sm:flex">
           <View className="bg-bg-button/10 px-3 py-1 rounded-full border border-bg-button/20">
             <Text className="text-bg-button text-sm font-semibold">
-              {memos.length} records
+              {memos.length} memos
             </Text>
           </View>
         </View>
@@ -201,6 +202,10 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               {memos.map((memo) => {
                 const formattedDate = formatDate(memo.createdAt);
                 const isPriority = memo.priority === 3;
+
+                // Fallback: If isRead is missing (common in Sent view), treat as Read (true)
+                // to avoid showing 'Unread' for items the user sent themselves.
+                const displayIsRead = memo.isRead ?? true;
 
                 return (
                   <TouchableOpacity
@@ -240,15 +245,15 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
 
                         <View
                           className={`px-3 py-1 rounded-md ml-2 ${
-                            memo.isRead ? "bg-green-100" : "bg-red-100"
+                            displayIsRead ? "bg-green-100" : "bg-red-100"
                           }`}
                         >
                           <Text
                             className={`text-xs font-semibold ${
-                              memo.isRead ? "text-green-700" : "text-red-700"
+                              displayIsRead ? "text-green-700" : "text-red-700"
                             }`}
                           >
-                            {memo.isRead ? "Read" : "Unread"}
+                            {displayIsRead ? "Read" : "Unread"}
                           </Text>
                         </View>
                       </View>
@@ -260,9 +265,16 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                         {memo.note}
                       </Text>
 
-                      <Text className="text-xs text-gray-400">
-                        {formattedDate}
-                      </Text>
+                      <View className="flex-row justify-between items-center">
+                        <Text className="text-xs text-gray-400">
+                          {formattedDate}
+                        </Text>
+                        {memo.version && (
+                          <Text className="text-xs text-gray-400 bg-gray-100 px-1.5 rounded">
+                            v{memo.version}
+                          </Text>
+                        )}
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );

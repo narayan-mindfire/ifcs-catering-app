@@ -26,7 +26,6 @@ interface FlightPreparationState {
   preparations: PreparationItem[];
   preparationDetail: PreparationDetailData | null;
   userSignatures: UserSignature[];
-
   isLoading: boolean;
   isPrinting: boolean;
   isPrepLoading: boolean;
@@ -47,7 +46,6 @@ interface FlightPreparationState {
     flightId: string,
   ) => Promise<{ success: boolean; fileUrl?: string; error?: string }>;
   clearPreparationDetail: () => void;
-
   checkUserSignature: (
     flightId: string,
     deliveryId: string,
@@ -58,6 +56,11 @@ interface FlightPreparationState {
     deliveryId: string,
     userId: string,
     signature: string,
+  ) => Promise<boolean>;
+  linkPriorPrep: (
+    flightId: string,
+    currentPrepId: string,
+    oldPrepId: string,
   ) => Promise<boolean>;
 }
 
@@ -72,6 +75,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     error: null,
     isPrinting: false,
 
+    // ... (Keep fetchPreparations, fetchPreparationById, updatePreparationFlag, printPreparation, clearPreparationDetail, checkUserSignature, addUserSignature AS IS) ...
     fetchPreparations: async (flightId: string) => {
       set({ isLoading: true, error: null });
       try {
@@ -205,11 +209,35 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           cleanSignature,
         );
 
-        // Refresh signatures to update state
         await get().checkUserSignature(flightId, deliveryId, userId);
         return true;
       } catch (err: any) {
         console.error("Add User Signature Error:", err);
+        return false;
+      }
+    },
+
+    // 👇 UPDATED REAL IMPLEMENTATION 👇
+    linkPriorPrep: async (
+      flightId: string,
+      currentPrepId: string,
+      oldPrepId: string,
+    ): Promise<boolean> => {
+      set({ isUpdating: true, error: null });
+      try {
+        await flightPreparationService.linkPriorPreparation(
+          flightId,
+          currentPrepId,
+          oldPrepId,
+        );
+        set({ isUpdating: false });
+        return true;
+      } catch (err: any) {
+        console.error("Link Prior Prep Error:", err);
+        set({
+          isUpdating: false,
+          error: err.message || "Failed to link prior preparation",
+        });
         return false;
       }
     },

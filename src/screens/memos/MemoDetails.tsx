@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  TextInput,
 } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -14,14 +13,10 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useMemoStore } from "../../store/useMemosStore";
-import {
-  GearIcon,
-  SparkleIcon,
-  UploadIcon,
-  UserIcon,
-} from "../../assets/icons";
+import { DocsIconDark, SparkleIcon, UserIcon } from "../../assets/icons";
 import { formatDateDetail } from "../../utils/dateFormatter";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import { MemoVersion } from "../../types/memo";
 
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<
@@ -32,14 +27,9 @@ type MemoDetailScreenNavigationProp = StackNavigationProp<
 interface Props {
   route: MemoDetailScreenRouteProp;
   navigation: MemoDetailScreenNavigationProp;
-  showVersion?: boolean;
 }
 
-const MemoDetailScreen: React.FC<Props> = ({
-  route,
-  navigation,
-  showVersion = false,
-}) => {
+const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { memoId } = route.params;
   const { activeMemo, isLoading, fetchMemoById, acknowledgeMemo, markAsRead } =
     useMemoStore();
@@ -47,6 +37,7 @@ const MemoDetailScreen: React.FC<Props> = ({
   const [isAckLoading, setIsAckLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  // Hardcoded for now based on requirement, usually comes from Auth Context
   const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
 
   const currentUserRecipientRecord = activeMemo?.recipients?.find(
@@ -70,6 +61,19 @@ const MemoDetailScreen: React.FC<Props> = ({
     });
   }, [recipients, CURRENT_USER_ID]);
 
+  // Handle versions derived from activeMemo data
+  console.log("Active Memo Versions:", activeMemo?.versions);
+  const hasVersions = activeMemo?.versions && activeMemo.versions.length > 1;
+
+  // Sort versions descending by date (newest first)
+  const sortedVersions = useMemo(() => {
+    if (!activeMemo?.versions) return [];
+    return [...activeMemo.versions].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [activeMemo?.versions]);
+
   useEffect(() => {
     const loadMemo = async () => {
       await fetchMemoById(memoId);
@@ -78,19 +82,20 @@ const MemoDetailScreen: React.FC<Props> = ({
   }, [memoId, fetchMemoById]);
 
   useEffect(() => {
-    if (activeMemo && !activeMemo.isRead) {
-      markAsRead(memoId);
+    // If activeMemo is loaded and unread, mark it as read
+    if (activeMemo && activeMemo.isRead === false) {
+      markAsRead(activeMemo.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMemo?.id]);
 
   const handleAcknowledge = async () => {
-    if (isAcknowledged) return;
+    if (isAcknowledged || !activeMemo) return;
     setIsAckLoading(true);
     try {
-      await acknowledgeMemo(memoId);
+      await acknowledgeMemo(activeMemo.id);
       Alert.alert("Success", "Memo acknowledged successfully.", [
-        { text: "OK", onPress: () => fetchMemoById(memoId) },
+        { text: "OK", onPress: () => fetchMemoById(activeMemo.id) },
       ]);
     } catch (e) {
       Alert.alert("Error", `Failed to acknowledge memo. ${e}`);
@@ -123,6 +128,11 @@ const MemoDetailScreen: React.FC<Props> = ({
     }
   };
 
+  const handleVersionClick = (versionId: string) => {
+    if (versionId === activeMemo?.id) return; // Already viewing
+    fetchMemoById(versionId);
+  };
+
   if (isLoading || !activeMemo) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
@@ -149,45 +159,59 @@ const MemoDetailScreen: React.FC<Props> = ({
         ]}
       />
       <View className="flex-1 flex-row bg-white">
-        {showVersion && (
+        {hasVersions && (
           <View className="w-72 bg-gray-50 border-r border-gray-200 p-4">
-            <View className="flex-row items-center justify-between mb-4">
+            <View className="mb-4">
               <Text className="text-lg font-semibold text-gray-900">
-                Memos (4)
+                Version History
               </Text>
-              <TouchableOpacity>
-                <Text className="text-sm text-gray-600 underline">
-                  Show All
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row gap-2 mb-4">
-              <View className="flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2">
-                <TextInput
-                  placeholder="Search..."
-                  className="text-sm text-gray-600"
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
-              <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
-                <GearIcon width={20} height={20} />
-              </TouchableOpacity>
-              <TouchableOpacity className="bg-white border border-gray-300 rounded-lg p-2 w-10 items-center justify-center">
-                <UploadIcon />
-              </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <TouchableOpacity className="bg-bg-accent rounded-xl p-4 mb-2" />
+              {sortedVersions.map((ver: MemoVersion) => {
+                const isSelected = ver.id === activeMemo.id;
+                return (
+                  <TouchableOpacity
+                    key={ver.id}
+                    onPress={() => handleVersionClick(ver.id)}
+                    className={`mb-2 p-3 rounded-xl border ${
+                      isSelected
+                        ? "bg-bg-accent border-bg-button/30"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    <View className="flex-row items-center justify-between mb-1">
+                      <Text
+                        className={`font-semibold ${isSelected ? "text-bg-button" : "text-gray-700"}`}
+                      >
+                        Version {ver.version}
+                      </Text>
+                    </View>
+                    <Text className="text-xs text-gray-500">
+                      {formatDateDetail(ver.createdAt)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         )}
 
+        {/* Main Content Area */}
         <View className="flex-1">
           <ScrollView className="flex-1">
             <View className="p-8">
-              <View className="flex-row items-center justify-end mb-4">
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center gap-2">
+                  {activeMemo.version && (
+                    <View className="bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                      <Text className="text-xs font-semibold text-gray-600">
+                        v{activeMemo.version}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+
                 {activeMemo.priority === 3 && (
                   <View className="bg-yellow-100 px-3 py-1.5 rounded-lg flex-row items-center gap-1.5">
                     <SparkleIcon />
@@ -211,19 +235,22 @@ const MemoDetailScreen: React.FC<Props> = ({
                   Last Modified {modifiedTime}
                 </Text>
               </View>
+
               <View className="mb-8">
                 <Text className="text-lg font-semibold text-gray-900 mb-4">
                   Message
                 </Text>
-                <Text className="text-base text-gray-700 leading-6">
-                  {activeMemo.note}
-                </Text>
+                <View className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <Text className="text-base text-gray-700 leading-7">
+                    {activeMemo.note}
+                  </Text>
+                </View>
               </View>
 
               {activeMemo.attachments && activeMemo.attachments.length > 0 && (
                 <View>
                   <Text className="text-lg font-semibold text-gray-900 mb-4">
-                    Attachments
+                    Attachments ({activeMemo.attachments.length})
                   </Text>
                   {activeMemo.attachments.map((attachment) => (
                     <TouchableOpacity
@@ -235,18 +262,26 @@ const MemoDetailScreen: React.FC<Props> = ({
                           attachment.id,
                         )
                       }
-                      className="flex-row items-center justify-between p-4 mb-3 bg-gray-50 rounded-lg border border-gray-200"
+                      className="flex-row items-center justify-between p-4 mb-3 bg-white rounded-lg border border-gray-200 shadow-sm"
                     >
-                      <Text
-                        className="text-base text-gray-700 flex-1"
-                        numberOfLines={1}
-                      >
-                        {attachment.fileName}
-                      </Text>
+                      <View className="flex-row items-center flex-1 gap-3">
+                        <View className="bg-gray-100 p-2 rounded-lg">
+                          <DocsIconDark width={20} height={20} />
+                        </View>
+                        <Text
+                          className="text-base text-gray-700 flex-1 font-medium"
+                          numberOfLines={1}
+                        >
+                          {attachment.fileName}
+                        </Text>
+                      </View>
+
                       {downloadingId === attachment.id ? (
                         <ActivityIndicator color="#602AF3" size="small" />
                       ) : (
-                        <Text className="text-gray-400 text-xl ml-2">↗</Text>
+                        <Text className="text-gray-400 text-sm ml-2 font-semibold">
+                          Download ↗
+                        </Text>
                       )}
                     </TouchableOpacity>
                   ))}
@@ -256,10 +291,11 @@ const MemoDetailScreen: React.FC<Props> = ({
           </ScrollView>
         </View>
 
+        {/* Recipients / Sidebar Right */}
         <View className="w-96 bg-white border-l border-gray-200 p-6">
           <View className="flex-row items-center justify-between mb-6">
             <Text className="text-lg font-semibold text-gray-900">
-              All Users
+              Recipients ({sortedRecipients.length})
             </Text>
           </View>
 
@@ -281,17 +317,23 @@ const MemoDetailScreen: React.FC<Props> = ({
                         <UserIcon />
                       )}
                     </View>
-                    <Text className="text-base font-medium text-gray-900">
-                      {item.firstName} {item.lastName}
-                      {isCurrentUser ? " (You)" : ""}
-                    </Text>
+                    <View className="flex-1">
+                      <Text className="text-base font-medium text-gray-900">
+                        {item.firstName} {item.lastName}
+                      </Text>
+                      {isCurrentUser && (
+                        <Text className="text-xs text-bg-button font-medium">
+                          You
+                        </Text>
+                      )}
+                    </View>
                   </View>
 
                   {isCurrentUser && !hasAck ? (
                     <TouchableOpacity
                       onPress={handleAcknowledge}
                       disabled={isAckLoading}
-                      className="bg-bg-button py-3 rounded-lg flex-row items-center justify-center gap-2"
+                      className="bg-bg-button py-3 rounded-lg flex-row items-center justify-center gap-2 mt-2"
                     >
                       {isAckLoading ? (
                         <ActivityIndicator color="white" size="small" />
@@ -305,17 +347,17 @@ const MemoDetailScreen: React.FC<Props> = ({
                       )}
                     </TouchableOpacity>
                   ) : hasAck ? (
-                    <View className="flex-row-reverse items-end gap-2">
-                      <View className="w-5 h-5 bg-bg-button rounded-full items-center justify-center">
-                        <Text className="text-white text-xs">✓</Text>
+                    <View className="flex-row items-center gap-2 mt-1 ml-11">
+                      <View className="w-4 h-4 bg-green-100 rounded-full items-center justify-center border border-green-200">
+                        <Text className="text-green-700 text-[10px]">✓</Text>
                       </View>
-                      <Text className="text-sm text-gray-600">
-                        {formatDateDetail(timestamp)}
+                      <Text className="text-xs text-gray-500">
+                        Acknowledged on {formatDateDetail(timestamp)}
                       </Text>
                     </View>
                   ) : (
-                    <Text className="text-sm text-right text-gray-400">
-                      Not yet acknowledged
+                    <Text className="text-xs text-gray-400 ml-11 mt-1">
+                      Pending acknowledgement
                     </Text>
                   )}
                 </View>

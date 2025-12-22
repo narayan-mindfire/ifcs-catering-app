@@ -3,17 +3,16 @@ import {
   View,
   Text,
   Modal,
-  TouchableOpacity,
   Image,
   TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import { PackingStandardItem } from "../../types/preparations";
 import { ImageIcon } from "../../assets/icons";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
+import { AppButton } from "../common/AppButton";
 
 interface ConsumptionModalProps {
   visible: boolean;
@@ -95,123 +94,132 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   };
 
   const Content = (
-    <View className="w-[600px] bg-white rounded-xl overflow-hidden shadow-xl">
-      {/* Header */}
-      <View className="p-4 pb-2">
-        <Text className="text-lg font-bold text-gray-900 uppercase">
+    <View className="w-[650px] bg-bg-surface rounded-2xl overflow-hidden shadow-2xl border border-border-muted">
+      {/* --- HEADER --- */}
+      <View className="p-5 border-b border-border-muted bg-bg-quaternary">
+        <Text className="text-xl font-bold text-text-primary uppercase tracking-wide">
           {item.name || "Item Details"}
         </Text>
       </View>
 
-      {/* Image + Location */}
-      <View className="flex-row px-4 pb-4 gap-4">
-        <View className="w-36 h-24 bg-gray-100 rounded-lg border border-gray-200 items-center justify-center overflow-hidden">
+      {/* --- BODY --- */}
+      <View className="flex-row p-6 gap-6">
+        {/* Left: Image Container */}
+        <View className="w-48 h-48 bg-bg-tertiary rounded-xl border border-border-muted items-center justify-center overflow-hidden shadow-sm">
           {item.picture ? (
             <Image
               source={{ uri: item.picture }}
               className="w-full h-full"
-              resizeMode="cover"
+              resizeMode="contain"
             />
           ) : (
-            <ImageIcon width={44} height={44} color="#9CA3AF" />
+            <ImageIcon width={64} height={64} color="#A09CAB" />
           )}
         </View>
 
-        <View className="flex-1 justify-center gap-1">
-          <Text className="text-lg text-gray-500 font-medium mb-1">
-            Location:
-          </Text>
-
-          <View className="flex-row items-center">
-            <Text className="text-base text-gray-400 w-24">Galley:</Text>
-            <Text className="text-base text-gray-800 font-semibold">
-              {locationInfo.galley}
+        {/* Right: Info Table */}
+        <View className="flex-1 justify-center gap-4">
+          <View className="bg-bg-tertiary rounded-xl p-4 border border-border-muted">
+            <Text className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">
+              Location Details
             </Text>
-          </View>
 
-          <View className="flex-row items-center">
-            <Text className="text-base text-gray-400 w-24">Stowage:</Text>
-            <Text className="text-base text-gray-800 font-semibold">
-              {locationInfo.stowage}
-            </Text>
-          </View>
+            {/* Table Row 1: Headers */}
+            <View className="flex-row border-b border-border-muted pb-2 mb-2">
+              <Text className="flex-1 text-xs font-bold text-text-secondary">
+                GALLEY
+              </Text>
+              <Text className="flex-1 text-xs font-bold text-text-secondary">
+                STOWAGE
+              </Text>
+              <Text className="flex-1 text-xs font-bold text-text-secondary">
+                CARRIER
+              </Text>
+            </View>
 
-          <View className="flex-row items-center">
-            <Text className="text-base text-gray-400 w-24">Carrier:</Text>
-            <Text className="text-base text-gray-800 font-semibold">
-              {locationInfo.carrier}
-            </Text>
+            {/* Table Row 2: Data */}
+            <View className="flex-row">
+              <Text className="flex-1 text-base font-medium text-text-primary">
+                {locationInfo.galley}
+              </Text>
+              <Text className="flex-1 text-base font-medium text-text-primary">
+                {locationInfo.stowage}
+              </Text>
+              <Text className="flex-1 text-base font-medium text-text-primary">
+                {locationInfo.carrier}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Quantity Section */}
-      <View className="bg-gray-200 p-4 flex-row items-center justify-between">
+      {/* --- QUANTITY INPUT SECTION --- */}
+      <View className="bg-bg-quaternary px-8 py-6 border-t border-border-muted flex-row items-center justify-between">
+        {/* Total */}
         <View className="items-center">
-          <Text className="text-base text-gray-500 font-semibold mb-1">
+          <Text className="text-sm font-semibold text-text-muted mb-1 uppercase">
             Total Qty
           </Text>
-          <Text className="text-3xl text-gray-600 font-bold">{totalQty}</Text>
+          <Text className="text-4xl font-bold text-text-primary">
+            {totalQty}
+          </Text>
         </View>
 
+        {/* Input */}
         <View className="items-center">
-          <Text className="text-base text-gray-500 font-semibold mb-1">
-            Enter Remaining Quantity
+          <Text className="text-sm font-bold text-bg-button mb-2 uppercase">
+            Enter Leftover
           </Text>
-          <View className="bg-white rounded-lg border border-blue-300 w-28 h-14 justify-center items-center shadow-sm">
+          <View className="bg-bg-surface rounded-xl border-2 border-bg-button w-32 h-16 justify-center items-center shadow-sm">
             <TextInput
               value={remainingInput}
               onChangeText={setRemainingInput}
               keyboardType="numeric"
               placeholder="#"
-              placeholderTextColor="#D1D5DB"
-              className="text-3xl font-bold text-center text-gray-800 w-full h-full"
+              placeholderTextColor="#A09CAB"
+              className="text-3xl font-bold text-center text-text-primary w-full h-full p-0"
               autoFocus
               editable={!isCreating}
             />
           </View>
         </View>
 
+        {/* Refill Calculation */}
         <View className="items-center">
-          <Text className="text-base text-gray-400 font-semibold mb-1">
-            To be Refilled
+          <Text className="text-sm font-semibold text-text-muted mb-1 uppercase">
+            To Refill
           </Text>
-          <Text className="text-3xl text-gray-400 font-bold">
-            {remainingInput === "" ? "#" : refillQty}
+          <Text className="text-4xl font-bold text-text-secondary">
+            {remainingInput === "" ? "-" : refillQty}
           </Text>
         </View>
       </View>
 
-      {/* Footer */}
-      <View className="bg-gray-200 px-4 pb-4 flex-row justify-end gap-3">
-        <TouchableOpacity
-          onPress={handleSave}
-          disabled={remainingInput === "" || isCreating}
-          className={`px-6 py-1 rounded-lg shadow-sm ${
-            remainingInput === "" || isCreating ? "bg-gray-400" : "bg-[#602AF3]"
-          }`}
-        >
-          {isCreating ? (
-            <ActivityIndicator size="small" color="#ffffff" />
-          ) : (
-            <Text className="text-white font-bold text-lg">Confirm</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
+      {/* --- FOOTER ACTIONS --- */}
+      <View className="p-5 border-t border-border-muted flex-row justify-end gap-3 bg-bg-surface">
+        <AppButton
+          title="Cancel"
           onPress={onClose}
+          type="secondary"
           disabled={isCreating}
-          className="bg-gray-300 px-6 py-1 rounded-lg"
-        >
-          <Text className="text-gray-700 font-bold text-lg">Cancel</Text>
-        </TouchableOpacity>
+          style={{ width: 120 }}
+        />
+
+        <AppButton
+          title={isCreating ? "Saving..." : "Confirm"}
+          onPress={handleSave}
+          type="primary"
+          disabled={remainingInput === "" || isCreating}
+          loading={isCreating}
+          style={{ width: 140 }}
+        />
       </View>
     </View>
   );
 
   if (presentationStyle === "overlay") {
     return (
-      <View className="absolute inset-0 z-50 bg-black/70 justify-center items-center">
+      <View className="absolute inset-0 z-50 bg-black/70 justify-center items-center px-4">
         {Content}
       </View>
     );
@@ -226,7 +234,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 bg-black/60 justify-center items-center"
+        className="flex-1 bg-black/60 justify-center items-center px-4"
       >
         {Content}
       </KeyboardAvoidingView>

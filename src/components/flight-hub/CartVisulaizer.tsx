@@ -59,7 +59,7 @@ const DrawerItem: React.FC<DrawerItemProps> = ({
         {label && (
           <View
             className={`absolute bg-black/50 px-1 rounded ${
-              isOpen ? "top-[40%] left-[20%]" : "top-[30%] left-0"
+              isOpen ? "top-[40%] left-[42%]" : "top-[30%] left-[10%]"
             }`}
           >
             <Text className="text-white text-[8px] font-bold">{label}</Text>

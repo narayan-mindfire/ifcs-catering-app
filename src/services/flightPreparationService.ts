@@ -46,7 +46,7 @@ export const flightPreparationService = {
     const response = await apiClient.get<ApiResponse<PreparationDetailData>>(
       `/flights/${callFlight}/preparations/${preparationId}`,
     );
-
+    console.log("Preparation Detail Response:", response.data.data);
     if (response.data.success) {
       return response.data.data;
     }
@@ -61,6 +61,7 @@ export const flightPreparationService = {
     payload: PreparationFlagUpdatePayload,
   ): Promise<PreparationItem> => {
     const callFlight = resolveFlightId(flightId);
+    console.log("PAYLOAD", payload);
     const response = await apiClient.patch<ApiResponse<PreparationItem>>(
       `/flights/${callFlight}/preparation-flags/${preparationId}`,
       payload,
@@ -124,5 +125,63 @@ export const flightPreparationService = {
       throw new Error("Failed to add signature");
     }
     console.log("User signature added successfully:", response.data.data);
+  },
+
+  linkPriorPreparation: async (
+    flightId: string,
+    currentPrepId: string,
+    oldPrepId: string,
+  ): Promise<void> => {
+    const callFlight = resolveFlightId(flightId);
+
+    console.log("🔗 Linking Prior Prep:", {
+      currentPrepId,
+      oldPrepId,
+    });
+
+    try {
+      // 1. Fetch current details to ensure we don't overwrite existing data
+      // (Since PUT replaces the resource, we usually need the full object)
+      const currentDetailsResponse = await apiClient.get<
+        ApiResponse<PreparationDetailData>
+      >(`/flights/${callFlight}/preparations/${currentPrepId}`);
+
+      if (!currentDetailsResponse.data.success) {
+        throw new Error(
+          "Failed to fetch current preparation details before linking",
+        );
+      }
+
+      const currentData = currentDetailsResponse.data.data;
+
+      // 2. Prepare Payload: Merge existing data with new link
+      // We strip out fields that shouldn't be sent back if necessary (like 'id', 'createdAt'),
+      // but usually sending back the data received is safe for a PUT.
+      const payload = {
+        ...currentData,
+        priorFlightPreparationId: oldPrepId, // <--- THE UPDATE
+      };
+
+      // 3. Send PUT Request
+      const response = await apiClient.put<ApiResponse<PreparationItem>>(
+        `/flights/${callFlight}/preparations/${currentPrepId}`,
+        payload,
+      );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Failed to update preparation link",
+        );
+      }
+
+      console.log("✅ Successfully linked prior preparation");
+    } catch (error: any) {
+      console.error("Link Prior Prep API Error:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to link preparations",
+      );
+    }
   },
 };
