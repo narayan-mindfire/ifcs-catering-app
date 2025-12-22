@@ -31,7 +31,7 @@ interface FlightStore {
     newFilters?: Partial<FlightFilters>,
     isRefresh?: boolean,
   ) => Promise<void>;
-
+  fetchFlightById: (id: string) => Promise<void>;
   loadMoreFlights: () => Promise<void>;
   setFilters: (newFilters: Partial<FlightFilters>) => void;
   selectFlightById: (id: string) => void;
@@ -108,10 +108,29 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
     }
   },
 
+  fetchFlightById: async (flightId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await flightService.getFlightById(flightId);
+      const foundFlight =
+        data.find((f) => f.id === flightId) || data[0] || null;
+
+      set({
+        selectedFlight: foundFlight,
+        isLoading: false,
+      });
+    } catch (err: any) {
+      console.error("Fetch Flight Error:", err);
+      set({
+        error: err.message || "Failed to fetch flight details",
+        isLoading: false,
+      });
+    }
+  },
+
   loadMoreFlights: async () => {
     const { isLoadingMore, hasNextPage, filters, flightGroups } = get();
 
-    // Prevent duplicate requests
     if (isLoadingMore || !hasNextPage) return;
 
     set({ isLoadingMore: true, error: null });
@@ -123,12 +142,10 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         page: nextPage,
       });
 
-      // Create a Set of existing flight IDs to check for duplicates
       const existingIds = new Set(
         flightGroups.flat().map((flight) => flight.id),
       );
 
-      // Filter out flight groups that contain flights we already have
       const newGroups = response.data.filter((group) =>
         group.every((flight) => !existingIds.has(flight.id)),
       );

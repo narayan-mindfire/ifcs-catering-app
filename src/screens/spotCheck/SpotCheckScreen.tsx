@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { FlatList, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, View, ActivityIndicator, Text } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 
@@ -7,6 +7,10 @@ import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { SpotCheckHeader } from "../../components/SpotCheck/SpotCheckHeader";
 import { SpotCheckListItem } from "../../components/SpotCheck/SpotCheckItemList";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { useFlightStore } from "../../store/useFlightStore";
+import { PreparationItem } from "../../types/preparations";
+import { formatDate } from "../../utils/dateFormatter";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;
 type SpotCheckScreenNavigationProp = StackNavigationProp<
@@ -19,84 +23,65 @@ interface Props {
   navigation: SpotCheckScreenNavigationProp;
 }
 
-const FLIGHT_INFO = {
-  flight: "WY913",
-  route: "MCT-SLL",
-  date: "Aug 13, 2025",
-  aircraft: "A380",
-  acReg: "STC",
-  destination: "SLL",
-};
+const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { flightId } = route.params;
 
-const CHECKS_DATA = [
-  {
-    id: "1",
-    code: "BU001",
-    name: "Eco Comfort Kits",
-    category: "Bulk",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    code: "BU002",
-    name: "Grooming Kit",
-    category: "Bulk",
-    status: "Pending",
-  },
-  {
-    id: "3",
-    code: "BU003",
-    name: "Ice Bags",
-    category: "Bulk",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    code: "BU004",
-    name: "Glasses",
-    category: "Bulk",
-    status: "Passed",
-  },
-  {
-    id: "5",
-    code: "BU005",
-    name: "Club items",
-    category: "Bulk",
-    status: "Passed",
-  },
-  {
-    id: "6",
-    code: "BU006",
-    name: "Club Blanket",
-    category: "Bulk",
-    status: "Passed",
-  },
-  {
-    id: "7",
-    code: "BU007",
-    name: "Small Ice Cubes",
-    category: "Bulk",
-    status: "Passed",
-  },
-  {
-    id: "8",
-    code: "BU008",
-    name: "Napkins",
-    category: "Bulk",
-    status: "Failed",
-  },
-];
+  // 1. Get Stores
+  const { preparations, fetchPreparations, isLoading } =
+    useFlightPreparationStore();
+  const {
+    selectedFlight,
+    fetchFlightById,
+    isLoading: isFlightLoading,
+  } = useFlightStore();
 
-const SpotCheckScreen: React.FC<Props> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<"required" | "completed">(
     "required",
   );
+
+  // 2. Fetch Data (Flight Info + Preparations)
+  useEffect(() => {
+    if (flightId) {
+      fetchPreparations(flightId);
+
+      // Fetch flight details if not already loaded or if the ID differs
+      if (!selectedFlight || selectedFlight.id !== flightId) {
+        fetchFlightById(flightId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flightId]);
+
+  const flightInfo = useMemo(() => {
+    if (!selectedFlight) {
+      return {
+        flight: "Loading...",
+        route: "...",
+        date: "...",
+        aircraft: "...",
+        acReg: "...",
+        destination: "...",
+      };
+    }
+
+    return {
+      flight: selectedFlight.flightNumber || "N/A",
+      route: `${selectedFlight.departureStation?.code || ""} - ${
+        selectedFlight.arrivalStation?.code || ""
+      }`,
+      date: formatDate(selectedFlight.scheduledDeparture) || "N/A",
+      aircraft: selectedFlight.aircraft?.type || "N/A",
+      acReg: selectedFlight.aircraft?.registration || "N/A",
+      destination: selectedFlight.arrivalStation?.code || "N/A",
+    };
+  }, [selectedFlight]);
+
   const listData = useMemo(() => {
-    return CHECKS_DATA.filter((item) => {
-      if (activeTab === "required") return item.status === "Pending";
-      return item.status !== "Pending";
-    });
-  }, [activeTab]);
+    if (activeTab === "required") {
+      return preparations;
+    }
+    return [];
+  }, [activeTab, preparations]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -116,13 +101,14 @@ const SpotCheckScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   const handleNavigateToDetails = useCallback(
-    (item: (typeof CHECKS_DATA)[0]) => {
+    (item: PreparationItem) => {
       navigation.navigate("SpotCheckDetails", {
         checkId: item.id,
         title: item.name,
+        flightId: flightId,
       });
     },
-    [navigation],
+    [navigation, flightId],
   );
 
   const handleTabChange = useCallback((tab: "required" | "completed") => {
@@ -131,21 +117,28 @@ const SpotCheckScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderHeader = useCallback(
     () => (
+      // ✅ Pass the dynamic flightInfo here
       <SpotCheckHeader
-        flightInfo={FLIGHT_INFO}
+        flightInfo={flightInfo}
         activeTab={activeTab}
         onTabChange={handleTabChange}
       />
     ),
-    [activeTab, handleTabChange],
+    [activeTab, handleTabChange, flightInfo], // Add flightInfo dependency
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: (typeof CHECKS_DATA)[0]; index: number }) => (
+    ({ item, index }: { item: PreparationItem; index: number }) => (
       <SpotCheckListItem
-        item={item}
+        item={{
+          id: item.id,
+          name: item.name,
+          code: item.code || "N/A",
+          category: "Bulk",
+          status: "Pending",
+        }}
         isLastItem={index === listData.length - 1}
-        onPress={handleNavigateToDetails}
+        onPress={() => handleNavigateToDetails(item)}
       />
     ),
     [listData.length, handleNavigateToDetails],
@@ -155,14 +148,30 @@ const SpotCheckScreen: React.FC<Props> = ({ navigation }) => {
     <>
       <BreadCrumb items={breadcrumbItems} />
       <View className="flex-1 bg-bg-surface p-4">
-        <FlatList
-          data={listData}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          ListHeaderComponent={renderHeader}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        {isLoading || isFlightLoading ? ( // Show loading if either is fetching
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#602AF3" />
+            <Text className="mt-4 text-text-secondary">
+              Loading Flight Data...
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={listData}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            ListHeaderComponent={renderHeader}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListEmptyComponent={
+              <View className="mt-10 items-center">
+                <Text className="text-text-tertiary">
+                  No preparations found.
+                </Text>
+              </View>
+            }
+          />
+        )}
       </View>
     </>
   );

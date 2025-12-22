@@ -4,8 +4,7 @@ import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
-
-import { NoFlightsIcon, PlaneIcon, QrIcon } from "../../assets/icons";
+import { NoFlightsIcon, QrIcon } from "../../assets/icons";
 
 type SpotCheckSelectionScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -21,6 +20,8 @@ interface Props {
   navigation: SpotCheckScreenNavigationProp;
 }
 
+// const TEST_FLIGHT_ID = "8548e2fd-e0d2-4e11-ab7e-d778274fe81d";
+
 const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
   const breadcrumbItems = [
     {
@@ -32,6 +33,9 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
     },
   ];
 
+  const handleScanPress = () => {
+    navigation.navigate("QRCodeScanner");
+  };
   return (
     <View className="flex-1 bg-gray-50">
       <BreadCrumb items={breadcrumbItems} />
@@ -45,35 +49,12 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
 
         <View className="flex-row items-center justify-center w-full max-w-lg gap-10">
-          <TouchableOpacity
-            className="flex-1 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
-            activeOpacity={0.7}
-            onPress={() =>
-              navigation.push("SpotCheck", { flightId: "abc@123" })
-            }
-          >
-            <PlaneIcon />
-            <TouchableOpacity
-              onPress={() => {
-                console.log("Navigate to flight selection");
-                navigation.push("SpotCheck", { flightId: "abc@123" });
-              }}
-            >
-              <Text className="mt-3 text-gray-700 font-medium text-lg text-center">
-                Select a Flight
-              </Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-
-          <Text className="text-gray-500 font-medium text-lg mx-6">Or</Text>
+          {/* <Text className="text-gray-500 font-medium text-lg mx-6">Or</Text> */}
 
           <TouchableOpacity
-            className="flex-1 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
+            className="flex-1/2 bg-bg-secondary rounded-2xl px-6 py-4 items-center justify-center aspect-square"
             activeOpacity={0.7}
-            onPress={() => {
-              console.log("on to scanning");
-              navigation.navigate("QRCodeScanner");
-            }}
+            onPress={handleScanPress}
           >
             <QrIcon width={40} height={40} />
             <Text className="mt-3 text-gray-700 font-medium text-lg text-center">

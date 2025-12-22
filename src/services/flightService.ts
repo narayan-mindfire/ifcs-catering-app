@@ -1,14 +1,11 @@
 import apiClient from "../api/axiosClient";
-import { FlightApiResponse, FlightFilters, Flight } from "../types/flight";
-
-interface FlightServiceResponse {
-  data: Flight[][];
-  meta: {
-    hasNextPage: boolean;
-    page: number;
-    total: number;
-  };
-}
+import {
+  FlightApiResponse,
+  FlightFilters,
+  Flight,
+  FlightServiceResponse,
+  SingleFlightResponse,
+} from "../types/flight";
 
 export const flightService = {
   getFlights: async (
@@ -50,5 +47,15 @@ export const flightService = {
         total: Number(response.data?.meta?.pagination?.total) || 0,
       },
     };
+  },
+
+  getFlightById: async (flightId: string): Promise<Flight[]> => {
+    const response = await apiClient.get<SingleFlightResponse>(
+      `/flights/${flightId}`,
+    );
+    if (response.data.success) {
+      return response.data.data || [];
+    }
+    throw new Error(response.data.message || "Failed to fetch flight details");
   },
 };
