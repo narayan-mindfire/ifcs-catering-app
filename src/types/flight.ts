@@ -183,3 +183,18 @@ export interface FlightApiResponse {
     };
   };
 }
+
+export interface FlightServiceResponse {
+  data: Flight[][];
+  meta: {
+    hasNextPage: boolean;
+    page: number;
+    total: number;
+  };
+}
+
+export interface SingleFlightResponse {
+  success: boolean;
+  message: string;
+  data: Flight[];
+}

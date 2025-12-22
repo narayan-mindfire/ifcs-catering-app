@@ -173,7 +173,7 @@ export const FlightRow: React.FC<Props> = memo(
 
         <View className="flex-[8] py-2.5 px-1 justify-center">
           <Text className="text-[17px] font-semibold text-black">
-            {flight.airline?.designator || "WY"}
+            {flight.airline?.designator}
             {flight.flightNumber}
           </Text>
         </View>
