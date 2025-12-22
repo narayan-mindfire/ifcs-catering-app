@@ -77,7 +77,14 @@ export const usePreparationActions = ({
 
   const handleSealAction = useCallback(
     async (item: PreparationItem) => {
-      if (!selectedFlight?.id) return;
+      console.log("[handleSealAction] START");
+      console.log("[handleSealAction] item:", item);
+      console.log("[handleSealAction] selectedFlight:", selectedFlight);
+
+      if (!selectedFlight?.id) {
+        console.warn("[handleSealAction] EXIT → selectedFlight.id missing");
+        return;
+      }
 
       const isPrepared = !!item.isContentPrepared;
       const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
@@ -86,19 +93,37 @@ export const usePreparationActions = ({
         (item.assemblyProcessFlag === "inprogress" ||
           item.assemblyProcessFlag === "completed");
 
+      console.log("[handleSealAction] computed flags:", {
+        isPrepared,
+        isSealed,
+        isLocked,
+        hasUserSignature,
+      });
+
       if (isSealed) {
+        console.log("[handleSealAction] BRANCH → item is SEALED");
+
         if (isLocked) {
+          console.warn("[handleSealAction] BLOCKED → item is LOCKED");
           modals.showValidationMessage(
             "Cannot remove seal. Please unlock first.",
           );
           return;
         }
+
+        console.log("[handleSealAction] Opening REMOVE SEAL confirm modal");
+
         modals.openConfirm({
           title: "Remove Seal",
           message: "Are you sure you want to remove the seal from this item?",
           actionType: "disable",
           onConfirm: async () => {
+            console.log("[handleSealAction] CONFIRM → Remove Seal clicked");
+
             modals.closeConfirm();
+
+            console.log("[handleSealAction] Calling updatePreparationFlag");
+
             const success = await updatePreparationFlag(
               selectedFlight.id,
               item.id,
@@ -107,24 +132,46 @@ export const usePreparationActions = ({
                 sealTagNumber: null,
               },
             );
-            if (success) Alert.alert("Success", "Seal removed");
+
+            console.log(
+              "[handleSealAction] updatePreparationFlag result:",
+              success,
+            );
+
+            if (success) {
+              console.log("[handleSealAction] Seal removed successfully");
+              Alert.alert("Success", "Seal removed");
+            } else {
+              console.warn("[handleSealAction] Failed to remove seal");
+            }
           },
         });
-      } else {
-        if (!isPrepared) {
-          modals.showValidationMessage(
-            "Please complete preparation first before sealing.",
-          );
-          return;
-        }
-        if (!hasUserSignature) {
-          modals.openSignature(item);
-          return;
-        }
-        modals.openSeal();
+
+        return;
       }
+
+      console.log("[handleSealAction] BRANCH → item is NOT sealed");
+
+      if (!isPrepared) {
+        console.warn("[handleSealAction] BLOCKED → item not prepared");
+        modals.showValidationMessage(
+          "Please complete preparation first before sealing.",
+        );
+        return;
+      }
+
+      if (!hasUserSignature) {
+        console.warn("[handleSealAction] BLOCKED → user signature missing");
+        modals.openSignature(item);
+        return;
+      }
+
+      console.log("[handleSealAction] Opening SEAL modal");
+      modals.openSeal(item);
+
+      console.log("[handleSealAction] END");
     },
-    [selectedFlight?.id, hasUserSignature, updatePreparationFlag, modals],
+    [selectedFlight, hasUserSignature, modals, updatePreparationFlag],
   );
 
   const handleAssemblyAction = useCallback(

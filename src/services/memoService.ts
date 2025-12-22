@@ -24,7 +24,7 @@ export const memoService = {
       params,
       headers: { "x-user-id": CURRENT_USER_ID },
     });
-
+    console.log("Memos Response Data:", response.data);
     return response.data.data.map((item: any) => {
       if (item.memo) {
         return {
@@ -32,8 +32,7 @@ export const memoService = {
           isRead: item.isRead,
           sender: item.sender,
           recipients: item.recipients || [],
-          isAcknowledged:
-            item.memo.status === "Sent" && tab === "Acknowledged By Me",
+          isAcknowledged: item.memo.status === "Sent" && tab === "Acknowledged",
         };
       }
       return item;

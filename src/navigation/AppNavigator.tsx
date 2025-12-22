@@ -20,7 +20,7 @@ export type RootStackParamList = {
   SpotCheckDetails: { checkId: string; title: string };
   Flights: { flightId: string };
   Memos: undefined;
-  MemoDetail: { memoId: string };
+  MemoDetail: { memoId: string; showVersion?: boolean };
   Documents: undefined;
   CreateMemo: undefined;
   FlightDetails: {

@@ -100,7 +100,12 @@ export const usePreparationModals = () => {
 
   const closeSignature = useCallback(() => setSignatureModalVisible(false), []);
 
-  const openSeal = useCallback(() => setSealModalVisible(true), []);
+  const openSeal = useCallback((item?: PreparationItem) => {
+    if (item) {
+      setCurrentActionItem(item);
+    }
+    setSealModalVisible(true);
+  }, []);
 
   const closeSeal = useCallback(() => {
     setSealModalVisible(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -30,7 +30,19 @@ export const QRScanner: React.FC<QRScannerProps> = ({
 }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [zoom, setZoom] = useState(0);
+  const [isActive, setIsActive] = useState(true);
   const translateY = useSharedValue(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    setIsActive(true);
+
+    return () => {
+      mountedRef.current = false;
+      setIsActive(false);
+    };
+  }, []);
 
   useEffect(() => {
     if (permission && !permission.granted && permission.canAskAgain) {
@@ -39,7 +51,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   }, [permission, requestPermission]);
 
   useEffect(() => {
-    if (!scanned) {
+    if (!scanned && isActive) {
       translateY.value = withRepeat(
         withTiming(290, {
           duration: 2000,
@@ -49,15 +61,30 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         true,
       );
     } else {
-      // Stop/Reset animation if needed (optional)
-      // translateY.value = 0;
+      translateY.value = 0;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scanned]);
+  }, [scanned, isActive]);
 
   const lineAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
+
+  const handleClose = () => {
+    setIsActive(false);
+    // Small delay to ensure camera cleanup before closing
+    setTimeout(() => {
+      if (mountedRef.current) {
+        onClose();
+      }
+    }, 100);
+  };
+
+  const handleScan = (data: string) => {
+    if (mountedRef.current && isActive) {
+      onScan(data);
+    }
+  };
 
   if (!permission) return <View className="flex-1 bg-black" />;
 
@@ -73,11 +100,15 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         >
           <Text className="text-white font-bold text-lg">Grant Access</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onClose} className="mt-6">
+        <TouchableOpacity onPress={handleClose} className="mt-6">
           <Text className="text-gray-400 text-lg">Cancel</Text>
         </TouchableOpacity>
       </View>
     );
+  }
+
+  if (!isActive) {
+    return <View className="flex-1 bg-black" />;
   }
 
   return (
@@ -87,7 +118,9 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         style={StyleSheet.absoluteFillObject}
         facing="back"
         zoom={zoom}
-        onBarcodeScanned={scanned ? undefined : (result) => onScan(result.data)}
+        onBarcodeScanned={
+          scanned ? undefined : (result) => handleScan(result.data)
+        }
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
@@ -95,7 +128,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         <View className="flex-1 bg-black/60">
           <View className="absolute top-12 right-8 z-10">
             <TouchableOpacity
-              onPress={onClose}
+              onPress={handleClose}
               className="bg-black/40 p-3 rounded-full border border-white/20"
             >
               <Text className="text-white text-xl font-bold">✕</Text>
@@ -145,7 +178,11 @@ export const QRScanner: React.FC<QRScannerProps> = ({
             </View>
             <View className="absolute bottom-10">
               <TouchableOpacity
-                onPress={() => onScan("WY913")}
+                onPress={() =>
+                  handleScan(
+                    "01515c8c-cb99-4bee-bcc3-0c265c1881fe\n8548e2fd-e0d2-4e11-ab7e-d778274fe81d\nead5eef8-1adf-4569-84da-6486c1c09b8d\n73c11996-edbc-4998-bce2-9523dff8e4ed\nead5eef8-1adf-4569-84da-6486c1c09b8d\nPlastic Cups X 200\n211\nY/C O/H\n2025-12-16T22:30:00Z\nNA\nLD Bag\nISC-MEA Double",
+                  )
+                }
                 className="bg-white/10 border border-white/30 px-6 py-2 rounded-full"
               >
                 <Text className="text-white/80 text-xs">Simulate Scan</Text>
