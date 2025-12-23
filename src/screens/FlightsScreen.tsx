@@ -16,8 +16,9 @@ import {
 } from "react-native";
 
 import { BreadCrumb } from "../components/common/BreadCrumbs";
+import { FlightGroupItem } from "../components/flight-list/FlightGroupItem";
 import { FlightListHeader } from "../components/flight-list/FlightListHeader";
-import { FlightRow } from "../components/flight-list/FlightRow";
+import { StationSelector } from "../components/flight-list/StationSelector";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { Flight } from "../types/flight";
@@ -156,26 +157,10 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [isLoadingMore, hasNextPage, loadMoreFlights]);
 
+  // --- UPDATED RENDER ITEM ---
   const renderFlightGroup: ListRenderItem<Flight[]> = useCallback(
     ({ item: group }) => {
-      const isPaired = group.length > 1;
-      const groupLength = group.length;
-
-      return (
-        <View className="mb-4 bg-bg-surface border-t border-border-secondary shadow-sm">
-          {group.map((flight, flightIndex) => (
-            <FlightRow
-              key={flight.id}
-              flight={flight}
-              navigation={navigation}
-              isLastInGroup={flightIndex === groupLength - 1}
-              isFirstInGroup={flightIndex === 0}
-              isPaired={isPaired}
-              flightGroup={group}
-            />
-          ))}
-        </View>
-      );
+      return <FlightGroupItem group={group} navigation={navigation} />;
     },
     [navigation],
   );
@@ -202,9 +187,10 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <>
       <BreadCrumb items={breadcrumbs} />
-      <View className="px-4 py-3 bg-bg-tertiary">
+      <View className="px-4 py-3 bg-bg-tertiary z-10 relative">
         <View className="flex-row items-center gap-2">
-          <Text className="font-extrabold text-4xl text-text-primary">YUL</Text>
+          <StationSelector currentStation={filters.station || "MCT"} />
+
           <View className="flex-row items-center gap-2 ml-auto">
             <Pressable
               className="bg-bg-surface rounded-lg border border-border-secondary h-[40px] w-[120px] justify-center px-3"

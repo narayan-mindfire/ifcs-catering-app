@@ -4,8 +4,13 @@ import { Text, View } from "react-native";
 export const FlightListHeader: React.FC = () => {
   return (
     <View className="bg-bg-quaternary border-b border-border-secondary">
-      {/* Row 1: Group Header */}
+      {/* Row 1: Group Header 
+        Added w-[30px] spacer at the start to offset the Dropdown column 
+      */}
       <View className="flex-row items-stretch bg-bg-tertiary border-b border-border-muted px-2.5">
+        {/* SPACER for Dropdown Column */}
+        <View className="w-[30px]" />
+
         <View className="flex-[57]">
           <View className="flex-row justify-center items-center py-2.5">
             <Text className="ml-1.5 text-base font-semibold text-text-primary">
@@ -41,8 +46,13 @@ export const FlightListHeader: React.FC = () => {
         </View>
       </View>
 
-      {/* Row 2: Column Header */}
+      {/* Row 2: Column Header 
+        Added w-[30px] spacer at the start to offset the Dropdown column 
+      */}
       <View className="flex-row items-stretch bg-border-secondary px-2.5">
+        {/* SPACER for Dropdown Column */}
+        <View className="w-[30px]" />
+
         {/* Flight columns */}
         <View className="flex-[6] px-1">
           <View className="justify-center py-3">
