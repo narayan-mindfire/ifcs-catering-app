@@ -1,15 +1,16 @@
-import React from "react";
-import { View, Text, StyleSheet, ImageBackground } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../../App";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { ImageBackground, StyleSheet, Text, View } from "react-native";
+
 import {
   AirplaneIcon,
   DocsIcon,
   MemosIcon,
   SpotIcon,
 } from "../../assets/icons";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { NavigationCard } from "../common/NavigationCard";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;

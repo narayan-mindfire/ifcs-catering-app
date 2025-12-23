@@ -1,7 +1,9 @@
 import React from "react";
-import { View, Modal, TouchableOpacity, Text } from "react-native";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 import Pdf from "react-native-pdf";
+
 import { PrintIcon } from "../../assets/icons";
+import { log } from "../../utils/logger";
 
 interface PdfViewerModalProps {
   visible: boolean;
@@ -49,17 +51,17 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
           <View className="flex-1 justify-start items-center w-full">
             <Pdf
               source={source}
-              onLoadComplete={(numberOfPages, filePath) => {
-                console.log(`Number of pages: ${numberOfPages}`);
+              onLoadComplete={(numberOfPages, _filePath) => {
+                log.info(`Number of pages: ${numberOfPages}`);
               }}
-              onPageChanged={(page, numberOfPages) => {
-                console.log(`Current page: ${page}`);
+              onPageChanged={(page, _numberOfPages) => {
+                log.info(`Current page: ${page}`);
               }}
               onError={(error) => {
-                console.log(error);
+                log.info(error);
               }}
               onPressLink={(uri) => {
-                console.log(`Link pressed: ${uri}`);
+                log.info(`Link pressed: ${uri}`);
               }}
               style={{ flex: 1, width: "100%" }}
             />

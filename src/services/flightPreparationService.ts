@@ -1,11 +1,12 @@
 import apiClient from "../api/axiosClient";
 import {
-  PreparationItem,
+  AddUserSignatureResponse,
   PreparationDetailData,
   PreparationFlagUpdatePayload,
+  PreparationItem,
   PrintData,
-  AddUserSignatureResponse,
 } from "../types/preparations";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -23,7 +24,7 @@ const resolveFlightId = (flightId: string) => {
 export const flightPreparationService = {
   getPreparations: async (flightId: string): Promise<PreparationItem[]> => {
     const callFlight = resolveFlightId(flightId);
-    console.log("Fetching preparations for flight:", flightId);
+    log.info("Fetching preparations for flight:", flightId);
 
     const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
       `/flights/${callFlight}/preparations`,
@@ -46,7 +47,7 @@ export const flightPreparationService = {
     const response = await apiClient.get<ApiResponse<PreparationDetailData>>(
       `/flights/${callFlight}/preparations/${preparationId}`,
     );
-    console.log("Preparation Detail Response:", response.data.data);
+    log.info("Preparation Detail Response:", response.data.data);
     if (response.data.success) {
       return response.data.data;
     }
@@ -61,7 +62,7 @@ export const flightPreparationService = {
     payload: PreparationFlagUpdatePayload,
   ): Promise<PreparationItem> => {
     const callFlight = resolveFlightId(flightId);
-    console.log("PAYLOAD", payload);
+    log.info("PAYLOAD", payload);
     const response = await apiClient.patch<ApiResponse<PreparationItem>>(
       `/flights/${callFlight}/preparation-flags/${preparationId}`,
       payload,
@@ -124,7 +125,7 @@ export const flightPreparationService = {
     if (!response.data.success) {
       throw new Error("Failed to add signature");
     }
-    console.log("User signature added successfully:", response.data.data);
+    log.info("User signature added successfully:", response.data.data);
   },
 
   linkPriorPreparation: async (
@@ -134,7 +135,7 @@ export const flightPreparationService = {
   ): Promise<void> => {
     const callFlight = resolveFlightId(flightId);
 
-    console.log("🔗 Linking Prior Prep:", {
+    log.info("🔗 Linking Prior Prep:", {
       currentPrepId,
       oldPrepId,
     });
@@ -174,7 +175,7 @@ export const flightPreparationService = {
         );
       }
 
-      console.log("✅ Successfully linked prior preparation");
+      log.info("✅ Successfully linked prior preparation");
     } catch (error: any) {
       console.error("Link Prior Prep API Error:", error);
       throw new Error(

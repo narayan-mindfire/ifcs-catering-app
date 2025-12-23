@@ -1,19 +1,19 @@
-import React, { useCallback, useEffect, useState, useMemo } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Platform,
-  Pressable,
-  Text,
-  TextInput,
-  View,
-  ListRenderItem,
-} from "react-native";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { FlightListHeader } from "../components/flight-list/FlightListHeader";
@@ -22,6 +22,7 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { Flight } from "../types/flight";
 import { formatDate } from "../utils/dateFormatter";
+import { log } from "../utils/logger";
 
 type FlightsScreenRouteProp = RouteProp<RootStackParamList, "Flights">;
 type FlightsScreenNavigationProp = StackNavigationProp<
@@ -149,7 +150,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   }, [fetchFlights]);
 
   const handleLoadMore = useCallback(() => {
-    console.log("LOADING MORE");
+    log.info("LOADING MORE");
     if (!isLoadingMore && hasNextPage) {
       loadMoreFlights();
     }

@@ -1,12 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, View, ActivityIndicator, Text } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
-import { RootStackParamList } from "../../navigation/AppNavigator";
 import { SpotCheckHeader } from "../../components/SpotCheck/SpotCheckHeader";
 import { SpotCheckListItem } from "../../components/SpotCheck/SpotCheckItemList";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import { PreparationItem } from "../../types/preparations";

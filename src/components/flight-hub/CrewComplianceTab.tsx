@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, ScrollView } from "react-native";
-import { SignatureModal } from "./SharedComponents";
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text, TextInput, View } from "react-native";
+
 import { CrewCompliance } from "../../types/deliveries";
-import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 import { AppButton } from "../common/AppButton";
+import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
+import { SignatureModal } from "./SharedComponents";
 
 interface CrewComplianceTabProps {
   crewCompliance: CrewCompliance | null;

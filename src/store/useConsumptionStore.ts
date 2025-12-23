@@ -1,11 +1,12 @@
 import { create } from "zustand";
+
+import { consumptionService } from "../services/consumptionService";
 import {
+  ConsumptionTrackingFilters,
   ConsumptionTrackingRecord,
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
-  ConsumptionTrackingFilters,
 } from "../types/consumption";
-import { consumptionService } from "../services/consumptionService";
 
 interface ConsumptionTrackingStore {
   records: ConsumptionTrackingRecord[];
@@ -45,7 +46,7 @@ interface ConsumptionTrackingStore {
 }
 
 export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
-  (set, get) => ({
+  (set, _get) => ({
     // Initial State
     records: [],
     selectedRecord: null,

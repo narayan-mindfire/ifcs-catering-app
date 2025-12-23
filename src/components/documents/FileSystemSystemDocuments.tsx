@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+
 import {
   FolderIcon,
-  PdfIcon,
   ImageThinIcon,
+  PdfIcon,
   VideoThinIcon,
 } from "../../assets/icons";
 import { DocumentFile, FileSystemItem } from "../../types/documents";

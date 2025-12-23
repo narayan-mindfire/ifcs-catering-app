@@ -1,18 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
 import {
   createMaterialTopTabNavigator,
   MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
 import { StackScreenProps } from "@react-navigation/stack";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Text, View } from "react-native";
 
+import { AppButton } from "../components/common/AppButton";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
-import DeliveriesScreen from "./details/Deliveries";
-import { PreparationsScreen } from "./details/Preparations";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { formatDate } from "../utils/dateFormatter";
-import { AppButton } from "../components/common/AppButton";
+import DeliveriesScreen from "./details/Deliveries";
+import { PreparationsScreen } from "./details/Preparations";
 
 type FlightDetailTabParamList = {
   Preparations: undefined;
@@ -22,7 +22,6 @@ type FlightDetailTabParamList = {
 };
 
 type Props = StackScreenProps<RootStackParamList, "FlightDetails">;
-
 const Tab = createMaterialTopTabNavigator<FlightDetailTabParamList>();
 
 const CustomTabBar = ({

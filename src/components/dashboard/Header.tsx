@@ -1,8 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import React from "react";
+import { Image, Text, TouchableOpacity, View } from "react-native";
+
+import { DropdownIcon, UserIcon } from "../../assets/icons";
 import { EmairatesIcon } from "../../assets/logos";
-import { UserIcon, DropdownIcon } from "../../assets/icons";
 type RootStackParamList = {
   Dashboard: undefined;
   Profile: undefined;

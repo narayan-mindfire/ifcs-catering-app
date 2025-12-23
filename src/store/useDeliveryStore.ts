@@ -1,6 +1,8 @@
 import { create } from "zustand";
-import { Delivery } from "../types/deliveries";
+
 import { deliveryService } from "../services/deliveryService";
+import { Delivery } from "../types/deliveries";
+import { log } from "../utils/logger";
 
 interface DeliveryStore {
   deliveries: Delivery[];
@@ -40,7 +42,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const deliveriesArray = await deliveryService.getDeliveries(flightId);
-      console.log("DELIVEREES: ", deliveriesArray);
+      log.info("DELIVEREES: ", deliveriesArray);
       set({
         deliveries: deliveriesArray,
         selectedDeliveryId:
@@ -128,8 +130,8 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     } catch (err: any) {
       console.error("Add Signature Error:", err);
       if (err.response) {
-        console.log("Error Status:", err.response.status);
-        console.log("Error Data:", JSON.stringify(err.response.data, null, 2));
+        log.info("Error Status:", err.response.status);
+        log.info("Error Data:", JSON.stringify(err.response.data, null, 2));
       }
     }
   },

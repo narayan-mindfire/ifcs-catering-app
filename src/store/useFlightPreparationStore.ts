@@ -1,10 +1,12 @@
 import { create } from "zustand";
+
+import { flightPreparationService } from "../services/flightPreparationService";
 import {
-  PreparationItem,
   PreparationDetailData,
   PreparationFlagUpdatePayload,
+  PreparationItem,
 } from "../types/preparations";
-import { flightPreparationService } from "../services/flightPreparationService";
+import { log } from "../utils/logger";
 
 export interface UserSignature {
   id: string;
@@ -181,7 +183,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           flightId,
           userId,
         );
-        console.log("User signature response:", signatures);
+        log.info("User signature response:", signatures);
         set({ userSignatures: signatures });
         return signatures.length > 0;
       } catch (err: any) {

@@ -1,7 +1,9 @@
+import { ResizeMode, Video } from "expo-av";
 import React, { useRef, useState } from "react";
 import { Dimensions, View } from "react-native";
-import { ResizeMode, Video } from "expo-av";
+
 import { DocumentFile } from "../../../types/documents";
+import { log } from "../../../utils/logger";
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {
@@ -17,7 +19,7 @@ export const VideoViewer: React.FC<ViewerProps> = ({
 }) => {
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<any>({});
-  console.log(status);
+  log.info(status);
 
   return (
     <View className="flex-1 bg-bg-surface rounded-xl overflow-hidden border border-border-muted ml-5">

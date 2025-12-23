@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { View, Modal } from "react-native";
+import { Modal, View } from "react-native";
+
 import { ScanIcon } from "../../assets/icons";
 import { AppButton } from "../common/AppButton";
-import { MultiSelectFilter } from "./MultiSelectFilter";
 import { QRScanner } from "../common/QRScanner";
+import { MultiSelectFilter } from "./MultiSelectFilter";
 
 type ScanActionType = "prep" | "seal" | "assemble" | "load";
 
@@ -43,7 +44,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
   filterOptions,
   selectedFilters,
   onToggleFilter,
-  selectedFlight,
+  // selectedFlight,
   onScanAction,
   isAwaitingCurrentFlightScan = false,
   onCancelConsumptionFlow,

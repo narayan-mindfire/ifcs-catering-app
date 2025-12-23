@@ -1,4 +1,6 @@
 import axios from "axios";
+
+import { log } from "../utils/logger";
 const apiClient = axios.create({
   // baseURL: "https://worrisome-overmodestly-nisha.ngrok-free.dev/api/v1", //sambit
   // baseURL: "https://uniterative-nonvocally-retta.ngrok-free.dev/api/v1", //sagarika
@@ -19,17 +21,17 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.log("--- AXIOS ERROR DEBUG ---");
+    log.info("--- AXIOS ERROR DEBUG ---");
     if (error.response) {
-      console.log("Status:", error.response.status);
-      console.log("Data:", error.response.data);
+      log.info("Status:", error.response.status);
+      log.info("Data:", error.response.data);
     } else if (error.request) {
-      console.log("Request made but NO RESPONSE received.");
-      console.log("Request details:", error.request);
+      log.info("Request made but NO RESPONSE received.");
+      log.info("Request details:", error.request);
     } else {
-      console.log("Error Message:", error.message);
+      log.info("Error Message:", error.message);
     }
-    console.log("Config:", error.config);
+    log.info("Config:", error.config);
 
     return Promise.reject(error);
   },

@@ -1,31 +1,29 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
+import { ImageIcon, PlaneIcon } from "../../assets/icons";
+import { AppButton } from "../../components/common/AppButton";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
-import { FailReasonModal } from "../../components/SpotCheck/FailedReasonModal";
 import { CartVisualizer } from "../../components/flight-hub/CartVisulaizer";
 import { ContainerVisualizer } from "../../components/flight-hub/ContainerVisualizer";
-import { AppButton } from "../../components/common/AppButton";
+import { FailReasonModal } from "../../components/SpotCheck/FailedReasonModal";
 import { FlightInfoHeader } from "../../components/SpotCheck/FlightDetailsHeader";
-
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import {
-  PackingStandardItem,
   PackingStandardContainer,
+  PackingStandardItem,
 } from "../../types/preparations";
-
-import { ImageIcon, PlaneIcon } from "../../assets/icons";
 import { formatDate } from "../../utils/dateFormatter";
 
 type SpotCheckDetailsScreenRouteProp = RouteProp<
@@ -146,7 +144,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleConfirmFail = useCallback(
     (data: { reason: string; remarks: string }) => {
-      console.log("Spot Check Failed:", data);
+      log.info("Spot Check Failed:", data);
       setIsFailModalVisible(false);
       Alert.alert("Recorded", "Spot Check marked as Failed.");
       navigation.goBack();
@@ -163,7 +161,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         {
           text: "Pass",
           onPress: () => {
-            console.log("Spot Check Passed");
+            log.info("Spot Check Passed");
             navigation.goBack();
           },
         },

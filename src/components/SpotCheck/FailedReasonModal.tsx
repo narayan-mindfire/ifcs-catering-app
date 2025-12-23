@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  TouchableWithoutFeedback,
   Keyboard,
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
+
 import {
   ImageIcon,
   //   ChevronLeftIcon,

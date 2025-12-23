@@ -1,5 +1,5 @@
 import apiClient from "../api/axiosClient";
-import { DocumentFolder, DocumentFile } from "../types/documents";
+import { DocumentFile, DocumentFolder } from "../types/documents";
 
 interface ApiResponse<T> {
   success: boolean;

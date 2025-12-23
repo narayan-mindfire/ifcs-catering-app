@@ -1,5 +1,6 @@
 import React from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+
 import { DownloadIcon, PrintIcon, ThreeDotsIcon } from "../../../assets/icons";
 
 interface ViewerHeaderProps {

@@ -1,22 +1,24 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { DocsIconDark, SparkleIcon, UserIcon } from "../../assets/icons";
+import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useMemoStore } from "../../store/useMemosStore";
-import { DocsIconDark, SparkleIcon, UserIcon } from "../../assets/icons";
-import { formatDateDetail } from "../../utils/dateFormatter";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { MemoVersion } from "../../types/memo";
+import { formatDateDetail } from "../../utils/dateFormatter";
+import { log } from "../../utils/logger";
 
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<
@@ -62,7 +64,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [recipients, CURRENT_USER_ID]);
 
   // Handle versions derived from activeMemo data
-  console.log("Active Memo Versions:", activeMemo?.versions);
+  log.info("Active Memo Versions:", activeMemo?.versions);
   const hasVersions = activeMemo?.versions && activeMemo.versions.length > 1;
 
   // Sort versions descending by date (newest first)

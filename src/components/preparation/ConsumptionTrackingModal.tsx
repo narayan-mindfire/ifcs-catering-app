@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Modal,
-  Image,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
   Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import { PackingStandardItem } from "../../types/preparations";
+
 import { ImageIcon } from "../../assets/icons";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
+import { PackingStandardItem } from "../../types/preparations";
 import { AppButton } from "../common/AppButton";
 
 interface ConsumptionModalProps {

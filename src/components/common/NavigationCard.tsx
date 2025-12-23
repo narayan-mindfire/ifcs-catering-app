@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
 import { BlurView } from "expo-blur";
+import React from "react";
+import { Dimensions, Text, TouchableOpacity, View } from "react-native";
 import { SvgProps } from "react-native-svg";
+
 import { RedirectIcon } from "../../assets/icons";
 
 const { width } = Dimensions.get("window");

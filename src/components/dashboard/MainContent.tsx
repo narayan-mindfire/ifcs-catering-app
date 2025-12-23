@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  View,
+  Modal,
+  ScrollView,
+  Switch,
   Text,
   TouchableOpacity,
-  Switch,
-  ScrollView,
-  Modal,
+  View,
 } from "react-native";
+
 import { AppButton } from "../common/AppButton";
 
 const mockTasks = [

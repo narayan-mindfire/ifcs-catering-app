@@ -1,17 +1,16 @@
-import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import React from "react";
 
 import { Header } from "../components/dashboard/Header";
-
 import DashboardScreen from "../screens/DashboardScreen";
 import DocumentsScreen from "../screens/DocumentsScreen";
-import FlightsScreen from "../screens/FlightsScreen";
 import FlightDetailsScreen from "../screens/FlightDetailsScreen";
-import MemosScreen from "../screens/MemosScreen";
+import FlightsScreen from "../screens/FlightsScreen";
 import MemoDetailScreen from "../screens/memos/MemoDetails";
+import MemosScreen from "../screens/MemosScreen";
 import QRCodeScannerScreen from "../screens/QRCodeScannerScreen";
-import SpotCheckScreen from "../screens/spotCheck/SpotCheckScreen";
 import SpotCheckDetailsScreen from "../screens/spotCheck/SpotCheckDetailsScreen";
+import SpotCheckScreen from "../screens/spotCheck/SpotCheckScreen";
 import SpotCheckSelectionScreen from "../screens/spotCheck/SpotCheckSelectionScreen";
 
 export type RootStackParamList = {

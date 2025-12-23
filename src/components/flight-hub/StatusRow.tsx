@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
-import { LockIcon, StringIcon, CheckIcon } from "../../assets/icons";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+
+import { CheckIcon, LockIcon, StringIcon } from "../../assets/icons";
 
 interface StatusRowProps {
   isLocked: boolean;

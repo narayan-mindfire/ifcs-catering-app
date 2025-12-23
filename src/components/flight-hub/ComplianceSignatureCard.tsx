@@ -1,20 +1,21 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  TouchableOpacity,
-  Alert,
   ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Checkbox } from "./SharedComponents";
-import { formatDate } from "../../utils/dateFormatter";
+
 import { PrintIcon } from "../../assets/icons";
-import { useFlightStore } from "../../store/useFlightStore";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
+import { useFlightStore } from "../../store/useFlightStore";
+import { formatDate } from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
+import { Checkbox } from "./SharedComponents";
 
 interface ComplianceSignatureCardProps {
   title: string;

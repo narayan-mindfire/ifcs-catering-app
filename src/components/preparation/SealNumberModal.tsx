@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  TextInput,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface SealNumberModalProps {

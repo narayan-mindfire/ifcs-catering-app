@@ -1,10 +1,12 @@
 import { create } from "zustand";
+
+import { documentService } from "../services/documentService";
 import {
-  DocumentFolder,
   DocumentFile,
+  DocumentFolder,
   FileSystemItem,
 } from "../types/documents";
-import { documentService } from "../services/documentService";
+import { log } from "../utils/logger";
 
 interface DocumentState {
   currentFolderId: string | null;
@@ -21,7 +23,7 @@ interface DocumentState {
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
 }
 
-export const useDocumentStore = create<DocumentState>((set, get) => ({
+export const useDocumentStore = create<DocumentState>((set, _get) => ({
   currentFolderId: null,
   breadcrumbs: [],
   items: [],
@@ -31,10 +33,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   error: null,
 
   fetchFolderContent: async (folderId: string | null) => {
-    console.log(
-      "📁 [FETCH] Starting fetchFolderContent for:",
-      folderId || "ROOT",
-    );
+    log.info("📁 [FETCH] Starting fetchFolderContent for:", folderId || "ROOT");
     set({ isLoading: true, error: null, currentFolderId: folderId });
 
     try {
@@ -99,7 +98,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   },
 
   searchDocuments: async (query: string) => {
-    console.log("[SEARCH] Starting global search for:", query);
+    log.info("[SEARCH] Starting global search for:", query);
     set({ isLoading: true, error: null });
 
     try {
@@ -138,11 +137,11 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     set({ selectedFile: file });
   },
 
-  downloadFile: async (fileId, fileName) => {
+  downloadFile: async (fileId, _fileName) => {
     set({ isDownloading: true });
     try {
       const url = await documentService.getDownloadUrl(fileId);
-      console.log("[SUCCESS] Download URL:", url);
+      log.info("[SUCCESS] Download URL:", url);
       set({ isDownloading: false });
       // Note: The original code returned the URL, but the store return type is Promise<void>.
       // If the component expects the URL, we might need to adjust the interface or component logic.
