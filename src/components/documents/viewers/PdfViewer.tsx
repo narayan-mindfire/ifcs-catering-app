@@ -21,11 +21,13 @@ export const PdfViewer: React.FC<ViewerProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [scale, setScale] = useState(1.0);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     setCurrentPage(1);
     setTotalPages(0);
     setScale(1.0);
+    setRotation(0);
   }, [file]);
 
   const handlePrevPage = () => {
@@ -46,6 +48,7 @@ export const PdfViewer: React.FC<ViewerProps> = ({
 
   const handleZoomIn = () => setScale((prev) => Math.min(prev + 0.1, 3.0));
   const handleZoomOut = () => setScale((prev) => Math.max(prev - 0.1, 0.5));
+  const handleRotate = () => setRotation((prev) => (prev + 90) % 360);
 
   return (
     <View className="flex-1 bg-bg-surface rounded-xl overflow-hidden border border-border-muted ml-5">
@@ -53,6 +56,7 @@ export const PdfViewer: React.FC<ViewerProps> = ({
         title={file.name}
         onDownload={onDownload}
         isDownloading={isDownloading}
+        fileUrl={file.url}
       >
         <View className="flex-row items-center mr-3 bg-bg-surface border border-border-muted rounded-lg px-2 py-1">
           <Text className="text-base text-text-secondary">Page:</Text>
@@ -105,12 +109,20 @@ export const PdfViewer: React.FC<ViewerProps> = ({
 
         <View className="w-px h-6 bg-border-secondary mx-3" />
 
-        <TouchableOpacity className="p-2 bg-bg-surface border border-border-muted rounded-lg justify-center items-center">
+        <TouchableOpacity
+          onPress={handleRotate}
+          className="p-2 bg-bg-surface border border-border-muted rounded-lg justify-center items-center"
+        >
           <RotateRightIcon color="#4F4B58" />
         </TouchableOpacity>
       </ViewerHeader>
 
-      <View className="flex-1 bg-bg-tertiary">
+      <View className="flex-1 bg-bg-tertiary justify-center items-center overflow-hidden">
+        {/* FIX APPLIED:
+           1. Removed `horizontal` prop.
+           2. Added `justify-center items-center` to parent View to keep PDF centered when rotated.
+           3. Simplified style.
+        */}
         <Pdf
           ref={pdfRef}
           source={{ uri: file.url, cache: true }}
@@ -121,7 +133,13 @@ export const PdfViewer: React.FC<ViewerProps> = ({
           onPageChanged={(page) => setCurrentPage(page)}
           onScaleChanged={(newScale) => setScale(newScale)}
           onError={(error) => console.error("PDF load error", error)}
-          style={{ flex: 1, width: "100%", height: "100%" }}
+          style={{
+            flex: 1,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "transparent",
+            transform: [{ rotate: `${rotation}deg` }],
+          }}
         />
       </View>
     </View>

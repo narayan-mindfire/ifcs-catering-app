@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -15,11 +15,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.ifcscateringapp",
-      "newArchEnabled": true,
+      "newArchEnabled": false,
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photo library to save downloaded files.",
+        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save downloaded files to your photo library.",
         "NSCameraUsageDescription": "We need camera access to scan flight QR codes."
       }
     },
@@ -42,6 +44,14 @@
         "expo-camera",
         {
           "cameraPermission": "We need camera access to scan flight QR codes."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow IFCS to access your photos.",
+          "savePhotosPermission": "Allow IFCS to save photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ]
