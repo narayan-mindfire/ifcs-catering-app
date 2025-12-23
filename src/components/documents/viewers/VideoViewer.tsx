@@ -27,6 +27,7 @@ export const VideoViewer: React.FC<ViewerProps> = ({
         title={file.name}
         onDownload={onDownload}
         isDownloading={isDownloading}
+        fileUrl={file.url}
       />
       <View className="flex-1 bg-bg-tertiary justify-center items-center">
         <Video

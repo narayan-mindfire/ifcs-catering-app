@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { NoMemoIcon } from "../../../assets/icons";
 import { DocumentFile } from "../../../types/documents";
-import { ImageViewer } from "./ImageHeader";
+import { ImageViewer } from "./ImageViewer";
 import { PdfViewer } from "./PdfViewer";
 import { VideoViewer } from "./VideoViewer";
 

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { downloadFileHelper } from "../components/documents/downloadHelper";
 import { documentService } from "../services/documentService";
 import {
   DocumentFile,
@@ -72,7 +73,6 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
           name: h.name,
         }));
 
-        // Ensure current folder is in breadcrumbs
         if (breadcrumbs[breadcrumbs.length - 1]?.id !== folderDetailsData.id) {
           breadcrumbs.push({
             id: folderDetailsData.id,
@@ -137,19 +137,30 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
     set({ selectedFile: file });
   },
 
-  downloadFile: async (fileId, _fileName) => {
+  downloadFile: async (fileId, fileName) => {
     set({ isDownloading: true });
     try {
+      // 1. Get the signed URL from your API
       const url = await documentService.getDownloadUrl(fileId);
-      log.info("[SUCCESS] Download URL:", url);
-      set({ isDownloading: false });
-      // Note: The original code returned the URL, but the store return type is Promise<void>.
-      // If the component expects the URL, we might need to adjust the interface or component logic.
-      // Assuming component handles the download trigger if the URL is returned.
-      return url as any;
+
+      if (!url) {
+        throw new Error("Failed to retrieve download URL");
+      }
+
+      log.info("[STORE] URL Fetched, starting file download...");
+
+      // 2. TRIGGER THE HELPER
+      // This was missing in your original code!
+      const success = await downloadFileHelper(url, fileName);
+
+      if (!success) {
+        throw new Error("File system download failed");
+      }
     } catch (err: any) {
-      console.error("[ERROR] Download failed:", err);
-      set({ isDownloading: false, error: "Download failed" });
+      console.error("[ERROR] Download workflow failed:", err);
+      set({ error: "Download failed" });
+    } finally {
+      set({ isDownloading: false });
     }
   },
 }));

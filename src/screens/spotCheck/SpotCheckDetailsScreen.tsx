@@ -25,6 +25,7 @@ import {
   PackingStandardItem,
 } from "../../types/preparations";
 import { formatDate } from "../../utils/dateFormatter";
+import { log } from "../../utils/logger";
 
 type SpotCheckDetailsScreenRouteProp = RouteProp<
   RootStackParamList,

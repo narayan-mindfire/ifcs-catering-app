@@ -1,25 +1,34 @@
+// src/types/documents.ts
+
+export interface DocumentFile {
+  id: string;
+  name: string;
+  url: string;
+  mimeType: string;
+  size?: number;
+  createdAt?: string;
+  modifiedAt?: string;
+}
+
+// Add this missing interface
 export interface DocumentFolder {
   id: string;
   name: string;
   parentId: string | null;
-  color: string;
-  createdAt: string;
-  updatedAt: string;
-  hierarchy?: DocumentFolder[];
-  filesCount?: number;
+  hierarchy?: { id: string; name: string }[];
+  createdAt?: string;
+  modifiedAt?: string;
 }
 
-export interface DocumentFile {
+export interface FolderItem {
   id: string;
-  folderId: string;
   name: string;
-  url: string;
-  fileSize: string;
-  mimeType: string;
-  createdAt: string;
-  updatedAt: string;
+  itemCount?: number;
+  createdAt?: string;
+  modifiedAt?: string;
 }
 
-export type FileSystemItem =
-  | { type: "folder"; data: DocumentFolder }
-  | { type: "file"; data: DocumentFile };
+export interface FileSystemItem {
+  type: "file" | "folder";
+  data: DocumentFile | FolderItem;
+}
