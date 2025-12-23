@@ -150,7 +150,7 @@ export interface FlightFilters {
   pageSize?: number;
   limit?: number;
 
-  sortBy?: keyof Flight;
+  sortBy?: keyof Flight | "groundPairing";
   sortOrder?: "asc" | "desc";
   order?: "asc" | "desc";
 

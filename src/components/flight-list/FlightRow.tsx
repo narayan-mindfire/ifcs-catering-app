@@ -1,8 +1,14 @@
 import { NavigationProp } from "@react-navigation/native";
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
-import { ArrowIcon } from "../../assets/icons";
+import { ArrowIcon, DropdownIcon } from "../../assets/icons";
 import { EmairatesIcon } from "../../assets/logos";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { Flight } from "../../types/flight";
@@ -15,9 +21,10 @@ interface Props {
   isFirstInGroup: boolean;
   isPaired: boolean;
   flightGroup?: Flight[];
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
-// Memoized component to prevent unnecessary re-renders
 export const FlightRow: React.FC<Props> = memo(
   ({
     flight,
@@ -26,8 +33,24 @@ export const FlightRow: React.FC<Props> = memo(
     isFirstInGroup,
     isPaired,
     flightGroup = [],
+    isExpanded = false,
+    onToggleExpand,
   }) => {
-    // Memoize timezone extraction
+    const rotation = useSharedValue(isExpanded ? 180 : 0);
+
+    useEffect(() => {
+      rotation.value = withTiming(isExpanded ? 180 : 0, {
+        duration: 100,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      });
+    }, [isExpanded, rotation]);
+
+    const animatedIconStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ rotate: `${rotation.value}deg` }],
+      };
+    });
+
     const { depOffset, arrOffset } = useMemo(
       () => ({
         depOffset: flight.departureStation?.timezone || "+00:00",
@@ -36,15 +59,12 @@ export const FlightRow: React.FC<Props> = memo(
       [flight.departureStation?.timezone, flight.arrivalStation?.timezone],
     );
 
-    // Memoize route display logic
     const routeText = useMemo(() => {
       if (isPaired && flightGroup.length > 1) {
         if (isFirstInGroup) {
           const firstLeg = flightGroup[0];
           const secondLeg = flightGroup[1];
           return `${firstLeg.departureDestination}-${firstLeg.arrivalDestination}-${secondLeg.arrivalDestination}`;
-        } else {
-          return "";
         }
       }
       return (
@@ -60,22 +80,19 @@ export const FlightRow: React.FC<Props> = memo(
       flight.arrivalDestination,
     ]);
 
-    // Memoize time display calculations
     const departureData = useMemo(() => {
-      if (flight.actualDepartureUtc) {
+      if (flight.actualDepartureUtc)
         return {
           label: "Actual",
           time: flight.actualDepartureUtc,
           colorClass: "text-green-600",
         };
-      }
-      if (flight.estimatedDepartureUtc) {
+      if (flight.estimatedDepartureUtc)
         return {
           label: "Estimated",
           time: flight.estimatedDepartureUtc,
           colorClass: "text-orange-500",
         };
-      }
       return {
         label: "Scheduled",
         time: flight.scheduledDepartureUtc,
@@ -88,20 +105,18 @@ export const FlightRow: React.FC<Props> = memo(
     ]);
 
     const arrivalData = useMemo(() => {
-      if (flight.actualArrivalUtc) {
+      if (flight.actualArrivalUtc)
         return {
           label: "Actual",
           time: flight.actualArrivalUtc,
           colorClass: "text-green-600",
         };
-      }
-      if (flight.estimatedArrivalUtc) {
+      if (flight.estimatedArrivalUtc)
         return {
           label: "Estimated",
           time: flight.estimatedArrivalUtc,
           colorClass: "text-orange-500",
         };
-      }
       return {
         label: "Scheduled",
         time: flight.scheduledArrivalUtc,
@@ -113,7 +128,6 @@ export const FlightRow: React.FC<Props> = memo(
       flight.scheduledArrivalUtc,
     ]);
 
-    // Memoize formatted times
     const departureTime = useMemo(
       () => formatTimeWithOffset(departureData.time, depOffset),
       [departureData.time, depOffset],
@@ -130,7 +144,6 @@ export const FlightRow: React.FC<Props> = memo(
       [flight.scheduledDeparture],
     );
 
-    // Memoize press handler
     const handlePress = useCallback(() => {
       navigation.navigate("FlightDetails", {
         flightNumber: flight.airline?.designator + flight.flightNumber,
@@ -155,6 +168,16 @@ export const FlightRow: React.FC<Props> = memo(
             : "border-b border-border-secondary"
         }`}
       >
+        <View className="w-[30px] justify-center items-center">
+          {isPaired && isFirstInGroup && onToggleExpand && (
+            <Pressable onPress={onToggleExpand} hitSlop={15} className="p-1">
+              <Animated.View style={animatedIconStyle}>
+                <DropdownIcon width={16} height={16} />
+              </Animated.View>
+            </Pressable>
+          )}
+        </View>
+
         <View className="flex-[6] py-2.5 px-1 justify-center items-start">
           {flight?.airline?.logo ? (
             <Image
@@ -189,7 +212,6 @@ export const FlightRow: React.FC<Props> = memo(
           <Text className="text-lg text-text-primary">{formattedDate}</Text>
         </View>
 
-        {/* --- DEPARTURE COLUMN --- */}
         <View className="flex-[7] py-2.5 px-1 justify-center">
           <Text
             className={`text-xs mb-0.5 uppercase ${departureData.colorClass}`}
@@ -204,7 +226,6 @@ export const FlightRow: React.FC<Props> = memo(
           </Text>
         </View>
 
-        {/* --- ARRIVAL COLUMN --- */}
         <View className="flex-[7] py-2.5 px-1 justify-center">
           <Text
             className={`text-xs mb-0.5 uppercase ${arrivalData.colorClass}`}
@@ -255,13 +276,12 @@ export const FlightRow: React.FC<Props> = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison function for memo
-    // Only re-render if these specific props change
     return (
       prevProps.flight.id === nextProps.flight.id &&
       prevProps.isLastInGroup === nextProps.isLastInGroup &&
       prevProps.isFirstInGroup === nextProps.isFirstInGroup &&
       prevProps.isPaired === nextProps.isPaired &&
+      prevProps.isExpanded === nextProps.isExpanded &&
       prevProps.flight.status === nextProps.flight.status &&
       prevProps.flight.estimatedDepartureUtc ===
         nextProps.flight.estimatedDepartureUtc &&
@@ -273,4 +293,5 @@ export const FlightRow: React.FC<Props> = memo(
     );
   },
 );
+
 FlightRow.displayName = "FlightRow";
