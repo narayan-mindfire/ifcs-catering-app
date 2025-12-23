@@ -1,20 +1,21 @@
 import React, { Suspense, useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, View, Modal } from "react-native";
+import { ActivityIndicator, Alert, Modal, View } from "react-native";
 
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { useFlightStore } from "../../store/useFlightStore";
+import { QRScanner } from "../../components/common/QRScanner";
+import { PreparationsModals } from "../../components/preparation/PreparationModal";
+import {
+  ParsedQRData,
+  PreparationsHeader,
+} from "../../components/preparation/PreparationsHeader";
+import { PreparationsList } from "../../components/preparation/PreparationsList";
 import { usePreparationActions } from "../../hooks/usePreparationActions";
 import { usePreparationData } from "../../hooks/usePreparationData";
 import { usePreparationModals } from "../../hooks/usePreparationModals";
-import { PreparationsList } from "../../components/preparation/PreparationsList";
-import {
-  PreparationsHeader,
-  ParsedQRData,
-} from "../../components/preparation/PreparationsHeader";
-import { PreparationsModals } from "../../components/preparation/PreparationModal";
-import { QRScanner } from "../../components/common/QRScanner";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { useFlightStore } from "../../store/useFlightStore";
 import { PreparationItem } from "../../types/preparations";
+import { log } from "../../utils/logger";
 
 const CURRENT_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
@@ -160,7 +161,7 @@ export const PreparationsScreen: React.FC = () => {
       actionType: "prep" | "seal" | "assemble" | "load" | "consumption",
       scannedData: ParsedQRData,
     ) => {
-      console.log("Scan 1 Received:", actionType, scannedData);
+      log.info("Scan 1 Received:", actionType, scannedData);
       setRefreshKey((prev) => prev + 1);
 
       // PREP ACTION: Check Flight Match
@@ -178,9 +179,7 @@ export const PreparationsScreen: React.FC = () => {
 
         // B. Mismatch -> OLD Flight Detected -> Start Consumption Flow
         else {
-          console.log(
-            "⚠️ Old Flight Detected. Starting Step 2 (Scan Current).",
-          );
+          log.info("⚠️ Old Flight Detected. Starting Step 2 (Scan Current).");
 
           // 1. Store Old Data Reference
           setPendingOldFlightData(scannedData);
@@ -260,7 +259,7 @@ export const PreparationsScreen: React.FC = () => {
       return;
     }
 
-    console.log("✅ Current Flight Verified. Fetching Old Data...");
+    log.info("✅ Current Flight Verified. Fetching Old Data...");
 
     // Close Scanner
     setIsVerifyScannerVisible(false);
@@ -293,7 +292,7 @@ export const PreparationsScreen: React.FC = () => {
       return;
     }
 
-    console.log("🎬 Finalizing Consumption Flow...");
+    log.info("🎬 Finalizing Consumption Flow...");
 
     // 1. Mark Current as Prepared
     await actions.handlePreparedAction(pendingCurrentItem);

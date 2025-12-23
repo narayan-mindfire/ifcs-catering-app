@@ -1,30 +1,31 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  Image,
-  ScrollView,
   ActivityIndicator,
   Alert,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { StatusRow } from "./StatusRow";
+
+import { ImageIcon } from "../../assets/icons";
+import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import {
+  PackingStandardContainer,
+  PackingStandardItem,
+} from "../../types/preparations";
+import { ConfirmationModal } from "../common/ConfirmationModal";
+import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
+import { SealNumberModal } from "../preparation/SealNumberModal";
 import { CartVisualizer } from "./CartVisulaizer";
 import { ContainerVisualizer } from "./ContainerVisualizer";
-import {
-  PackingStandardItem,
-  PackingStandardContainer,
-} from "../../types/preparations";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
-import { ImageIcon } from "../../assets/icons";
-import { SealNumberModal } from "../preparation/SealNumberModal";
 import { SignatureModal } from "./SharedComponents";
-import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
-import { ConfirmationModal } from "../common/ConfirmationModal";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
+import { StatusRow } from "./StatusRow";
 
 interface FlightPreparationModalProps {
   visible: boolean;

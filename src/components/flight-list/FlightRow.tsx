@@ -1,11 +1,12 @@
-import React, { memo, useMemo, useCallback } from "react";
-import { View, Text, Pressable, Image } from "react-native";
 import { NavigationProp } from "@react-navigation/native";
-import { Flight } from "../../types/flight";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import React, { memo, useCallback, useMemo } from "react";
+import { Image, Pressable, Text, View } from "react-native";
+
 import { ArrowIcon } from "../../assets/icons";
-import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
 import { EmairatesIcon } from "../../assets/logos";
+import { RootStackParamList } from "../../navigation/AppNavigator";
+import { Flight } from "../../types/flight";
+import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
 
 interface Props {
   flight: Flight;

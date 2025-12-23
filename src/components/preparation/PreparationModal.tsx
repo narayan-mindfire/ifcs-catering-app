@@ -1,5 +1,6 @@
 import React, { lazy } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
+
 import { ConfirmationModal } from "../common/ConfirmationModal";
 
 // Lazy load heavy components
@@ -47,7 +48,7 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
   onSaveSealNumber,
   isConsumptionMode = false,
   consumptionFlightId,
-  onFinishConsumption,
+  // onFinishConsumption,
 }) => {
   // Determine which flight ID to use
   // If in consumption mode, use the scanned old flight ID. Otherwise, use current selected flight.

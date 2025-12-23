@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
+
 import { FilterIcon } from "../../assets/icons";
 
 interface Option {

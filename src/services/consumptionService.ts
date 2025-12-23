@@ -1,12 +1,13 @@
 import apiClient from "../api/axiosClient";
 import {
-  ConsumptionTrackingRecord,
-  CreateConsumptionTrackingInput,
-  UpdateConsumptionTrackingInput,
   ConsumptionTrackingFilters,
   ConsumptionTrackingListResponse,
+  ConsumptionTrackingRecord,
   ConsumptionTrackingResponse,
+  CreateConsumptionTrackingInput,
+  UpdateConsumptionTrackingInput,
 } from "../types/consumption";
+import { log } from "../utils/logger";
 
 export const consumptionService = {
   getRecords: async (
@@ -60,10 +61,7 @@ export const consumptionService = {
     );
 
     if (response.data.success) {
-      console.log(
-        "Consumption record created successfully:",
-        response.data.data,
-      );
+      log.info("Consumption record created successfully:", response.data.data);
       return response.data.data;
     }
     throw new Error("Failed to create consumption record");
@@ -80,7 +78,7 @@ export const consumptionService = {
     );
 
     if (response.data.success) {
-      console.log("Consumption record updated successfully");
+      log.info("Consumption record updated successfully");
       return response.data.data;
     }
     throw new Error("Failed to update consumption record");
@@ -90,6 +88,6 @@ export const consumptionService = {
     await apiClient.delete(
       `/flights/${flightId}/consumption-tracking/${recordId}`,
     );
-    console.log("Consumption record deleted successfully");
+    log.info("Consumption record deleted successfully");
   },
 };

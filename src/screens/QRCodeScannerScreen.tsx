@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from "react";
-import { View, Alert } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/AppNavigator";
+import React, { useCallback, useState } from "react";
+import { Alert, View } from "react-native";
+
 import { QRScanner } from "../components/common/QRScanner";
+import { RootStackParamList } from "../navigation/AppNavigator";
+import { log } from "../utils/logger";
 
 type QRCodeScannerScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -43,7 +45,7 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation }) => {
 
           // Validate essential IDs
           if (flightPrepId && flightId) {
-            console.log(`✅ Jumping to: ${prepName} (${flightPrepId})`);
+            log.info(`✅ Jumping to: ${prepName} (${flightPrepId})`);
 
             // Use 'replace' so hitting "Back" goes to the Dashboard/Selection
             // instead of returning to the camera.

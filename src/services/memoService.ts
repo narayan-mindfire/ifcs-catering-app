@@ -1,5 +1,6 @@
 import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
+import { log } from "../utils/logger";
 
 const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
 
@@ -24,7 +25,7 @@ export const memoService = {
       params,
       headers: { "x-user-id": CURRENT_USER_ID },
     });
-    console.log("Memos Response Data:", response.data);
+    log.info("Memos Response Data:", response.data);
     return response.data.data.map((item: any) => {
       if (item.memo) {
         return {
@@ -43,7 +44,7 @@ export const memoService = {
     const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
       headers: { "x-user-id": CURRENT_USER_ID },
     });
-    console.log("MEMO: ", response.data.data);
+    log.info("MEMO: ", response.data.data);
     return response.data.data;
   },
 

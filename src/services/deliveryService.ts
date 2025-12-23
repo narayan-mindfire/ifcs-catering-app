@@ -1,5 +1,6 @@
 import apiClient from "../api/axiosClient";
 import { Delivery } from "../types/deliveries";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -37,7 +38,7 @@ export const deliveryService = {
       `/flights/${callFlight}/deliveries`,
       { deliveryName },
     );
-    console.log("NEW DELIVERY CREATED RESPONSE:", response.data);
+    log.info("NEW DELIVERY CREATED RESPONSE:", response.data);
     return response.data.data;
   },
 
@@ -71,20 +72,20 @@ export const deliveryService = {
     const callFlight = resolveFlightId(flightId);
     const url = `/flights/${callFlight}/deliveries/${deliveryId}/signatures?type=${type}`;
 
-    console.log("\n================= REQUEST DEBUG START =================");
-    console.log("URL:", url);
-    console.log("COMMENT:", requestPayload.comment);
-    console.log(
+    log.info("\n================= REQUEST DEBUG START =================");
+    log.info("URL:", url);
+    log.info("COMMENT:", requestPayload.comment);
+    log.info(
       "SIGNATURE START (Check for prefix):",
       requestPayload.signature.substring(0, 50) + "...",
     );
-    console.log("================= REQUEST DEBUG END ===================\n");
+    log.info("================= REQUEST DEBUG END ===================\n");
 
     const response = await apiClient.post<ApiResponse<Delivery>>(
       url,
       requestPayload,
     );
-    console.log("RESPONSE DATA =================", response.data.data);
+    log.info("RESPONSE DATA =================", response.data.data);
     return response.data.data;
   },
 

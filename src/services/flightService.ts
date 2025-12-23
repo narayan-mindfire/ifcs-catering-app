@@ -1,8 +1,8 @@
 import apiClient from "../api/axiosClient";
 import {
+  Flight,
   FlightApiResponse,
   FlightFilters,
-  Flight,
   FlightServiceResponse,
   SingleFlightResponse,
 } from "../types/flight";

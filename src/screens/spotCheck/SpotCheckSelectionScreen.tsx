@@ -1,10 +1,11 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+
 import { NoFlightsIcon, QrIcon } from "../../assets/icons";
+import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 
 type SpotCheckSelectionScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -22,7 +23,7 @@ interface Props {
 
 // const TEST_FLIGHT_ID = "8548e2fd-e0d2-4e11-ab7e-d778274fe81d";
 
-const SpotCheckSelectionScreen: React.FC<Props> = ({ route, navigation }) => {
+const SpotCheckSelectionScreen: React.FC<Props> = ({ navigation }) => {
   const breadcrumbItems = [
     {
       label: "Dashboard",

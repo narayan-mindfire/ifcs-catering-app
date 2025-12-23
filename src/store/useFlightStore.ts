@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { Flight, FlightFilters } from "../types/flight";
+
 import { flightService } from "../services/flightService";
+import { Flight, FlightFilters } from "../types/flight";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
 

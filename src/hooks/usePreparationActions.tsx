@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 import { Alert } from "react-native";
+
 import { PreparationItem } from "../types/preparations";
+import { log } from "../utils/logger";
 
 interface UsePreparationActionsParams {
   selectedFlight: any;
@@ -77,9 +79,9 @@ export const usePreparationActions = ({
 
   const handleSealAction = useCallback(
     async (item: PreparationItem) => {
-      console.log("[handleSealAction] START");
-      console.log("[handleSealAction] item:", item);
-      console.log("[handleSealAction] selectedFlight:", selectedFlight);
+      log.info("[handleSealAction] START");
+      log.info("[handleSealAction] item:", item);
+      log.info("[handleSealAction] selectedFlight:", selectedFlight);
 
       if (!selectedFlight?.id) {
         console.warn("[handleSealAction] EXIT → selectedFlight.id missing");
@@ -93,7 +95,7 @@ export const usePreparationActions = ({
         (item.assemblyProcessFlag === "inprogress" ||
           item.assemblyProcessFlag === "completed");
 
-      console.log("[handleSealAction] computed flags:", {
+      log.info("[handleSealAction] computed flags:", {
         isPrepared,
         isSealed,
         isLocked,
@@ -101,7 +103,7 @@ export const usePreparationActions = ({
       });
 
       if (isSealed) {
-        console.log("[handleSealAction] BRANCH → item is SEALED");
+        log.info("[handleSealAction] BRANCH → item is SEALED");
 
         if (isLocked) {
           console.warn("[handleSealAction] BLOCKED → item is LOCKED");
@@ -111,18 +113,18 @@ export const usePreparationActions = ({
           return;
         }
 
-        console.log("[handleSealAction] Opening REMOVE SEAL confirm modal");
+        log.info("[handleSealAction] Opening REMOVE SEAL confirm modal");
 
         modals.openConfirm({
           title: "Remove Seal",
           message: "Are you sure you want to remove the seal from this item?",
           actionType: "disable",
           onConfirm: async () => {
-            console.log("[handleSealAction] CONFIRM → Remove Seal clicked");
+            log.info("[handleSealAction] CONFIRM → Remove Seal clicked");
 
             modals.closeConfirm();
 
-            console.log("[handleSealAction] Calling updatePreparationFlag");
+            log.info("[handleSealAction] Calling updatePreparationFlag");
 
             const success = await updatePreparationFlag(
               selectedFlight.id,
@@ -133,13 +135,13 @@ export const usePreparationActions = ({
               },
             );
 
-            console.log(
+            log.info(
               "[handleSealAction] updatePreparationFlag result:",
               success,
             );
 
             if (success) {
-              console.log("[handleSealAction] Seal removed successfully");
+              log.info("[handleSealAction] Seal removed successfully");
               Alert.alert("Success", "Seal removed");
             } else {
               console.warn("[handleSealAction] Failed to remove seal");
@@ -150,7 +152,7 @@ export const usePreparationActions = ({
         return;
       }
 
-      console.log("[handleSealAction] BRANCH → item is NOT sealed");
+      log.info("[handleSealAction] BRANCH → item is NOT sealed");
 
       if (!isPrepared) {
         console.warn("[handleSealAction] BLOCKED → item not prepared");
@@ -166,10 +168,10 @@ export const usePreparationActions = ({
         return;
       }
 
-      console.log("[handleSealAction] Opening SEAL modal");
+      log.info("[handleSealAction] Opening SEAL modal");
       modals.openSeal(item);
 
-      console.log("[handleSealAction] END");
+      log.info("[handleSealAction] END");
     },
     [selectedFlight, hasUserSignature, modals, updatePreparationFlag],
   );

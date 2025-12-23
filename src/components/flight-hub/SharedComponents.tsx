@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { View, Text, Modal, Pressable, TouchableOpacity } from "react-native";
+import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import SignatureScreen, {
   SignatureViewRef,
 } from "react-native-signature-canvas";

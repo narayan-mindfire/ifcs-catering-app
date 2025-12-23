@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  ScrollView,
   ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
 } from "react-native";
-import { SignatureModal } from "./SharedComponents";
+
 import { DeleteIcon } from "../../assets/icons";
-import { formatDate } from "../../utils/dateFormatter";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { formatDate } from "../../utils/dateFormatter";
+import { SignatureModal } from "./SharedComponents";
 
 interface ContentPreparersTabProps {
   flightId: string;

@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  StatusBar,
+  View,
 } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
 import Animated, {
-  useSharedValue,
+  Easing,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
 
 interface QRScannerProps {

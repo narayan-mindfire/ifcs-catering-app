@@ -4,9 +4,10 @@ import { useWindowDimensions, View } from "react-native";
 import { UserDropdown } from "../components/common/UserDropdown";
 import { MainContent } from "../components/dashboard/MainContent";
 import { Sidebar } from "../components/dashboard/Sidebar";
+import { log } from "../utils/logger";
 
 const useAuth = () => ({
-  signOut: () => console.log("MOCK: Logout action fired"),
+  signOut: () => log.info("MOCK: Logout action fired"),
 });
 
 const DashboardContent: React.FC = () => {

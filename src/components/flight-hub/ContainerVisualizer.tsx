@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { View, Image, Pressable, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
   Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
+
 import { PackingStandardContainer } from "../../types/preparations";
 
 interface DrawerItemProps {
@@ -20,7 +21,7 @@ interface DrawerItemProps {
 const DrawerItem: React.FC<DrawerItemProps> = ({
   isOpen,
   positionTop,
-  originalIndex,
+  // originalIndex,
   imageUrl,
   label,
   onPress,
