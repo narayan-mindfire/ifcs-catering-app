@@ -1,8 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { useForm } from "react-hook-form";
+import { ScrollView, Text, View } from "react-native";
 
+import {
+  CrewComplianceSchema,
+  crewComplianceSchema,
+} from "../../schemas/deliverySchemas";
 import { CrewCompliance } from "../../types/deliveries";
 import { AppButton } from "../common/AppButton";
+import { FormInput } from "../common/FormInput"; // Import reusable input
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 import { SignatureModal } from "./SharedComponents";
 
@@ -15,86 +22,84 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
   crewCompliance,
   onUpdateCompliance,
 }) => {
-  const [isCompliant, setIsCompliant] = useState(false);
-
-  const [airCrewRepresentative, setAirCrewRepresentative] = useState("");
-  const [crewName, setCrewName] = useState("");
-  const [staffNumber, setStaffNumber] = useState("");
-
-  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
-
-  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // 1. Initialize React Hook Form
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { isDirty, isValid, errors },
+  } = useForm<CrewComplianceSchema>({
+    resolver: zodResolver(crewComplianceSchema),
+    mode: "onChange", // Validate as user types
+    defaultValues: {
+      airCrewRepresentative: "",
+      crewName: "",
+      staffNumber: "",
+      signature: "",
+      isCompliant: false,
+    },
+  });
+
+  // Watch values needed for UI logic (like toggling compliance card)
+  const isCompliant = watch("isCompliant");
+  const signature = watch("signature");
+
+  // 2. Sync Props to Form State
   useEffect(() => {
     if (crewCompliance) {
-      setIsCompliant(crewCompliance.isCompliant || false);
-      setAirCrewRepresentative(crewCompliance.airCrewRepresentative || "");
-      setCrewName(crewCompliance.crewName || "");
-      setStaffNumber(crewCompliance.staffNumber || "");
-      setPendingSignature(crewCompliance.signature || null);
+      reset({
+        airCrewRepresentative: crewCompliance.airCrewRepresentative || "",
+        crewName: crewCompliance.crewName || "",
+        staffNumber: crewCompliance.staffNumber || "",
+        signature: crewCompliance.signature || "",
+        isCompliant: crewCompliance.isCompliant || false,
+      });
     } else {
-      setIsCompliant(false);
-      setAirCrewRepresentative("");
-      setCrewName("");
-      setStaffNumber("");
-      setPendingSignature(null);
+      reset({
+        airCrewRepresentative: "",
+        crewName: "",
+        staffNumber: "",
+        signature: "",
+        isCompliant: false,
+      });
     }
-    setHasChanges(false);
-  }, [crewCompliance]);
+  }, [crewCompliance, reset]);
 
-  useEffect(() => {
-    const changed =
-      isCompliant !== (crewCompliance?.isCompliant ?? false) ||
-      airCrewRepresentative !== (crewCompliance?.airCrewRepresentative ?? "") ||
-      crewName !== (crewCompliance?.crewName ?? "") ||
-      staffNumber !== (crewCompliance?.staffNumber ?? "") ||
-      pendingSignature !== (crewCompliance?.signature ?? null);
-
-    setHasChanges(changed);
-  }, [
-    isCompliant,
-    airCrewRepresentative,
-    crewName,
-    staffNumber,
-    pendingSignature,
-    crewCompliance,
-  ]);
-
-  const handleSave = async () => {
+  // 3. Handle Submit
+  const onSubmit = async (data: CrewComplianceSchema) => {
     setIsSaving(true);
-
     await onUpdateCompliance({
-      isCompliant,
+      isCompliant: data.isCompliant,
       confirmationText:
         "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
-      signature: pendingSignature,
-      signedAt: pendingSignature
-        ? new Date()
-        : crewCompliance?.signedAt || null,
-
-      airCrewRepresentative,
-      crewName,
-      staffNumber,
+      signature: data.signature,
+      // If signature changed, update timestamp, else keep old one
+      signedAt:
+        data.signature !== crewCompliance?.signature
+          ? new Date()
+          : crewCompliance?.signedAt || null,
+      airCrewRepresentative: data.airCrewRepresentative,
+      crewName: data.crewName,
+      staffNumber: data.staffNumber,
     });
-
+    // Reset "dirty" state with the new saved values
+    reset(data);
     setIsSaving(false);
-    setHasChanges(false);
   };
 
-  const handleSaveSignature = (signature: string) => {
-    setPendingSignature(signature);
+  const handleSaveSignature = (sig: string) => {
+    setValue("signature", sig, { shouldValidate: true, shouldDirty: true });
     setShowSignatureModal(false);
   };
 
-  // Validation Logic
-  // ALL fields are mandatory here
-  const isFormValid =
-    airCrewRepresentative.trim() !== "" &&
-    crewName.trim() !== "" &&
-    staffNumber.trim() !== "" &&
-    pendingSignature !== null;
+  const handleToggleCompliance = (val: boolean) => {
+    setValue("isCompliant", val, { shouldValidate: true, shouldDirty: true });
+  };
 
   return (
     <ScrollView
@@ -106,61 +111,53 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             Crew Member Details
           </Text>
 
-          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-            Air Crew Representative Name <Text className="text-red-500">*</Text>
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={airCrewRepresentative}
-            onChangeText={setAirCrewRepresentative}
+          {/* Reusable Form Inputs */}
+          <FormInput
+            control={control}
+            name="airCrewRepresentative"
+            label="Air Crew Representative Name"
             placeholder="Enter air crew representative name"
-            placeholderTextColor="#A09CAB"
+            required
           />
 
-          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-            Crew Name <Text className="text-red-500">*</Text>
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={crewName}
-            onChangeText={setCrewName}
+          <FormInput
+            control={control}
+            name="crewName"
+            label="Crew Name"
             placeholder="Enter crew name"
-            placeholderTextColor="#A09CAB"
+            required
           />
 
-          <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-            Staff Number <Text className="text-red-500">*</Text>
-          </Text>
-          <TextInput
-            className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-            value={staffNumber}
-            onChangeText={setStaffNumber}
+          <FormInput
+            control={control}
+            name="staffNumber"
+            label="Staff Number"
             placeholder="Enter staff number"
-            placeholderTextColor="#A09CAB"
+            required
           />
         </View>
 
         <View>
           <AppButton
-            title={hasChanges ? "Save Changes" : "No Changes to Save"}
-            onPress={handleSave}
+            title={isDirty ? "Save Changes" : "No Changes to Save"}
+            onPress={handleSubmit(onSubmit)}
             loading={isSaving}
-            disabled={!hasChanges || !isFormValid}
-            type={!hasChanges || !isFormValid ? "secondary" : "primary"}
+            disabled={!isDirty || !isValid}
+            type={!isDirty || !isValid ? "secondary" : "primary"}
             style={{
               marginTop: 24,
               borderRadius: 12,
               paddingVertical: 12,
-              opacity: !hasChanges || !isFormValid ? 0.5 : 1,
+              opacity: !isDirty || !isValid ? 0.5 : 1,
             }}
             textStyle={{
               fontSize: 18,
               fontWeight: "600",
-              color: !hasChanges || !isFormValid ? undefined : "#fff",
+              color: !isDirty || !isValid ? undefined : "#fff",
             }}
           />
 
-          {!hasChanges && crewName && (
+          {!isDirty && crewCompliance?.crewName && (
             <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
               <Text className="text-sm text-text-primary text-center font-medium">
                 ✓ Information Synced
@@ -170,15 +167,25 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
         </View>
       </View>
 
-      <ComplianceSignatureCard
-        title="CREW Catering Security Measures Compliance"
-        isCompliant={isCompliant}
-        onToggleCompliance={setIsCompliant}
-        confirmationText="In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition"
-        signature={pendingSignature ?? null}
-        signedAt={crewCompliance?.signedAt ?? null}
-        onSign={() => setShowSignatureModal(true)}
-      />
+      <View className="flex-1">
+        <ComplianceSignatureCard
+          title="CREW Catering Security Measures Compliance"
+          isCompliant={isCompliant || false}
+          onToggleCompliance={handleToggleCompliance}
+          confirmationText="In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition"
+          signature={signature || null}
+          signedAt={crewCompliance?.signedAt || null}
+          onSign={() => setShowSignatureModal(true)}
+        />
+        {/* Display Signature Validation Error */}
+        {errors.signature && (
+          <View className="bg-red-50 border border-red-200 p-2 rounded-lg mt-2">
+            <Text className="text-red-600 text-center font-medium">
+              {errors.signature.message}
+            </Text>
+          </View>
+        )}
+      </View>
 
       <SignatureModal
         isOpen={showSignatureModal}
