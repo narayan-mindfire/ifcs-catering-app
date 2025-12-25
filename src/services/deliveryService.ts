@@ -13,7 +13,6 @@ interface ApiResponse<T> {
   };
 }
 
-// Helper to handle the specific flight ID swap logic
 const resolveFlightId = (flightId: string) => {
   return flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
     ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"

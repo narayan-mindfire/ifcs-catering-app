@@ -1,8 +1,15 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { useForm } from "react-hook-form";
+import { ScrollView, Text, View } from "react-native";
 
+import {
+  DriverDeclarationSchema,
+  driverDeclarationSchema,
+} from "../../schemas/deliverySchemas";
 import { DriversDeclaration } from "../../types/deliveries";
 import { AppButton } from "../common/AppButton";
+import { FormInput } from "../common/FormInput";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 import { SignatureModal } from "./SharedComponents";
 
@@ -15,95 +22,82 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   driversDeclaration,
   onUpdateDeclaration,
 }) => {
-  const [driver, setDriver] = useState("");
-  const [staffID, setStaffID] = useState("");
-  const [truckSeal, setTruckSeal] = useState("");
-  const [company, setCompany] = useState("");
-  const [sealIntact, setSealIntact] = useState(false);
-
-  const [pendingSignature, setPendingSignature] = useState<string | null>(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
-
-  const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { isDirty, isValid, errors },
+  } = useForm<DriverDeclarationSchema>({
+    resolver: zodResolver(driverDeclarationSchema),
+    mode: "onChange",
+    defaultValues: {
+      driverName: "",
+      driverStaffId: "",
+      truckSeal: "",
+      driverCompany: "",
+      signature: "",
+      sealIntact: false,
+    },
+  });
+
+  const sealIntact = watch("sealIntact");
+  const signature = watch("signature");
+  const driverName = watch("driverName");
 
   useEffect(() => {
     if (driversDeclaration) {
-      setDriver(driversDeclaration.driverName || "");
-      setStaffID(driversDeclaration.driverStaffId || "");
-      setTruckSeal(driversDeclaration.truckSeal || "");
-      setCompany(driversDeclaration.driverCompany || "");
-      setSealIntact(driversDeclaration.sealIntact || false);
-      setPendingSignature(driversDeclaration.signature || null);
+      reset({
+        driverName: driversDeclaration.driverName || "",
+        driverStaffId: driversDeclaration.driverStaffId || "",
+        truckSeal: driversDeclaration.truckSeal || "",
+        driverCompany: driversDeclaration.driverCompany || "",
+        signature: driversDeclaration.signature || "",
+        sealIntact: driversDeclaration.sealIntact || false,
+      });
     } else {
-      setDriver("");
-      setStaffID("");
-      setTruckSeal("");
-      setCompany("");
-      setSealIntact(false);
-      setPendingSignature(null);
+      reset({
+        driverName: "",
+        driverStaffId: "",
+        truckSeal: "",
+        driverCompany: "",
+        signature: "",
+        sealIntact: false,
+      });
     }
-    setHasChanges(false);
-  }, [driversDeclaration]);
+  }, [driversDeclaration, reset]);
 
-  useEffect(() => {
-    const originalSig = driversDeclaration?.signature || null;
-
-    const changed =
-      driver !== (driversDeclaration?.driverName || "") ||
-      staffID !== (driversDeclaration?.driverStaffId || "") ||
-      truckSeal !== (driversDeclaration?.truckSeal || "") ||
-      company !== (driversDeclaration?.driverCompany || "") ||
-      sealIntact !== (driversDeclaration?.sealIntact || false) ||
-      pendingSignature !== originalSig;
-
-    setHasChanges(changed);
-  }, [
-    driver,
-    staffID,
-    truckSeal,
-    company,
-    sealIntact,
-    pendingSignature,
-    driversDeclaration,
-  ]);
-
-  const handleSave = async () => {
+  const onSubmit = async (data: DriverDeclarationSchema) => {
     setIsSaving(true);
-
     await onUpdateDeclaration({
-      driverName: driver,
-      driverStaffId: staffID,
-      truckSeal: truckSeal,
-      driverCompany: company,
-      sealIntact: sealIntact,
+      driverName: data.driverName,
+      driverStaffId: data.driverStaffId,
+      truckSeal: data.truckSeal,
+      driverCompany: data.driverCompany,
+      sealIntact: data.sealIntact,
       confirmationText: "The driver confirms the seal is intact.",
-      signature: pendingSignature,
-      signedAt: pendingSignature
-        ? new Date()
-        : driversDeclaration?.signedAt || null,
+      signature: data.signature,
+      signedAt:
+        data.signature !== driversDeclaration?.signature
+          ? new Date()
+          : driversDeclaration?.signedAt || null,
     });
-
-    setHasChanges(false);
+    reset(data);
     setIsSaving(false);
   };
 
-  const handleSaveSignature = (signature: string) => {
-    setPendingSignature(signature);
+  const handleSaveSignature = (sig: string) => {
+    setValue("signature", sig, { shouldValidate: true, shouldDirty: true });
     setShowSignatureModal(false);
   };
 
-  const handleToggleSealIntact = (value: boolean) => {
-    setSealIntact(value);
+  const handleToggleSealIntact = (val: boolean) => {
+    setValue("sealIntact", val, { shouldValidate: true, shouldDirty: true });
   };
-
-  // Validation Logic
-  const isFormValid =
-    driver.trim() !== "" &&
-    staffID.trim() !== "" &&
-    // truckSeal.trim() !== "" &&
-    // company.trim() !== "" &&
-    pendingSignature !== null;
 
   return (
     <ScrollView
@@ -114,70 +108,56 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           Driver Information
         </Text>
 
-        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-          Driver Name <Text className="text-red-500">*</Text>
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={driver}
-          onChangeText={setDriver}
+        <FormInput
+          control={control}
+          name="driverName"
+          label="Driver Name"
           placeholder="Enter driver name"
-          placeholderTextColor="#A09CAB"
+          required
         />
 
-        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-          Staff ID <Text className="text-red-500">*</Text>
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={staffID}
-          onChangeText={setStaffID}
+        <FormInput
+          control={control}
+          name="driverStaffId"
+          label="Staff ID"
           placeholder="Enter staff ID"
-          placeholderTextColor="#A09CAB"
+          required
         />
 
-        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-          Truck Seal
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={truckSeal}
-          onChangeText={setTruckSeal}
+        <FormInput
+          control={control}
+          name="truckSeal"
+          label="Truck Seal"
           placeholder="Enter truck seal ID"
-          placeholderTextColor="#A09CAB"
         />
 
-        <Text className="text-sm text-text-secondary mb-1.5 mt-2.5">
-          Company
-        </Text>
-        <TextInput
-          className="border border-border-muted rounded-xl p-3 text-lg text-text-primary bg-bg-surface"
-          value={company}
-          onChangeText={setCompany}
+        <FormInput
+          control={control}
+          name="driverCompany"
+          label="Company"
           placeholder="Enter company name"
-          placeholderTextColor="#A09CAB"
         />
 
         <AppButton
-          title={hasChanges ? "Save Changes" : "No Changes to Save"}
-          onPress={handleSave}
+          title={isDirty ? "Save Changes" : "No Changes to Save"}
+          onPress={handleSubmit(onSubmit)}
           loading={isSaving}
-          disabled={!hasChanges || !isFormValid}
-          type={!hasChanges || !isFormValid ? "secondary" : "primary"}
+          disabled={!isDirty || !isValid}
+          type={!isDirty || !isValid ? "secondary" : "primary"}
           style={{
             marginTop: 24,
             paddingVertical: 12,
             borderRadius: 12,
-            opacity: !hasChanges || !isFormValid ? 0.5 : 1,
+            opacity: !isDirty || !isValid ? 0.5 : 1,
           }}
           textStyle={{
             fontSize: 14,
             fontWeight: "600",
-            color: !hasChanges || !isFormValid ? undefined : "#fff",
+            color: !isDirty || !isValid ? undefined : "#fff",
           }}
         />
 
-        {!hasChanges && driver && (
+        {!isDirty && driverName && (
           <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
             <Text className="text-sm text-text-primary text-center font-medium">
               ✓ Information Synced
@@ -186,20 +166,29 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
         )}
       </View>
 
-      <ComplianceSignatureCard
-        title="Security Seal is Intact"
-        toPrint={true}
-        isCompliant={sealIntact}
-        onToggleCompliance={handleToggleSealIntact}
-        confirmationText={
-          "I certify that:\n" +
-          "a. The security of in-flight supplies has been maintained during transfer.\n" +
-          "b. Supplies were loaded in secure condition and handed over properly."
-        }
-        signature={pendingSignature}
-        signedAt={driversDeclaration?.signedAt || null}
-        onSign={() => setShowSignatureModal(true)}
-      />
+      <View className="flex-1">
+        <ComplianceSignatureCard
+          title="Security Seal is Intact"
+          toPrint={true}
+          isCompliant={sealIntact || false}
+          onToggleCompliance={handleToggleSealIntact}
+          confirmationText={
+            "I certify that:\n" +
+            "a. The security of in-flight supplies has been maintained during transfer.\n" +
+            "b. Supplies were loaded in secure condition and handed over properly."
+          }
+          signature={signature || null}
+          signedAt={driversDeclaration?.signedAt || null}
+          onSign={() => setShowSignatureModal(true)}
+        />
+        {errors.signature && (
+          <View className="bg-red-50 border border-red-200 p-2 rounded-lg mt-2">
+            <Text className="text-red-600 text-center font-medium">
+              {errors.signature.message}
+            </Text>
+          </View>
+        )}
+      </View>
 
       <SignatureModal
         isOpen={showSignatureModal}
