@@ -42,7 +42,6 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const deliveriesArray = await deliveryService.getDeliveries(flightId);
-      log.info("DELIVEREES: ", deliveriesArray);
       set({
         deliveries: deliveriesArray,
         selectedDeliveryId:

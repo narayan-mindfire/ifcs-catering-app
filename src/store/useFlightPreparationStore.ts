@@ -6,7 +6,6 @@ import {
   PreparationFlagUpdatePayload,
   PreparationItem,
 } from "../types/preparations";
-import { log } from "../utils/logger";
 
 export interface UserSignature {
   id: string;
@@ -183,7 +182,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           flightId,
           userId,
         );
-        log.info("User signature response:", signatures);
         set({ userSignatures: signatures });
         return signatures.length > 0;
       } catch (err: any) {
