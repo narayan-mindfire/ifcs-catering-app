@@ -24,6 +24,7 @@
     "expo-blur": "~15.0.7",
     "expo-camera": "~17.0.10",
     "expo-file-system": "~19.0.19",
+    "expo-image-picker": "~17.0.10",
     "expo-linear-gradient": "^15.0.7",
     "expo-media-library": "~18.2.1",
     "expo-print": "~15.0.8",

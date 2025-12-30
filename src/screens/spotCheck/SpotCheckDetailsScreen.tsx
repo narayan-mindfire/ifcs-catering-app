@@ -22,6 +22,7 @@ import { FlightInfoHeader } from "../../components/SpotCheck/FlightDetailsHeader
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
+import { useSpotCheckStore } from "../../store/useSpotcheckStore";
 import {
   PackingStandardContainer,
   PackingStandardItem,
@@ -46,6 +47,7 @@ interface Props {
 const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { checkId, title, flightId } = route.params;
 
+  // Stores
   const { preparationDetail, fetchPreparationById, isPrepLoading } =
     useFlightPreparationStore();
   const {
@@ -53,6 +55,11 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     fetchFlightById,
     isLoading: isFlightLoading,
   } = useFlightStore();
+  const {
+    markAsPassed,
+    markAsFailed,
+    isLoading: isSubmitting,
+  } = useSpotCheckStore(); // ✅ Use Store
 
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
     PackingStandardItem[]
@@ -61,6 +68,8 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     null,
   );
   const [activeEquipmentName, setActiveEquipmentName] = useState<string>("");
+
+  // Modal & Preview States
   const [isFailModalVisible, setIsFailModalVisible] = useState(false);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
@@ -93,7 +102,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flightId, checkId]);
+  }, [flightId, checkId, selectedFlight]);
 
   const flightInfo = useMemo(() => {
     if (!selectedFlight) {
@@ -136,26 +145,23 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     };
   }, [selectedFlight, preparationDetail]);
 
+  // ... (Keep getDerivedEquipmentType & useEffect for visualizers exactly as before) ...
   const getDerivedEquipmentType = () => {
     if (!preparationDetail) return "";
     const packingStd = preparationDetail.packingStandard;
-
     const rawType = packingStd?.equipmentItem?.type;
     if (rawType) return rawType;
-
     const containers = packingStd?.containers || [];
     const name = (
       packingStd?.equipmentItem?.name ||
       preparationDetail.equipment ||
       ""
     ).toLowerCase();
-
     if (containers.length > 0) {
       if (name.includes("cart")) return "Cart";
       if (name.includes("oven")) return "Oven Insert";
       return "Atlas";
     }
-
     return "Bulk";
   };
 
@@ -163,12 +169,10 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!preparationDetail) return;
-
     const packingStd = preparationDetail.packingStandard;
     const parentContents = packingStd?.items || [];
     const drawers = packingStd?.containers || [];
     const parentName = packingStd?.name || "Equipment Contents";
-
     const type = derivedEquipmentType;
 
     if (type === "Cart" || type === "Atlas" || type === "Container") {
@@ -196,9 +200,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const packingStd = preparationDetail?.packingStandard;
     const parentContents = packingStd?.items || [];
     const parentName = packingStd?.name || "Equipment Contents";
-
     setActiveDrawerIndex(drawerIndex);
-
     if (drawerIndex !== null && drawerData) {
       setSelectedDrawerContents(drawerData.items || []);
       setActiveEquipmentName(drawerData.name || "N/A");
@@ -213,16 +215,49 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
+  // ✅ ACTION: Handle FAIL
   const handleConfirmFail = useCallback(
-    (data: { reason: string; remarks: string }) => {
-      log.info("Spot Check Failed:", data);
-      setIsFailModalVisible(false);
-      Alert.alert("Recorded", "Spot Check marked as Failed.");
-      navigation.goBack();
+    async (data: { reason: string; remarks: string; images: string[] }) => {
+      if (!selectedFlight || !preparationDetail) return;
+
+      const payload = {
+        flightId: flightId,
+        preparationId: checkId,
+        // Mapping Fields per Requirement
+        route: `${selectedFlight.departureStation?.code}-${selectedFlight.arrivalStation?.code}`,
+        loadingPlanId: selectedFlight?.loadingPlan?.id,
+        aircraftRegistration: selectedFlight.aircraft?.registration || "N/A",
+        flightNumber: selectedFlight.flightNumber || "N/A",
+        equipmentItemName:
+          activeEquipmentName || preparationDetail.equipment || "N/A",
+        // User Inputs
+        remarks: data.remarks,
+        reason: data.reason,
+        images: data.images,
+      };
+
+      const success = await markAsFailed(payload);
+
+      if (success) {
+        setIsFailModalVisible(false);
+        Alert.alert("Recorded", "Compliance record created and log updated.");
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", "Failed to submit spot check result.");
+      }
     },
-    [navigation],
+    [
+      selectedFlight,
+      preparationDetail,
+      flightId,
+      checkId,
+      activeEquipmentName,
+      markAsFailed,
+      navigation,
+    ],
   );
 
+  // ✅ ACTION: Handle PASS
   const handlePass = useCallback(() => {
     Alert.alert(
       "Confirm Pass",
@@ -231,14 +266,19 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         { text: "Cancel", style: "cancel" },
         {
           text: "Pass",
-          onPress: () => {
-            log.info("Spot Check Passed");
-            navigation.goBack();
+          onPress: async () => {
+            const success = await markAsPassed(flightId, checkId);
+            if (success) {
+              log.info("Spot Check Passed");
+              navigation.goBack();
+            } else {
+              Alert.alert("Error", "Failed to update status.");
+            }
           },
         },
       ],
     );
-  }, [navigation]);
+  }, [flightId, checkId, markAsPassed, navigation]);
 
   const handleFailTrigger = useCallback(() => {
     setIsFailModalVisible(true);
@@ -251,26 +291,29 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         label: "Spot Check",
         onPress: () => navigation.navigate("SpotCheckSelection"),
       },
-      {
-        label: "Required Checks",
-        onPress: () => {},
-      },
+      { label: "Required Checks", onPress: () => {} },
       { label: title || "Details" },
     ],
     [navigation, title],
   );
 
-  if (isPrepLoading || !preparationDetail || isFlightLoading) {
+  // --- Render Loading ---
+  if (isPrepLoading || !preparationDetail || isFlightLoading || isSubmitting) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center">
         <ActivityIndicator size="large" color="#602AF3" />
         <Text className="mt-4 text-gray-500">
-          {isFlightLoading ? "Loading Flight Info..." : "Loading Details..."}
+          {isSubmitting
+            ? "Submitting Spot Check..."
+            : isFlightLoading
+              ? "Loading Flight Info..."
+              : "Loading Details..."}
         </Text>
       </View>
     );
   }
 
+  // --- Render Visualizers (Same as before) ---
   const packingStd = preparationDetail?.packingStandard;
   const containers = packingStd?.containers || [];
   const positionImage =
@@ -296,7 +339,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         />
       );
     }
-
     if (derivedEquipmentType === "Cart") {
       return (
         <CartVisualizer
@@ -308,7 +350,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         />
       );
     }
-
     if (cabinetImage) {
       return (
         <Image
@@ -318,7 +359,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         />
       );
     }
-
     return (
       <View className="items-center justify-center">
         <ImageIcon width={60} height={60} color="#9CA3AF" />
@@ -330,11 +370,11 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <View className="flex-1 bg-gray-50">
       <BreadCrumb items={breadcrumbItems} />
-
       <FlightInfoHeader flightInfo={flightInfo} />
 
       <ScrollView contentContainerStyle={{ padding: 24 }}>
         <View className="flex-row gap-6 h-[500px]">
+          {/* Visualizer Column */}
           <View className="flex-[2] bg-white rounded-2xl p-4 flex-row gap-4 border border-gray-200">
             <View className="flex-1 items-center justify-center border-r border-gray-100 pr-4">
               {positionImage ? (
@@ -352,12 +392,12 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               )}
             </View>
-
             <View className="flex-1 items-center justify-center">
               {renderVisualizer()}
             </View>
           </View>
 
+          {/* Items List Column */}
           <View className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <View className="p-3 border-b border-gray-200 bg-gray-100">
               <View className="mb-2">
@@ -367,7 +407,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 </Text>
               </View>
             </View>
-
             <View className="flex-row p-2 border-b border-gray-200 bg-gray-50">
               <Text className="flex-1 text-xs font-bold text-gray-500 text-center">
                 Qty
@@ -379,7 +418,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 Img
               </Text>
             </View>
-
             <ScrollView>
               {selectedDrawerContents.length > 0 ? (
                 selectedDrawerContents.map((item, index) => (
@@ -422,7 +460,8 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         </View>
 
-        <View className="px-6 py-4 border-t border-gray-200 bg-white flex-row gap-4">
+        {/* Buttons */}
+        <View className="flex-row gap-4 mt-6 justify-end">
           <AppButton
             title="FAIL"
             onPress={handleFailTrigger}
@@ -432,13 +471,13 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <AppButton
             title="PASS"
             onPress={handlePass}
-            type="secondary"
             style={{ flex: 1, backgroundColor: "#22c55e" }}
-            textStyle={{ color: "white" }}
+            type="primary"
           />
         </View>
       </ScrollView>
 
+      {/* Fail Reason Modal - Passing new props */}
       <FailReasonModal
         isVisible={isFailModalVisible}
         onClose={() => setIsFailModalVisible(false)}
@@ -446,6 +485,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         itemName={title || "Preparation Item"}
       />
 
+      {/* Image Preview Modal (Keep as is) */}
       <Modal
         visible={isPreviewVisible}
         animationType="fade"
@@ -465,7 +505,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 <Text className="text-gray-600 text-xl font-bold">✕</Text>
               </TouchableOpacity>
             </View>
-
             <View className="w-full h-80 bg-gray-100 rounded-xl justify-center items-center overflow-hidden border border-gray-200">
               {previewImageUrl ? (
                 <Image
@@ -482,7 +521,6 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               )}
             </View>
-
             <View className="mt-4 flex-row justify-end">
               <TouchableOpacity
                 onPress={closeImagePreview}
