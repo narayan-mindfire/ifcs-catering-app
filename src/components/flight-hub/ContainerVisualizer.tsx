@@ -46,7 +46,7 @@ const DrawerItem: React.FC<DrawerItemProps> = ({
       style={{
         position: "absolute",
         top: `${isOpen ? positionTop - 1 : positionTop}%`,
-        left: "32%",
+        left: `${isOpen ? "13.7" : "30"}%`,
         width: isOpen ? "94%" : "79%",
         height: 40,
         zIndex: isOpen ? 100 : 10,

@@ -1,15 +1,17 @@
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import {
+  CompletedCheckItem,
+  CompletedCheckListItem,
+} from "../../components/SpotCheck/CompletedCheckListItem";
 import { SpotCheckHeader } from "../../components/SpotCheck/SpotCheckHeader";
-import { SpotCheckListItem } from "../../components/SpotCheck/SpotCheckItemList";
+import { MOCK_COMPLETED_CHECKS } from "../../const/spotChecks";
 import { RootStackParamList } from "../../navigation/AppNavigator";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
-import { PreparationItem } from "../../types/preparations";
 import { formatDate } from "../../utils/dateFormatter";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;
@@ -24,27 +26,16 @@ interface Props {
 }
 
 const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { flightId } = route.params;
+  const { flightId } = route.params || {};
 
-  // 1. Get Stores
-  const { preparations, fetchPreparations, isLoading } =
-    useFlightPreparationStore();
   const {
     selectedFlight,
     fetchFlightById,
     isLoading: isFlightLoading,
   } = useFlightStore();
 
-  const [activeTab, setActiveTab] = useState<"required" | "completed">(
-    "required",
-  );
-
-  // 2. Fetch Data (Flight Info + Preparations)
   useEffect(() => {
     if (flightId) {
-      fetchPreparations(flightId);
-
-      // Fetch flight details if not already loaded or if the ID differs
       if (!selectedFlight || selectedFlight.id !== flightId) {
         fetchFlightById(flightId);
       }
@@ -53,6 +44,17 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [flightId]);
 
   const flightInfo = useMemo(() => {
+    if (!flightId) {
+      return {
+        flight: "General",
+        route: "User Logs",
+        date: formatDate(new Date().toISOString()),
+        aircraft: "-",
+        acReg: "-",
+        destination: "-",
+      };
+    }
+
     if (!selectedFlight) {
       return {
         flight: "Loading...",
@@ -74,14 +76,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
       acReg: selectedFlight.aircraft?.registration || "N/A",
       destination: selectedFlight.arrivalStation?.code || "N/A",
     };
-  }, [selectedFlight]);
-
-  const listData = useMemo(() => {
-    if (activeTab === "required") {
-      return preparations;
-    }
-    return [];
-  }, [activeTab, preparations]);
+  }, [selectedFlight, flightId]);
 
   const breadcrumbItems = useMemo(
     () => [
@@ -90,65 +85,46 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
         onPress: () => navigation.navigate("Dashboard"),
       },
       {
-        label: "Spot Check",
+        label: "Spot Checks",
+        onPress: flightId ? undefined : () => navigation.goBack(),
       },
       {
-        label:
-          activeTab === "required" ? "Required Checks" : "Completed Checks",
+        label: "Completed",
       },
     ],
-    [activeTab, navigation],
-  );
-
-  const handleNavigateToDetails = useCallback(
-    (item: PreparationItem) => {
-      navigation.navigate("SpotCheckDetails", {
-        checkId: item.id,
-        title: item.name,
-        flightId: flightId,
-      });
-    },
     [navigation, flightId],
   );
 
-  const handleTabChange = useCallback((tab: "required" | "completed") => {
-    setActiveTab(tab);
-  }, []);
+  const handleScanPress = useCallback(() => {
+    navigation.navigate("QRCodeScanner");
+  }, [navigation]);
 
   const renderHeader = useCallback(
     () => (
-      // ✅ Pass the dynamic flightInfo here
-      <SpotCheckHeader
-        flightInfo={flightInfo}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
+      <SpotCheckHeader flightInfo={flightInfo} onScanPress={handleScanPress} />
     ),
-    [activeTab, handleTabChange, flightInfo], // Add flightInfo dependency
+    [flightInfo, handleScanPress],
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: PreparationItem; index: number }) => (
-      <SpotCheckListItem
-        item={{
-          id: item.id,
-          name: item.name,
-          code: item.code || "N/A",
-          category: "Bulk",
-          status: "Pending",
-        }}
-        isLastItem={index === listData.length - 1}
-        onPress={() => handleNavigateToDetails(item)}
-      />
-    ),
-    [listData.length, handleNavigateToDetails],
+    ({ item, index }: { item: CompletedCheckItem; index: number }) => {
+      return (
+        <CompletedCheckListItem
+          item={item}
+          isLastItem={index === MOCK_COMPLETED_CHECKS.length - 1}
+        />
+      );
+    },
+    [],
   );
+
+  const showLoading = flightId && isFlightLoading;
 
   return (
     <>
       <BreadCrumb items={breadcrumbItems} />
       <View className="flex-1 bg-bg-surface p-4">
-        {isLoading || isFlightLoading ? ( // Show loading if either is fetching
+        {showLoading ? (
           <View className="flex-1 justify-center items-center">
             <ActivityIndicator size="large" color="#602AF3" />
             <Text className="mt-4 text-text-secondary">
@@ -157,7 +133,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         ) : (
           <FlatList
-            data={listData}
+            data={MOCK_COMPLETED_CHECKS}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             ListHeaderComponent={renderHeader}
@@ -166,7 +142,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
             ListEmptyComponent={
               <View className="mt-10 items-center">
                 <Text className="text-text-tertiary">
-                  No preparations found.
+                  No completed checks found.
                 </Text>
               </View>
             }

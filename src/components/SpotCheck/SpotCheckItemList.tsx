@@ -40,10 +40,10 @@ export const SpotCheckListItem: React.FC<SpotCheckListItemProps> = React.memo(
       <View
         className={`flex-row px-4 py-4 bg-bg-surface items-center ${rowStyle}`}
       >
-        <Text className="flex-[0.5] text-base text-text-secondary">
+        <Text className="flex-[1.2] text-base text-text-secondary">
           {item.code}
         </Text>
-        <Text className="flex-[1.5] text-base text-text-secondary font-medium">
+        <Text className="flex-[0.8] text-left text-base text-text-secondary font-medium">
           {item.name}
         </Text>
         <Text className="flex-[0.8] text-base text-text-secondary">

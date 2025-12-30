@@ -40,16 +40,12 @@ export const PreparationsScreen: React.FC = () => {
   const [hasUserSignature, setHasUserSignature] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // --- Consumption Flow State ---
-  // Data from Scan 1 (Old Flight)
   const [pendingOldFlightData, setPendingOldFlightData] =
     useState<ParsedQRData | null>(null);
 
-  // Data from Scan 2 (Current Flight Item)
   const [pendingCurrentItem, setPendingCurrentItem] =
     useState<PreparationItem | null>(null);
 
-  // Controls the Step 2 Scanner
   const [isVerifyScannerVisible, setIsVerifyScannerVisible] = useState(false);
 
   const modals = usePreparationModals();
@@ -64,7 +60,6 @@ export const PreparationsScreen: React.FC = () => {
     modals,
   });
 
-  // --- Effects ---
   useEffect(() => {
     if (selectedFlight?.id) {
       fetchPreparations(selectedFlight.id);
@@ -153,9 +148,7 @@ export const PreparationsScreen: React.FC = () => {
     [preparations],
   );
 
-  // --- CONSUMPTION FLOW LOGIC ---
-
-  // Step 1: Initial Scan (Prep)
+  // Step 1: Initial Scan
   const handleScanAction = useCallback(
     async (
       actionType: "prep" | "seal" | "assemble" | "load" | "consumption",
@@ -179,13 +172,12 @@ export const PreparationsScreen: React.FC = () => {
 
         // B. Mismatch -> OLD Flight Detected -> Start Consumption Flow
         else {
-          log.info("⚠️ Old Flight Detected. Starting Step 2 (Scan Current).");
+          log.info("Old Flight Detected. Starting Step 2 (Scan Current).");
 
           // 1. Store Old Data Reference
           setPendingOldFlightData(scannedData);
 
-          // 2. IMMEDIATELY Open Verification Scanner (Step 2)
-          // We use a timeout to allow the previous scanner modal (from header) to close smoothly
+          // 2. IMMEDIATELY Open Verification Scanner
           setTimeout(() => {
             Alert.alert(
               "Verify Current Flight",
@@ -243,7 +235,7 @@ export const PreparationsScreen: React.FC = () => {
     const scannedCurrentPrepId = lines[0]?.trim();
     const scannedFlightId = lines[1]?.trim();
 
-    // 🚨 VALIDATION: Must match CURRENT flight 🚨
+    // VALIDATION: Must match CURRENT flight
     if (scannedFlightId !== selectedFlight?.id) {
       Alert.alert(
         "Mismatch",
@@ -259,7 +251,7 @@ export const PreparationsScreen: React.FC = () => {
       return;
     }
 
-    log.info("✅ Current Flight Verified. Fetching Old Data...");
+    log.info("Current Flight Verified. Fetching Old Data...");
 
     // Close Scanner
     setIsVerifyScannerVisible(false);
@@ -286,13 +278,12 @@ export const PreparationsScreen: React.FC = () => {
     modals.closeDetailModal();
 
     if (!selectedFlight?.id || !pendingOldFlightData || !pendingCurrentItem) {
-      // Safety check
       setPendingOldFlightData(null);
       setPendingCurrentItem(null);
       return;
     }
 
-    log.info("🎬 Finalizing Consumption Flow...");
+    log.info("Finalizing Consumption Flow...");
 
     // 1. Mark Current as Prepared
     await actions.handlePreparedAction(pendingCurrentItem);
@@ -305,15 +296,14 @@ export const PreparationsScreen: React.FC = () => {
     );
 
     if (linkSuccess) {
-      // Refresh Data
       await fetchPreparations(selectedFlight.id);
       Alert.alert(
-        "✅ Complete",
+        "Complete",
         "Items linked and preparation marked as complete.",
       );
     } else {
       Alert.alert(
-        "⚠️ Warning",
+        "Warning",
         "Preparation marked, but linking prior flight failed.",
       );
     }
@@ -339,7 +329,6 @@ export const PreparationsScreen: React.FC = () => {
           selectedFlight={selectedFlight}
           onSaveSignature={handleSaveSignature}
           onSaveSealNumber={handleSaveSealNumber}
-          // Modal logic relies on having BOTH old data (for display) and current item (for linking context)
           isConsumptionMode={!!pendingOldFlightData && !!pendingCurrentItem}
           consumptionFlightId={pendingOldFlightData?.flightId}
           onFinishConsumption={handleFinishConsumption}
@@ -361,14 +350,13 @@ export const PreparationsScreen: React.FC = () => {
         actions={actions}
       />
 
-      {/* Step 2 Scanner */}
       <Modal visible={isVerifyScannerVisible} animationType="slide">
         <QRScanner
           onScan={handleVerifyScan}
           scanned={false}
           onClose={() => {
             setIsVerifyScannerVisible(false);
-            setPendingOldFlightData(null); // Cancel entire flow if scan is cancelled
+            setPendingOldFlightData(null);
           }}
           title="Scan CURRENT Flight Label to Confirm"
         />

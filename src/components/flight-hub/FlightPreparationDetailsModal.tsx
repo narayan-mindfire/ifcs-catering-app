@@ -36,9 +36,6 @@ interface FlightPreparationModalProps {
   isSealed: boolean;
   isPrepared: boolean;
   lockRequired: boolean;
-  // Consumption Flow Props
-  isConsumptionMode?: boolean;
-  onFinishConsumption?: () => void;
 }
 
 const ValidationModal = ({
@@ -84,8 +81,6 @@ export const FlightPreparationDetailsModal: React.FC<
   isSealed: initialIsSealed,
   isPrepared: initialIsPrepared,
   lockRequired,
-  // isConsumptionMode,
-  // onFinishConsumption,
 }) => {
   const {
     preparationDetail,
@@ -95,14 +90,10 @@ export const FlightPreparationDetailsModal: React.FC<
     isUpdating,
     checkUserSignature,
     addUserSignature,
-    // provisions, // Required for flag workaround
   } = useFlightPreparationStore();
 
-  const {
-    records: consumptionRecords,
-    fetchConsumptionRecords,
-    // createConsumptionRecord,
-  } = useConsumptionTrackingStore();
+  const { records: consumptionRecords, fetchConsumptionRecords } =
+    useConsumptionTrackingStore();
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
     useDeliveryStore();
@@ -180,6 +171,7 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [deliveries, flightId, selectedDeliveryId, visible]);
 
+  // --- Sync Flags ---
   useEffect(() => {
     if (preparationDetail) {
       setIsSealed(
@@ -193,38 +185,79 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [preparationDetail]);
 
+  const getDerivedEquipmentType = () => {
+    if (!preparationDetail) return "";
+    const packingStd = preparationDetail.packingStandard;
+
+    const rawType = packingStd?.equipmentItem?.type;
+    if (rawType) return rawType;
+
+    const containers = packingStd?.containers || [];
+    const name = (
+      packingStd?.equipmentItem?.name ||
+      preparationDetail.equipment ||
+      ""
+    ).toLowerCase();
+
+    if (containers.length > 0) {
+      if (name.includes("cart")) return "Cart";
+      if (name.includes("oven")) return "Oven Insert";
+      return "Atlas";
+    }
+
+    return "Bulk";
+  };
+
+  const derivedEquipmentType = getDerivedEquipmentType();
+
   useEffect(() => {
     if (!preparationDetail) return;
 
     const packingStd = preparationDetail.packingStandard;
-    const equipmentType = packingStd?.equipmentItem?.type || "";
-    const rootItems = packingStd?.items || [];
-    const containers = packingStd?.containers || [];
+    const parentContents = packingStd?.items || []; // Items directly in the equipment (not in drawers)
+    const drawers = packingStd?.containers || [];
+    const equipmentName = packingStd?.equipmentItem?.name || "";
+    const parentName = packingStd?.name || "Equipment Contents";
 
-    if (equipmentType === "Cart" || equipmentType === "Container") {
-      if (containers.length > 0) {
-        const firstContainer = containers[0];
-        setSelectedDrawerContents(firstContainer.items || []);
-        setActiveEquipmentName(firstContainer.name || "N/A");
-        setActiveDrawerIndex(0);
-      } else {
-        setSelectedDrawerContents(rootItems);
-        setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
+    const type = derivedEquipmentType;
+
+    if (type === "Cart" || type === "Atlas" || type === "Container") {
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveEquipmentName(parentName);
+        setActiveDrawerEquipmentItemName(equipmentName);
         setActiveDrawerIndex(null);
+      } else if (drawers.length > 0) {
+        const firstDrawer = drawers[0];
+        setSelectedDrawerContents(firstDrawer.items || []);
+        setActiveEquipmentName(firstDrawer.name || "N/A");
+        setActiveDrawerEquipmentItemName(
+          firstDrawer.equipmentItem?.name || "N/A",
+        );
+        setActiveDrawerIndex(0);
       }
-    } else {
-      setSelectedDrawerContents(rootItems);
-      setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
+    } else if (
+      type === "Tray" ||
+      type === "Drawer" ||
+      type === "Bulk" ||
+      type === "Oven Insert"
+    ) {
+      // Case 3: Simple containers (just show contents)
+      setSelectedDrawerContents(parentContents);
+      setActiveEquipmentName(parentName);
+      setActiveDrawerEquipmentItemName(equipmentName);
       setActiveDrawerIndex(null);
     }
-  }, [preparationDetail]);
+  }, [preparationDetail, derivedEquipmentType]);
 
   const handleDrawerClick = (
     drawerIndex: number | null,
     drawerData: PackingStandardContainer | null,
   ) => {
     const packingStd = preparationDetail?.packingStandard;
-    const rootItems = packingStd?.items || [];
+    const parentContents = packingStd?.items || [];
+    const parentName = packingStd?.name || "Equipment Contents";
+    const parentEquipmentName = packingStd?.equipmentItem?.name || "";
 
     setActiveDrawerIndex(drawerIndex);
 
@@ -233,9 +266,16 @@ export const FlightPreparationDetailsModal: React.FC<
       setActiveEquipmentName(drawerData.name || "N/A");
       setActiveDrawerEquipmentItemName(drawerData.equipmentItem?.name || "N/A");
     } else {
-      setSelectedDrawerContents(rootItems);
-      setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
-      setActiveDrawerEquipmentItemName("N/A");
+      // Clicking "Back" or Deselecting -> Show Parent Contents
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveEquipmentName(parentName);
+        setActiveDrawerEquipmentItemName(parentEquipmentName);
+      } else {
+        setSelectedDrawerContents([]);
+        setActiveEquipmentName("");
+        setActiveDrawerEquipmentItemName("");
+      }
     }
   };
 
@@ -259,6 +299,7 @@ export const FlightPreparationDetailsModal: React.FC<
     setPreviewItemName("");
   };
 
+  // ... (Keep handlePreparedAction, handleSealAction, handleLockedAction, handleSaveSignature, handleSaveSealNumber) ...
   const handlePreparedAction = async () => {
     if (!flightId || !preparationDetail) return;
 
@@ -435,7 +476,6 @@ export const FlightPreparationDetailsModal: React.FC<
 
   const packingStd = preparationDetail?.packingStandard;
   const containers = packingStd?.containers || [];
-  const equipmentType = packingStd?.equipmentItem?.type || "";
   const positionImage =
     preparationDetail?.aircraftConfigGalleyPosition?.picture;
 
@@ -449,15 +489,9 @@ export const FlightPreparationDetailsModal: React.FC<
       >
         <View className="flex-1 bg-black/60 justify-center items-center px-4">
           <View className="w-full max-w-[1000px] h-[80%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
-            {/* Header: Change color if in Consumption Mode */}
             <View
               className={`p-4 border-b border-border-muted flex-row justify-between items-cente z-10`}
             >
-              {/* <Text className="text-xl font-medium text-text-secondary">
-                {isConsumptionMode
-                  ? "📦 Record Leftovers (Old Flight)"
-                  : "Flight Preparation Plan Details"}
-              </Text> */}
               <Text className="text-xl font-medium text-text-secondary">
                 Flight Preparation Plan Details
               </Text>
@@ -551,7 +585,9 @@ export const FlightPreparationDetailsModal: React.FC<
                       )}
                     </View>
                     <View className="flex-1 items-center justify-center">
-                      {equipmentType === "Container" ? (
+                      {/* ✅ UPDATED RENDER LOGIC for Visualizers */}
+                      {derivedEquipmentType === "Atlas" ||
+                      derivedEquipmentType === "Container" ? (
                         <ContainerVisualizer
                           cabinetFrameImg={packingStd?.equipmentItem?.picture}
                           numberOfDrawers={containers.length}
@@ -563,7 +599,7 @@ export const FlightPreparationDetailsModal: React.FC<
                               : handleDrawerClick(null, null)
                           }
                         />
-                      ) : equipmentType === "Cart" ? (
+                      ) : derivedEquipmentType === "Cart" ? (
                         <CartVisualizer
                           cabinetFrameImg={packingStd?.equipmentItem?.picture}
                           numberOfDrawers={containers.length}
@@ -572,6 +608,7 @@ export const FlightPreparationDetailsModal: React.FC<
                           onDrawerClick={handleDrawerClick}
                         />
                       ) : (
+                        // Fallback for Oven, Tray, Bulk, etc.
                         <Image
                           source={{
                             uri: packingStd?.equipmentItem?.picture || "",
@@ -611,31 +648,19 @@ export const FlightPreparationDetailsModal: React.FC<
                     <ScrollView>
                       {selectedDrawerContents.length > 0 ? (
                         selectedDrawerContents.map((item, index) => {
-                          // --- TRACKING LOGIC ---
-                          const isTrackable =
-                            !item.isTrackConsumption ||
-                            // provisions?.find(
-                            //   (p) =>
-                            //     p.id === item.itemId ||
-                            //     p.id === item.provisionId,
-                            // )?.isTrackConsumption ||
-                            true;
-
+                          const isTrackable = !item.isTrackConsumption || true;
                           const isTracked = consumptionRecords.some(
                             (r) =>
                               r.flightPrepPackingStandardItemId === item.id,
                           );
 
-                          // Blue = Done, Red = Pending (Only applies in Consumption Mode)
                           let rowStyle =
                             "bg-bg-surface border-b border-border-muted";
                           if (isTrackable) {
                             if (isTracked) {
-                              // Blue Style (Done)
                               rowStyle =
                                 "bg-blue-50 border-b border-blue-200 border-l-[4px] border-l-blue-500";
                             } else {
-                              // Red Style (Pending)
                               rowStyle =
                                 "bg-red-50 border-b border-red-200 border-l-[4px] border-l-red-500";
                             }

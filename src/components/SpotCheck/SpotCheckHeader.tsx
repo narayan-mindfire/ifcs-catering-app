@@ -1,5 +1,8 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
+
+import { QrIcon } from "../../assets/icons";
+import { AppButton } from "../common/AppButton";
 
 interface FlightInfo {
   flight: string;
@@ -12,87 +15,62 @@ interface FlightInfo {
 
 interface SpotCheckHeaderProps {
   flightInfo: FlightInfo;
-  activeTab: "required" | "completed";
-  onTabChange: (tab: "required" | "completed") => void;
+  onScanPress: () => void;
 }
 
-const InfoItem: React.FC<{ label: string; value: string }> = ({
-  label,
-  value,
-}) => (
-  <View className="flex-row items-center">
-    <Text className="text-text-muted text-base mr-1">{label}:</Text>
-    <Text className="text-text-primary font-bold text-base">{value}</Text>
-  </View>
-);
-
 export const SpotCheckHeader: React.FC<SpotCheckHeaderProps> = React.memo(
-  ({ flightInfo, activeTab, onTabChange }) => {
+  ({ onScanPress }) => {
     return (
       <View className="my-6">
-        <View className="flex-row flex-wrap gap-x-6 gap-y-2 mb-6 px-1">
-          <InfoItem label="Flight" value={flightInfo.flight} />
-          <InfoItem label="Route" value={flightInfo.route} />
-          <InfoItem label="Date" value={flightInfo.date} />
-          <InfoItem label="Aircraft" value={flightInfo.aircraft} />
-          <InfoItem label="AC Reg" value={flightInfo.acReg} />
-          <InfoItem label="Destination" value={flightInfo.destination} />
-        </View>
-
-        {/* Tab Switcher */}
-        <View className="bg-bg-tertiary rounded-full flex-row h-12 mb-6">
-          <TouchableOpacity
-            className={`flex-1 rounded-full justify-center items-center ${
-              activeTab === "required" ? "bg-bg-secondary" : ""
-            }`}
-            onPress={() => onTabChange("required")}
-          >
-            <Text
-              className={`font-medium ${
-                activeTab === "required"
-                  ? "text-text-primary"
-                  : "text-text-muted"
-              }`}
-            >
-              Required Checks
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`flex-1 rounded-full justify-center items-center ${
-              activeTab === "completed" ? "bg-bg-secondary" : ""
-            }`}
-            onPress={() => onTabChange("completed")}
-          >
-            <Text
-              className={`font-medium ${
-                activeTab === "completed"
-                  ? "text-text-primary"
-                  : "text-text-muted"
-              }`}
-            >
-              Completed Checks
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Table Header Row */}
-        <View className="bg-bg-tertiary rounded-t-xl flex-row px-4 py-3 border-b border-border-muted">
-          <Text className="flex-[0.5] text-lg font-semibold text-text-primary">
-            Code
-          </Text>
-          <Text className="flex-[1.5] text-lg font-semibold text-text-primary">
-            Name
-          </Text>
-          <Text className="flex-[0.8] text-lg font-semibold text-text-primary">
-            Category
-          </Text>
-          <View className="flex-[0.8] flex-row items-center">
-            <Text className="text-lg font-semibold text-text-primary mr-1">
-              Status
+        {/* Top Section: Flight Info & Scan Button */}
+        <View className="flex-row justify-between items-start mb-6">
+          <View className="flex-1 flex-row flex-wrap gap-x-6 gap-y-2 px-1">
+            <Text className="font-rubik text-3xl font-[500]">
+              COMPLETED CHECKS
             </Text>
           </View>
-          <Text className="flex-[0.5] text-lg font-semibold text-text-primary text-right">
-            Action
+
+          <View className="ml-2">
+            <AppButton
+              title="Scan Code"
+              onPress={onScanPress}
+              type="accent"
+              IconComponent={<QrIcon width={20} height={20} />}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 8,
+              }}
+              textStyle={{ fontSize: 14, color: "black" }}
+            />
+          </View>
+        </View>
+
+        {/* Table Header Row (Completed Checks Columns Only) */}
+        <View className="bg-bg-tertiary rounded-t-xl flex-row px-4 py-3 border-b border-border-muted">
+          <Text className="flex-[0.7] text-sm font-semibold text-text-primary">
+            Flight
+          </Text>
+          <Text className="flex-[0.8] text-sm font-semibold text-text-primary">
+            Route
+          </Text>
+          <Text className="flex-[0.8] text-sm font-semibold text-text-primary">
+            Departure
+          </Text>
+          <Text className="flex-[0.5] text-sm font-semibold text-text-primary">
+            Galley
+          </Text>
+          <Text className="flex-[0.6] text-sm font-semibold text-text-primary">
+            Stowage
+          </Text>
+          <Text className="flex-[1.5] text-sm font-semibold text-text-primary">
+            Category
+          </Text>
+          <Text className="flex-[1] text-sm font-semibold text-text-primary">
+            Carrier
+          </Text>
+          <Text className="flex-[0.6] text-sm font-semibold text-text-primary text-right">
+            Status
           </Text>
         </View>
       </View>

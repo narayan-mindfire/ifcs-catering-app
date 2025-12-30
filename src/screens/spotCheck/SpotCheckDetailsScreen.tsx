@@ -5,8 +5,10 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Modal,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -60,6 +62,26 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   );
   const [activeEquipmentName, setActiveEquipmentName] = useState<string>("");
   const [isFailModalVisible, setIsFailModalVisible] = useState(false);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [previewItemName, setPreviewItemName] = useState<
+    string | null | undefined
+  >("");
+
+  const handleImagePress = (
+    url: string | null | undefined,
+    name: string | null | undefined,
+  ) => {
+    setPreviewImageUrl(url || null);
+    setPreviewItemName(name);
+    setIsPreviewVisible(true);
+  };
+
+  const closeImagePreview = () => {
+    setIsPreviewVisible(false);
+    setPreviewImageUrl(null);
+    setPreviewItemName("");
+  };
 
   useEffect(() => {
     if (flightId && checkId) {
@@ -82,13 +104,25 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         aircraft: "...",
         acReg: "...",
         destination: "...",
+        galley: "...",
+        stowage: "...",
+        carrier: "...",
       };
     }
 
+    const galleyCode =
+      preparationDetail?.aircraftConfigGalleyPosition.galleyPosition || "N/A";
+    const stowageCode =
+      preparationDetail?.position || preparationDetail?.galleyPosition || "N/A";
+    const carrierName =
+      preparationDetail?.equipment ||
+      preparationDetail?.packingStandard?.equipmentItem?.name ||
+      "N/A";
+
     return {
       flight:
-        selectedFlight.airline?.designator + selectedFlight.flightNumber ||
-        "N/A",
+        (selectedFlight.airline?.designator || "") +
+          (selectedFlight.flightNumber || "") || "N/A",
       route: `${selectedFlight.departureStation?.code || ""} - ${
         selectedFlight.arrivalStation?.code || ""
       }`,
@@ -96,41 +130,72 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       aircraft: selectedFlight.aircraft?.type || "N/A",
       acReg: selectedFlight.aircraft?.registration || "N/A",
       destination: selectedFlight.arrivalStation?.code || "N/A",
+      galley: galleyCode,
+      stowage: stowageCode,
+      carrier: carrierName,
     };
-  }, [selectedFlight]);
+  }, [selectedFlight, preparationDetail]);
+
+  const getDerivedEquipmentType = () => {
+    if (!preparationDetail) return "";
+    const packingStd = preparationDetail.packingStandard;
+
+    const rawType = packingStd?.equipmentItem?.type;
+    if (rawType) return rawType;
+
+    const containers = packingStd?.containers || [];
+    const name = (
+      packingStd?.equipmentItem?.name ||
+      preparationDetail.equipment ||
+      ""
+    ).toLowerCase();
+
+    if (containers.length > 0) {
+      if (name.includes("cart")) return "Cart";
+      if (name.includes("oven")) return "Oven Insert";
+      return "Atlas";
+    }
+
+    return "Bulk";
+  };
+
+  const derivedEquipmentType = getDerivedEquipmentType();
 
   useEffect(() => {
     if (!preparationDetail) return;
 
     const packingStd = preparationDetail.packingStandard;
-    const equipmentType = packingStd?.equipmentItem?.type || "";
-    const rootItems = packingStd?.items || [];
-    const containers = packingStd?.containers || [];
+    const parentContents = packingStd?.items || [];
+    const drawers = packingStd?.containers || [];
+    const parentName = packingStd?.name || "Equipment Contents";
 
-    if (equipmentType === "Cart" || equipmentType === "Container") {
-      if (containers.length > 0) {
-        const firstContainer = containers[0];
+    const type = derivedEquipmentType;
+
+    if (type === "Cart" || type === "Atlas" || type === "Container") {
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveEquipmentName(parentName);
+        setActiveDrawerIndex(null);
+      } else if (drawers.length > 0) {
+        const firstContainer = drawers[0];
         setSelectedDrawerContents(firstContainer.items || []);
         setActiveEquipmentName(firstContainer.name || "N/A");
         setActiveDrawerIndex(0);
-      } else {
-        setSelectedDrawerContents(rootItems);
-        setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
-        setActiveDrawerIndex(null);
       }
     } else {
-      setSelectedDrawerContents(rootItems);
-      setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
+      setSelectedDrawerContents(parentContents);
+      setActiveEquipmentName(parentName);
       setActiveDrawerIndex(null);
     }
-  }, [preparationDetail]);
+  }, [preparationDetail, derivedEquipmentType]);
 
   const handleDrawerClick = (
     drawerIndex: number | null,
     drawerData: PackingStandardContainer | null,
   ) => {
     const packingStd = preparationDetail?.packingStandard;
-    const rootItems = packingStd?.items || [];
+    const parentContents = packingStd?.items || [];
+    const parentName = packingStd?.name || "Equipment Contents";
 
     setActiveDrawerIndex(drawerIndex);
 
@@ -138,8 +203,13 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       setSelectedDrawerContents(drawerData.items || []);
       setActiveEquipmentName(drawerData.name || "N/A");
     } else {
-      setSelectedDrawerContents(rootItems);
-      setActiveEquipmentName(packingStd?.equipmentItem?.name || "N/A");
+      if (parentContents.length > 0) {
+        setSelectedDrawerContents(parentContents);
+        setActiveEquipmentName(parentName);
+      } else {
+        setSelectedDrawerContents([]);
+        setActiveEquipmentName("");
+      }
     }
   };
 
@@ -179,17 +249,15 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       { label: "Home", onPress: () => navigation.navigate("Dashboard") },
       {
         label: "Spot Check",
-        onPress: () =>
-          navigation.navigate("SpotCheck", { flightId: flightId || "" }),
+        onPress: () => navigation.navigate("SpotCheckSelection"),
       },
       {
         label: "Required Checks",
-        onPress: () =>
-          navigation.navigate("SpotCheck", { flightId: flightId || "" }),
+        onPress: () => {},
       },
       { label: title || "Details" },
     ],
-    [navigation, title, flightId],
+    [navigation, title],
   );
 
   if (isPrepLoading || !preparationDetail || isFlightLoading) {
@@ -205,31 +273,18 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const packingStd = preparationDetail?.packingStandard;
   const containers = packingStd?.containers || [];
-  const equipmentType = packingStd?.equipmentItem?.type || "";
-
   const positionImage =
     preparationDetail?.aircraftConfigGalleyPosition?.picture || null;
   const cabinetImage = packingStd?.equipmentItem?.picture || null;
 
   const renderVisualizer = () => {
     if (
-      (equipmentType === "Container" || equipmentType === "Cart") &&
-      !cabinetImage
+      derivedEquipmentType === "Atlas" ||
+      derivedEquipmentType === "Container"
     ) {
       return (
-        <View className="w-full h-full justify-center items-center bg-gray-100 rounded-lg">
-          <Text className="text-gray-400 font-bold mb-2">No Cabinet Image</Text>
-          <Text className="text-gray-400 text-xs text-center px-4">
-            Cannot render visualizer.
-          </Text>
-        </View>
-      );
-    }
-
-    if (equipmentType === "Container") {
-      return (
         <ContainerVisualizer
-          cabinetFrameImg={cabinetImage!}
+          cabinetFrameImg={cabinetImage}
           numberOfDrawers={containers.length}
           drawersData={containers}
           defaultOpenDrawer={activeDrawerIndex}
@@ -240,38 +295,42 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           }
         />
       );
-    } else if (equipmentType === "Cart") {
+    }
+
+    if (derivedEquipmentType === "Cart") {
       return (
         <CartVisualizer
-          cabinetFrameImg={cabinetImage!}
+          cabinetFrameImg={cabinetImage}
           numberOfDrawers={containers.length}
           drawers={containers}
           defaultOpenDrawer={activeDrawerIndex}
           onDrawerClick={handleDrawerClick}
         />
       );
-    } else {
-      if (cabinetImage) {
-        return (
-          <Image
-            source={{ uri: cabinetImage }}
-            className="w-full h-full"
-            resizeMode="contain"
-          />
-        );
-      }
+    }
+
+    if (cabinetImage) {
       return (
-        <View className="items-center justify-center">
-          <ImageIcon width={60} height={60} color="#9CA3AF" />
-          <Text className="text-gray-400 mt-2">No Item Image</Text>
-        </View>
+        <Image
+          source={{ uri: cabinetImage }}
+          className="w-full h-full"
+          resizeMode="contain"
+        />
       );
     }
+
+    return (
+      <View className="items-center justify-center">
+        <ImageIcon width={60} height={60} color="#9CA3AF" />
+        <Text className="text-gray-400 mt-2">No Item Image</Text>
+      </View>
+    );
   };
 
   return (
     <View className="flex-1 bg-gray-50">
       <BreadCrumb items={breadcrumbItems} />
+
       <FlightInfoHeader flightInfo={flightInfo} />
 
       <ScrollView contentContainerStyle={{ padding: 24 }}>
@@ -335,15 +394,22 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                       {item.name}
                     </Text>
                     <View className="flex-1 items-center">
-                      {item.picture ? (
-                        <Image
-                          source={{ uri: item.picture }}
-                          className="w-8 h-8 rounded"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <ImageIcon width={25} height={25} />
-                      )}
+                      <TouchableOpacity
+                        onPress={() =>
+                          handleImagePress(item.picture, item.name)
+                        }
+                        disabled={!item.picture}
+                      >
+                        {item.picture ? (
+                          <Image
+                            source={{ uri: item.picture }}
+                            className="w-8 h-8 rounded"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <ImageIcon width={25} height={25} />
+                        )}
+                      </TouchableOpacity>
                     </View>
                   </View>
                 ))
@@ -356,7 +422,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         </View>
 
-        <View className="flex-row gap-4 mt-6 justify-end">
+        <View className="px-6 py-4 border-t border-gray-200 bg-white flex-row gap-4">
           <AppButton
             title="FAIL"
             onPress={handleFailTrigger}
@@ -366,8 +432,9 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <AppButton
             title="PASS"
             onPress={handlePass}
-            style={{ flex: 1 }}
-            type="primary"
+            type="secondary"
+            style={{ flex: 1, backgroundColor: "#22c55e" }}
+            textStyle={{ color: "white" }}
           />
         </View>
       </ScrollView>
@@ -378,6 +445,55 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         onConfirm={handleConfirmFail}
         itemName={title || "Preparation Item"}
       />
+
+      <Modal
+        visible={isPreviewVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={closeImagePreview}
+      >
+        <View className="flex-1 bg-black/80 justify-center items-center z-50">
+          <View className="bg-white w-96 rounded-2xl overflow-hidden p-4">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text
+                className="text-lg font-bold text-gray-800 flex-1 mr-2"
+                numberOfLines={1}
+              >
+                {previewItemName}
+              </Text>
+              <TouchableOpacity onPress={closeImagePreview} className="p-1">
+                <Text className="text-gray-600 text-xl font-bold">✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View className="w-full h-80 bg-gray-100 rounded-xl justify-center items-center overflow-hidden border border-gray-200">
+              {previewImageUrl ? (
+                <Image
+                  source={{ uri: previewImageUrl }}
+                  className="w-full h-full"
+                  resizeMode="contain"
+                />
+              ) : (
+                <View className="items-center justify-center">
+                  <ImageIcon width={60} height={60} color="#9CA3AF" />
+                  <Text className="text-gray-400 mt-2 font-medium">
+                    Image Not Available
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View className="mt-4 flex-row justify-end">
+              <TouchableOpacity
+                onPress={closeImagePreview}
+                className="bg-indigo-600 py-2 px-6 rounded-lg"
+              >
+                <Text className="text-white font-semibold text-sm">Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

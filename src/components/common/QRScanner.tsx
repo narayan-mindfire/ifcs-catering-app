@@ -176,18 +176,6 @@ export const QRScanner: React.FC<QRScannerProps> = ({
                 <Text className="text-white text-3xl font-bold">+</Text>
               </TouchableOpacity>
             </View>
-            <View className="absolute bottom-10">
-              <TouchableOpacity
-                onPress={() =>
-                  handleScan(
-                    "01515c8c-cb99-4bee-bcc3-0c265c1881fe\n8548e2fd-e0d2-4e11-ab7e-d778274fe81d\nead5eef8-1adf-4569-84da-6486c1c09b8d\n73c11996-edbc-4998-bce2-9523dff8e4ed\nead5eef8-1adf-4569-84da-6486c1c09b8d\nPlastic Cups X 200\n211\nY/C O/H\n2025-12-16T22:30:00Z\nNA\nLD Bag\nISC-MEA Double",
-                  )
-                }
-                className="bg-white/10 border border-white/30 px-6 py-2 rounded-full"
-              >
-                <Text className="text-white/80 text-xs">Simulate Scan</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       </CameraView>

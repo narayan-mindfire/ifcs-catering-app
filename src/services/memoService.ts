@@ -2,7 +2,7 @@ import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
 import { log } from "../utils/logger";
 
-const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
+const CURRENT_USER_ID = "019b4c4c-969a-75ea-8ceb-8de5a5c41a26";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -57,6 +57,7 @@ export const memoService = {
   },
 
   markAsRead: async (id: string): Promise<void> => {
+    log.info("marking the memo as read in service:");
     await apiClient.patch(
       `/memos/${id}/read`,
       { isRead: true },

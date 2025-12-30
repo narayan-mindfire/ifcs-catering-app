@@ -11,7 +11,7 @@ import {
 interface AppButtonProps {
   title: string;
   onPress: () => void;
-  type?: "primary" | "secondary" | "danger" | "tertiary";
+  type?: "primary" | "secondary" | "danger" | "tertiary" | "accent";
   disabled?: boolean;
   IconComponent?: React.ReactNode;
   style?: ViewStyle;
@@ -30,17 +30,19 @@ export const AppButton: React.FC<AppButtonProps> = ({
   loading,
 }) => {
   const baseButton =
-    "flex-row items-center justify-center rounded-xl py-3 px-4";
+    "flex-row items-center justify-center rounded-xl py-3 px-4 border";
 
   const backgroundClass = disabled
-    ? "bg-border-muted"
+    ? "bg-border-muted border-border-muted"
     : type === "primary"
-      ? "bg-bg-button"
+      ? "bg-bg-button border-bg-button"
       : type === "secondary"
-        ? "bg-bg-secondary"
+        ? "bg-bg-secondary border-bg-secondary"
         : type === "tertiary"
-          ? "bg-bg-tertiary"
-          : "bg-red-600";
+          ? "bg-bg-tertiary border-bg-tertiary"
+          : type === "accent"
+            ? "bg-bg-accent border-bg-button"
+            : "bg-red-600 border-red-600";
 
   const textClass =
     type === "secondary" ? "text-text-primary" : "text-text-surface";

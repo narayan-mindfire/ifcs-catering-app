@@ -39,14 +39,14 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isAckLoading, setIsAckLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Hardcoded for now based on requirement, usually comes from Auth Context
-  const CURRENT_USER_ID = "b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22";
-
+  // Hardcoded for now based on requirement, TODO: get from user content
+  const CURRENT_USER_ID = "019b4c4c-969a-75ea-8ceb-8de5a5c41a26";
   const currentUserRecipientRecord = activeMemo?.recipients?.find(
     (r: { userId: string; isAcknowledge: boolean }) =>
       r.userId === CURRENT_USER_ID,
   );
 
+  const isRead = currentUserRecipientRecord?.isRead ?? true;
   const isAcknowledged = currentUserRecipientRecord?.isAcknowledge || false;
 
   const recipients = useMemo(
@@ -65,7 +65,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Handle versions derived from activeMemo data
   log.info("Active Memo Versions:", activeMemo?.versions);
-  const hasVersions = activeMemo?.versions && activeMemo.versions.length > 1;
+  const hasVersions = activeMemo?.versions && activeMemo.versions.length > 0;
 
   // Sort versions descending by date (newest first)
   const sortedVersions = useMemo(() => {
@@ -84,12 +84,12 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [memoId, fetchMemoById]);
 
   useEffect(() => {
-    // If activeMemo is loaded and unread, mark it as read
-    if (activeMemo && activeMemo.isRead === false) {
+    if (activeMemo && !isLoading && isRead === false) {
+      log.info("Marking memo as read:", activeMemo.id);
       markAsRead(activeMemo.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeMemo?.id]);
+  }, [activeMemo?.id, isRead, isLoading, markAsRead]);
 
   const handleAcknowledge = async () => {
     if (isAcknowledged || !activeMemo) return;
@@ -199,7 +199,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* Main Content Area */}
         <View className="flex-1">
           <ScrollView className="flex-1">
             <View className="p-8">
@@ -293,7 +292,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           </ScrollView>
         </View>
 
-        {/* Recipients / Sidebar Right */}
         <View className="w-96 bg-white border-l border-gray-200 p-6">
           <View className="flex-row items-center justify-between mb-6">
             <Text className="text-lg font-semibold text-gray-900">

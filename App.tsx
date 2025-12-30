@@ -1,10 +1,11 @@
 import "react-native-gesture-handler";
-import React from "react";
-import { ActivityIndicator } from "react-native";
+import "./global.css";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import React from "react";
+import { ActivityIndicator } from "react-native";
 
-import "./global.css";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 
 export default function App() {

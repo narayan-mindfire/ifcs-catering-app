@@ -23,32 +23,16 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation }) => {
       setScanned(true);
 
       try {
-        // --- PARSING LOGIC based on your join("\n") structure ---
-        // 0: flightPrepId  <-- needed for checkId
-        // 1: flightId      <-- needed for flightId
-        // 2: flightPrepPackingStandardId
-        // 3: galleyConfigId
-        // 4: packingStandardId
-        // 5: parentStorageId
-        // 6: storageId
-        // 7: prepName      <-- needed for title
-        // 8: flightNumber
-        // ...
-
         const lines = data.split("\n");
 
         if (lines.length >= 8) {
-          // Ensure we have enough data fields
           const flightPrepId = lines[0].trim();
           const flightId = lines[1].trim();
           const prepName = lines[7].trim();
 
-          // Validate essential IDs
           if (flightPrepId && flightId) {
-            log.info(`✅ Jumping to: ${prepName} (${flightPrepId})`);
+            log.info(`Jumping to: ${prepName} (${flightPrepId})`);
 
-            // Use 'replace' so hitting "Back" goes to the Dashboard/Selection
-            // instead of returning to the camera.
             navigation.replace("SpotCheckDetails", {
               flightId: flightId,
               checkId: flightPrepId,

@@ -15,7 +15,9 @@ import SpotCheckSelectionScreen from "../screens/spotCheck/SpotCheckSelectionScr
 
 export type RootStackParamList = {
   Dashboard: undefined;
-  SpotCheck: { flightId: string };
+  SpotCheck:
+    | { flightId: string; initialTab?: "required" | "completed" }
+    | undefined;
   SpotCheckDetails: { checkId: string; title: string; flightId: string };
   Flights: { flightId: string };
   Memos: undefined;
