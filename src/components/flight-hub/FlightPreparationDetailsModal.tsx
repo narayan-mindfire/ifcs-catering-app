@@ -15,6 +15,7 @@ import { ImageIcon } from "../../assets/icons";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
+import { ConsumptionTrackingRecord } from "../../types/consumption";
 import {
   PackingStandardContainer,
   PackingStandardItem,
@@ -142,6 +143,8 @@ export const FlightPreparationDetailsModal: React.FC<
   const [isPrepared, setIsPrepared] = useState(initialIsPrepared);
   const [isSealed, setIsSealed] = useState(initialIsSealed);
   const [isLocked, setIsLocked] = useState(initialIsLocked);
+  const [selectedConsumptionRecord, setSelectedConsumptionRecord] =
+    useState<ConsumptionTrackingRecord | null>(null);
 
   const CURRENT_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
@@ -149,7 +152,10 @@ export const FlightPreparationDetailsModal: React.FC<
     if (visible && flightId && preparationId) {
       fetchPreparationById(flightId, preparationId);
       fetchDeliveries(flightId);
-      fetchConsumptionRecords(flightId);
+      fetchConsumptionRecords(flightId, {
+        flightPreparationId: preparationId,
+        limit: 100,
+      });
     }
   }, [visible, flightId, preparationId]);
 
@@ -280,6 +286,13 @@ export const FlightPreparationDetailsModal: React.FC<
   };
 
   const handleOpenConsumptionModal = (item: PackingStandardItem) => {
+    // 1. Find if a record already exists for this item
+    const existingRecord = consumptionRecords.find(
+      (r) => r.flightPrepPackingStandardItemId === item.id,
+    );
+
+    // 2. Set the state
+    setSelectedConsumptionRecord(existingRecord || null);
     setConsumptionItem(item);
     setConsumptionModalVisible(true);
   };
@@ -530,7 +543,8 @@ export const FlightPreparationDetailsModal: React.FC<
                         Galley
                       </Text>
                       <Text className="text-text-primary font-bold">
-                        {preparationDetail.galleyPosition || "N/A"}
+                        {preparationDetail.aircraftConfigGalleyPosition
+                          .galleyPosition || "N/A"}
                       </Text>
                     </View>
                     <View>
@@ -736,10 +750,15 @@ export const FlightPreparationDetailsModal: React.FC<
             onClose={() => {
               setConsumptionModalVisible(false);
               setConsumptionItem(null);
+              setSelectedConsumptionRecord(null); // Reset record on close
             }}
             item={consumptionItem}
+            // PASS THE RECORD HERE
+            existingRecord={selectedConsumptionRecord}
             locationInfo={{
-              galley: preparationDetail?.galleyPosition || "N/A",
+              galley:
+                preparationDetail?.aircraftConfigGalleyPosition
+                  .galleyPosition || "N/A",
               stowage: preparationDetail?.position || "N/A",
               carrier: preparationDetail?.name || "N/A",
             }}

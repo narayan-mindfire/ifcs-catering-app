@@ -7,7 +7,6 @@ import {
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
 } from "../types/consumption";
-import { log } from "../utils/logger";
 
 export const consumptionService = {
   getRecords: async (
@@ -34,6 +33,7 @@ export const consumptionService = {
         total: response.data.total,
       };
     }
+
     throw new Error("Failed to fetch consumption records");
   },
 
@@ -61,9 +61,9 @@ export const consumptionService = {
     );
 
     if (response.data.success) {
-      log.info("Consumption record created successfully:", response.data.data);
       return response.data.data;
     }
+
     throw new Error("Failed to create consumption record");
   },
 
@@ -78,7 +78,6 @@ export const consumptionService = {
     );
 
     if (response.data.success) {
-      log.info("Consumption record updated successfully");
       return response.data.data;
     }
     throw new Error("Failed to update consumption record");
@@ -88,6 +87,5 @@ export const consumptionService = {
     await apiClient.delete(
       `/flights/${flightId}/consumption-tracking/${recordId}`,
     );
-    log.info("Consumption record deleted successfully");
   },
 };
