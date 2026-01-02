@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { ImageIcon } from "../../assets/icons";
+import { AppButton } from "../common/AppButton";
 
 interface FailReasonModalProps {
   isVisible: boolean;
@@ -44,39 +45,30 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
   const [remarks, setRemarks] = useState("");
   const [images, setImages] = useState<string[]>([]);
 
+  // Image Preview State
+  const [previewUri, setPreviewUri] = useState<string | null>(null);
+
   const handleAddImage = () => {
     Alert.alert("Upload Image", "Choose an option", [
-      {
-        text: "Camera",
-        onPress: pickFromCamera,
-      },
-      {
-        text: "Gallery",
-        onPress: pickFromGallery,
-      },
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
+      { text: "Camera", onPress: pickFromCamera },
+      { text: "Gallery", onPress: pickFromGallery },
+      { text: "Cancel", style: "cancel" },
     ]);
   };
 
   const pickFromGallery = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Permission to access camera roll is required!");
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsEditing: false,
       quality: 0.7,
-      allowsMultipleSelection: true, // Allow multiple items from gallery
+      allowsMultipleSelection: true,
     });
-
     if (!result.canceled) {
       const newUris = result.assets.map((asset) => asset.uri);
       setImages((prev) => [...prev, ...newUris]);
@@ -85,18 +77,15 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
 
   const pickFromCamera = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert("Permission to access camera is required!");
       return;
     }
-
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ["images"],
       allowsEditing: false,
       quality: 0.7,
     });
-
     if (!result.canceled) {
       setImages((prev) => [...prev, result.assets[0].uri]);
     }
@@ -109,7 +98,6 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
   const handleConfirm = () => {
     if (selectedReason) {
       onConfirm({ reason: selectedReason, remarks, images });
-      // Reset state
       setSelectedReason(null);
       setRemarks("");
       setImages([]);
@@ -138,7 +126,8 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
               {/* Header */}
               <View className="px-6 py-4 border-b border-gray-100">
                 <Text className="text-lg font-semibold text-gray-800">
-                  Mark {itemName} as Failed
+                  Mark <Text className="color-bg-button">{itemName}</Text> as
+                  Failed
                 </Text>
               </View>
 
@@ -154,14 +143,14 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
                       onPress={() => setSelectedReason(reason)}
                       className={`px-4 py-2 rounded-lg border ${
                         selectedReason === reason
-                          ? "bg-red-50 border-red-500"
-                          : "bg-gray-100 border-gray-200"
+                          ? "bg-bg-accent border-bg-button"
+                          : "bg-bg-tertiary border-border-secondary"
                       }`}
                     >
                       <Text
                         className={`font-medium ${
                           selectedReason === reason
-                            ? "text-red-700"
+                            ? "text-bg-button"
                             : "text-gray-600"
                         }`}
                       >
@@ -171,7 +160,6 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
                   ))}
                 </View>
 
-                {/* Remarks Section */}
                 <Text className="text-base font-bold text-gray-800 mb-3">
                   Remarks
                 </Text>
@@ -193,31 +181,46 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
                   Evidence Photos
                 </Text>
 
-                {/* Image List */}
+                {/* Image List (Scrollable) */}
                 {images.length > 0 && (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="mb-4 flex-row gap-3"
-                  >
-                    {images.map((uri, index) => (
-                      <View key={index} className="relative mr-3">
-                        <Image
-                          source={{ uri }}
-                          className="w-20 h-20 rounded-lg bg-gray-100"
-                          resizeMode="cover"
-                        />
-                        <TouchableOpacity
-                          onPress={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 items-center justify-center border border-white"
-                        >
-                          <Text className="text-white text-xs font-bold">
-                            ✕
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </ScrollView>
+                  <View className="mb-4">
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={true} // Enabled scrollbar for better UX
+                      className="flex-row"
+                      contentContainerStyle={{ paddingBottom: 8 }}
+                    >
+                      {images.map((uri, index) => (
+                        <View key={index} className="relative mr-3 mt-3">
+                          <TouchableOpacity
+                            onPress={() => setPreviewUri(uri)}
+                            activeOpacity={0.8}
+                          >
+                            <Image
+                              source={{ uri }}
+                              className="w-20 h-20 rounded-lg bg-gray-100 border border-gray-200"
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            onPress={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 items-center justify-center border border-white z-10"
+                            hitSlop={{
+                              top: 10,
+                              bottom: 10,
+                              left: 10,
+                              right: 10,
+                            }}
+                          >
+                            <Text className="text-white text-xs font-bold">
+                              ✕
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </ScrollView>
+                  </View>
                 )}
 
                 <TouchableOpacity
@@ -235,30 +238,55 @@ export const FailReasonModal: React.FC<FailReasonModalProps> = ({
 
               {/* Footer Actions */}
               <View className="flex-row gap-4 p-6 pt-2 border-t border-gray-50 bg-white">
-                <TouchableOpacity
-                  onPress={handleClose}
-                  className="flex-1 py-3 rounded-lg border border-gray-200 items-center justify-center bg-white"
-                >
-                  <Text className="text-gray-700 font-medium text-lg">
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleConfirm}
-                  disabled={!selectedReason}
-                  className={`flex-1 py-3 rounded-lg items-center justify-center ${
-                    selectedReason ? "bg-red-600" : "bg-gray-300"
-                  }`}
-                >
-                  <Text className="text-white font-medium text-lg">
-                    Confirm Fail
-                  </Text>
-                </TouchableOpacity>
+                <View className="flex-1">
+                  <AppButton
+                    title="Cancel"
+                    onPress={handleClose}
+                    type="secondary"
+                    style={{ borderRadius: 8 }}
+                    textStyle={{ fontSize: 18 }}
+                  />
+                </View>
+                <View className="flex-1">
+                  <AppButton
+                    title="Confirm Fail"
+                    onPress={handleConfirm}
+                    type="danger"
+                    disabled={!selectedReason}
+                    style={{ borderRadius: 8 }}
+                    textStyle={{ fontSize: 18 }}
+                  />
+                </View>
               </View>
             </View>
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+
+      {/* Internal Image Preview Modal */}
+      {previewUri && (
+        <Modal
+          visible={true}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setPreviewUri(null)}
+        >
+          <View className="flex-1 bg-black/90 justify-center items-center z-50">
+            <TouchableOpacity
+              onPress={() => setPreviewUri(null)}
+              className="absolute top-12 right-6 p-2 z-10 bg-black/50 rounded-full"
+            >
+              <Text className="text-white text-2xl font-bold">✕</Text>
+            </TouchableOpacity>
+
+            <Image
+              source={{ uri: previewUri }}
+              className="w-full h-4/5"
+              resizeMode="contain"
+            />
+          </View>
+        </Modal>
+      )}
     </Modal>
   );
 };

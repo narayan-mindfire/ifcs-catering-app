@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { ImageIcon } from "../../assets/icons";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
@@ -146,7 +147,8 @@ export const FlightPreparationDetailsModal: React.FC<
   const [selectedConsumptionRecord, setSelectedConsumptionRecord] =
     useState<ConsumptionTrackingRecord | null>(null);
 
-  const CURRENT_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+  // const userId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+  const { userId } = useAuthStore();
 
   useEffect(() => {
     if (visible && flightId && preparationId) {
@@ -166,7 +168,7 @@ export const FlightPreparationDetailsModal: React.FC<
         const hasSignature = await checkUserSignature(
           flightId,
           deliveryId,
-          CURRENT_USER_ID,
+          userId,
         );
         setHasUserSignature(hasSignature);
       }
@@ -177,7 +179,6 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [deliveries, flightId, selectedDeliveryId, visible]);
 
-  // --- Sync Flags ---
   useEffect(() => {
     if (preparationDetail) {
       setIsSealed(
@@ -248,7 +249,6 @@ export const FlightPreparationDetailsModal: React.FC<
       type === "Bulk" ||
       type === "Oven Insert"
     ) {
-      // Case 3: Simple containers (just show contents)
       setSelectedDrawerContents(parentContents);
       setActiveEquipmentName(parentName);
       setActiveDrawerEquipmentItemName(equipmentName);
@@ -272,7 +272,6 @@ export const FlightPreparationDetailsModal: React.FC<
       setActiveEquipmentName(drawerData.name || "N/A");
       setActiveDrawerEquipmentItemName(drawerData.equipmentItem?.name || "N/A");
     } else {
-      // Clicking "Back" or Deselecting -> Show Parent Contents
       if (parentContents.length > 0) {
         setSelectedDrawerContents(parentContents);
         setActiveEquipmentName(parentName);
@@ -312,7 +311,6 @@ export const FlightPreparationDetailsModal: React.FC<
     setPreviewItemName("");
   };
 
-  // ... (Keep handlePreparedAction, handleSealAction, handleLockedAction, handleSaveSignature, handleSaveSealNumber) ...
   const handlePreparedAction = async () => {
     if (!flightId || !preparationDetail) return;
 
@@ -461,7 +459,7 @@ export const FlightPreparationDetailsModal: React.FC<
     const success = await addUserSignature(
       flightId,
       deliveryId,
-      CURRENT_USER_ID,
+      userId,
       signature,
     );
     if (success) {
@@ -543,8 +541,8 @@ export const FlightPreparationDetailsModal: React.FC<
                         Galley
                       </Text>
                       <Text className="text-text-primary font-bold">
-                        {preparationDetail.aircraftConfigGalleyPosition
-                          .galleyPosition || "N/A"}
+                        {preparationDetail?.aircraftConfigGalleyPosition
+                          ?.galleyPosition || "N/A"}
                       </Text>
                     </View>
                     <View>
@@ -583,7 +581,6 @@ export const FlightPreparationDetailsModal: React.FC<
                 </View>
 
                 <View className="flex-row gap-4 mt-6 h-[500px]">
-                  {/* Visualizer Column */}
                   <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
                     <View className="flex-1 items-center justify-center">
                       {positionImage ? (
@@ -599,7 +596,6 @@ export const FlightPreparationDetailsModal: React.FC<
                       )}
                     </View>
                     <View className="flex-1 items-center justify-center">
-                      {/* ✅ UPDATED RENDER LOGIC for Visualizers */}
                       {derivedEquipmentType === "Atlas" ||
                       derivedEquipmentType === "Container" ? (
                         <ContainerVisualizer
@@ -622,7 +618,6 @@ export const FlightPreparationDetailsModal: React.FC<
                           onDrawerClick={handleDrawerClick}
                         />
                       ) : (
-                        // Fallback for Oven, Tray, Bulk, etc.
                         <Image
                           source={{
                             uri: packingStd?.equipmentItem?.picture || "",
@@ -633,8 +628,6 @@ export const FlightPreparationDetailsModal: React.FC<
                       )}
                     </View>
                   </View>
-
-                  {/* List Column */}
                   <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
                     <View className="p-3 border-b border-border-muted bg-bg-secondary">
                       <View className="mb-2">
@@ -758,7 +751,7 @@ export const FlightPreparationDetailsModal: React.FC<
             locationInfo={{
               galley:
                 preparationDetail?.aircraftConfigGalleyPosition
-                  .galleyPosition || "N/A",
+                  ?.galleyPosition || "N/A",
               stowage: preparationDetail?.position || "N/A",
               carrier: preparationDetail?.name || "N/A",
             }}

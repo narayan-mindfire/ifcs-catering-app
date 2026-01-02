@@ -10,6 +10,9 @@ export interface CompletedCheckItem {
   stowage: string;
   category: string;
   carrier: string;
+  name: string;
+  info: string;
+  time: string;
   status: "Pass" | "Fail";
 }
 

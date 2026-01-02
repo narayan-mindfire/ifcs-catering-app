@@ -2,8 +2,6 @@ import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
 import { log } from "../utils/logger";
 
-const CURRENT_USER_ID = "019b4c4c-969a-75ea-8ceb-8de5a5c41a26";
-
 interface ApiResponse<T> {
   success: boolean;
   data: T;
@@ -11,7 +9,11 @@ interface ApiResponse<T> {
 }
 
 export const memoService = {
-  getMemos: async (tab: MemoTab, search?: string): Promise<Memo[]> => {
+  getMemos: async (
+    userId: string,
+    tab: MemoTab,
+    search?: string,
+  ): Promise<Memo[]> => {
     const viewParam = tab === "Inbox" ? "Inbox" : "Acknowledged";
     const params: Record<string, any> = {
       view: viewParam,
@@ -23,7 +25,7 @@ export const memoService = {
     }
     const response = await apiClient.get("/memos", {
       params,
-      headers: { "x-user-id": CURRENT_USER_ID },
+      headers: { "x-user-id": userId },
     });
     log.info("Memos Response Data:", response.data);
     return response.data.data.map((item: any) => {
@@ -40,28 +42,28 @@ export const memoService = {
     });
   },
 
-  getMemoById: async (id: string): Promise<Memo> => {
+  getMemoById: async (userId: string, id: string): Promise<Memo> => {
     const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
-      headers: { "x-user-id": CURRENT_USER_ID },
+      headers: { "x-user-id": userId },
     });
     log.info("MEMO: ", response.data.data);
     return response.data.data;
   },
 
-  acknowledgeMemo: async (id: string): Promise<void> => {
+  acknowledgeMemo: async (userId: string, id: string): Promise<void> => {
     await apiClient.patch(
       `/memos/${id}/acknowledge`,
       { isAcknowledge: true },
-      { headers: { "x-user-id": CURRENT_USER_ID } },
+      { headers: { "x-user-id": userId } },
     );
   },
 
-  markAsRead: async (id: string): Promise<void> => {
+  markAsRead: async (userId: string, id: string): Promise<void> => {
     log.info("marking the memo as read in service:");
     await apiClient.patch(
       `/memos/${id}/read`,
       { isRead: true },
-      { headers: { "x-user-id": CURRENT_USER_ID } },
+      { headers: { "x-user-id": userId } },
     );
   },
 };

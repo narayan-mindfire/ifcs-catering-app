@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { DeleteIcon } from "../../assets/icons";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { formatDate } from "../../utils/dateFormatter";
 import { SignatureModal } from "./SharedComponents";
@@ -32,14 +33,13 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [signingUserId, setSigningUserId] = useState<string | null>(null);
 
-  // Hardcoded ID
-  const TARGET_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
-
+  // const userId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+  const { userId } = useAuthStore();
   useEffect(() => {
     const fetchData = async () => {
       if (flightId && deliveryId) {
         setLoading(true);
-        await checkUserSignature(flightId, deliveryId, TARGET_USER_ID);
+        await checkUserSignature(flightId, deliveryId, userId);
         setLoading(false);
       }
     };
