@@ -482,7 +482,11 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <AppButton
             title="PASS"
             onPress={handlePass}
-            style={{ flex: 1, backgroundColor: "#22c55e" }}
+            style={{
+              flex: 1,
+              backgroundColor: "#22c55e",
+              borderColor: "#22c55e",
+            }}
             type="primary"
           />
         </View>

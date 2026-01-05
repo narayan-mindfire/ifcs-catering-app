@@ -43,7 +43,7 @@ export const CompletedCheckListItem: React.FC<Props> = React.memo(
         <Text className="flex-[0.8] text-base text-text-secondary">
           {item.departure}
         </Text>
-        <Text className="flex-[0.5] text-base text-text-secondary">
+        <Text className="flex-[0.5] text-center text-base text-text-secondary">
           {item.galley}
         </Text>
         <Text className="flex-[0.6] text-base text-text-secondary">

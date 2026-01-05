@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.ifcscateringapp",
+      "bundleIdentifier": "com.ifcscatering.app",
       "newArchEnabled": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
         },
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photo library to save downloaded files.",
-        "NSPhotoLibraryAddUsageDescription": "Allow $(PRODUCT_NAME) to save downloaded files to your photo library.",
+        "NSPhotoLibraryUsageDescription": "Allow IFCS to access your photo library to save downloaded files.",
+        "NSPhotoLibraryAddUsageDescription": "Allow IFCS to save downloaded files to your photo library.",
         "NSCameraUsageDescription": "We need camera access to scan flight QR codes."
       }
     },

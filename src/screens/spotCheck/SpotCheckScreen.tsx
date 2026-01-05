@@ -1,7 +1,13 @@
 import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useCallback, useEffect, useMemo } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import {
@@ -29,16 +35,27 @@ interface Props {
 const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId } = route.params || {};
   const { userId } = useAuthStore();
-  // Stores
-  const { selectedFlight, isLoading: isFlightLoading } = useFlightStore();
 
+  const { selectedFlight, isLoading: isFlightLoading } = useFlightStore();
   const { spotCheckLogs, fetchSpotCheckLogs, isLogsLoading } =
     useSpotCheckStore();
 
-  // 2. Fetch Spot Check Logs (Always fetch for the user context)
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Initial fetch
   useEffect(() => {
     fetchSpotCheckLogs(userId);
   }, [userId, fetchSpotCheckLogs]);
+
+  // Pull-to-refresh handler (iOS native)
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchSpotCheckLogs(userId);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchSpotCheckLogs, userId]);
 
   const flightInfo = useMemo(() => {
     if (!flightId) {
@@ -108,27 +125,18 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
       const mappedItem: CompletedCheckItem = {
         id: item.id,
         name: item.preparationName || item.equipment || "Unknown Item",
-        status: item.isPass ? "Pass" : "Fail", // Ensure string "Pass"/"Fail" matches your UI expectation
-
-        // Safely handle null carrier or galley
-        info: `${item.carrier || "N/A"} | ${item.galleyDetails?.galleyPosition || "N/A"}`,
-
+        status: item.isPass ? "Pass" : "Fail",
+        info: `${item.carrier || "N/A"} | ${
+          item.galleyDetails?.galleyPosition || "N/A"
+        }`,
         time: formatDate(item.createdAt),
-
-        // Handle designator or flightNumber being null
         flight: `${item.designator || ""}${item.flightNumber || ""}`,
-
-        // Handle route possibly being null (your JSON showed "route": null)
         route:
           item.route || `${item.departure || "N/A"}-${item.arrival || "N/A"}`,
-
         departure: item.scheduledDeparture
           ? formatDateDetail(item.scheduledDeparture)
           : "N/A",
-
-        // ✅ FIX: Use optional chaining here
         galley: item.galleyDetails?.galleyPosition || "N/A",
-
         stowage: item.position || "N/A",
         category: item.equipment || "N/A",
         carrier: item.preparationCode || "N/A",
@@ -141,7 +149,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
         />
       );
     },
-    [spotCheckLogs.length], // Add dependency if spotCheckLogs is used for index calculation
+    [spotCheckLogs.length],
   );
 
   const showLoading = (flightId && isFlightLoading) || isLogsLoading;
@@ -163,6 +171,13 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
             ListHeaderComponent={renderHeader}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                tintColor="#602AF3"
+              />
+            }
             ListEmptyComponent={
               <View className="mt-10 items-center">
                 <Text className="text-text-tertiary">
