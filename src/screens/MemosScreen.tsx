@@ -28,6 +28,7 @@ import {
 import { AppButton } from "../components/common/AppButton";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import { useAuthStore } from "../store/useAuthStore";
 import { useMemoStore } from "../store/useMemosStore";
 import { MemoTab } from "../types/memo";
 
@@ -50,6 +51,7 @@ const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos, isLoading } = useMemoStore();
+  const { userId } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,12 +76,12 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchMemos(activeTab, debouncedSearch);
-  }, [activeTab, debouncedSearch, fetchMemos]);
+    fetchMemos(userId, activeTab, debouncedSearch);
+  }, [activeTab, userId, debouncedSearch, fetchMemos]);
 
   const onRefresh = useCallback(() => {
-    fetchMemos(activeTab, debouncedSearch);
-  }, [activeTab, debouncedSearch, fetchMemos]);
+    fetchMemos(userId, activeTab, debouncedSearch);
+  }, [activeTab, userId, debouncedSearch, fetchMemos]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");

@@ -11,13 +11,12 @@ import { PreparationsList } from "../../components/preparation/PreparationsList"
 import { usePreparationActions } from "../../hooks/usePreparationActions";
 import { usePreparationData } from "../../hooks/usePreparationData";
 import { usePreparationModals } from "../../hooks/usePreparationModals";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import { PreparationItem } from "../../types/preparations";
 import { log } from "../../utils/logger";
-
-const CURRENT_USER_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 
 export const PreparationsScreen: React.FC = () => {
   const selectedFlight = useFlightStore((state) => state.selectedFlight);
@@ -35,6 +34,8 @@ export const PreparationsScreen: React.FC = () => {
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
     useDeliveryStore();
+
+  const { userId } = useAuthStore();
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [hasUserSignature, setHasUserSignature] = useState(false);
@@ -74,13 +75,19 @@ export const PreparationsScreen: React.FC = () => {
         const hasSignature = await checkUserSignature(
           selectedFlight.id,
           deliveryId,
-          CURRENT_USER_ID,
+          userId,
         );
         setHasUserSignature(hasSignature);
       }
     };
     if (deliveries.length > 0) checkSignature();
-  }, [deliveries, selectedFlight?.id, selectedDeliveryId, checkUserSignature]);
+  }, [
+    deliveries,
+    selectedFlight?.id,
+    selectedDeliveryId,
+    checkUserSignature,
+    userId,
+  ]);
 
   const handleToggleFilter = useCallback((option: string) => {
     setSelectedFilters((prev) =>
@@ -108,7 +115,7 @@ export const PreparationsScreen: React.FC = () => {
         await addUserSignature(
           selectedFlight.id,
           deliveryId!,
-          CURRENT_USER_ID,
+          userId,
           signature,
         )
       ) {
@@ -123,6 +130,7 @@ export const PreparationsScreen: React.FC = () => {
       modals,
       createDelivery,
       addUserSignature,
+      userId,
     ],
   );
 

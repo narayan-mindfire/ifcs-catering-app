@@ -76,7 +76,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     error: null,
     isPrinting: false,
 
-    // ... (Keep fetchPreparations, fetchPreparationById, updatePreparationFlag, printPreparation, clearPreparationDetail, checkUserSignature, addUserSignature AS IS) ...
     fetchPreparations: async (flightId: string) => {
       set({ isLoading: true, error: null });
       try {

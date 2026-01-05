@@ -10,6 +10,9 @@ export interface CompletedCheckItem {
   stowage: string;
   category: string;
   carrier: string;
+  name: string;
+  info: string;
+  time: string;
   status: "Pass" | "Fail";
 }
 
@@ -31,29 +34,29 @@ export const CompletedCheckListItem: React.FC<Props> = React.memo(
       <View
         className={`flex-row px-4 py-4 bg-bg-surface items-center ${rowStyle}`}
       >
-        <Text className="flex-[0.7] text-sm text-text-secondary">
+        <Text className="flex-[0.7] text-base text-text-secondary">
           {item.flight}
         </Text>
-        <Text className="flex-[0.8] text-sm text-text-secondary">
+        <Text className="flex-[0.8] text-base text-text-secondary">
           {item.route}
         </Text>
-        <Text className="flex-[0.8] text-sm text-text-secondary">
+        <Text className="flex-[0.8] text-base text-text-secondary">
           {item.departure}
         </Text>
-        <Text className="flex-[0.5] text-sm text-text-secondary">
+        <Text className="flex-[0.5] text-center text-base text-text-secondary">
           {item.galley}
         </Text>
-        <Text className="flex-[0.6] text-sm text-text-secondary">
+        <Text className="flex-[0.6] text-base text-text-secondary">
           {item.stowage}
         </Text>
-        <Text className="flex-[1.5] text-sm text-text-secondary font-medium pr-2">
+        <Text className="flex-[1.5] text-base text-text-secondary font-medium pr-2">
           {item.category}
         </Text>
-        <Text className="flex-[1] text-sm text-text-secondary">
+        <Text className="flex-[1] text-base text-text-secondary">
           {item.carrier}
         </Text>
         <Text
-          className={`flex-[0.6] text-sm font-bold text-right ${statusColor}`}
+          className={`flex-[0.6] text-base font-bold text-right ${statusColor}`}
         >
           {item.status}
         </Text>

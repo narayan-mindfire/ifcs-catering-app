@@ -15,6 +15,7 @@ import {
 import { DocsIconDark, SparkleIcon, UserIcon } from "../../assets/icons";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { useAuthStore } from "../../store/useAuthStore";
 import { useMemoStore } from "../../store/useMemosStore";
 import { MemoVersion } from "../../types/memo";
 import { formatDateDetail } from "../../utils/dateFormatter";
@@ -39,11 +40,9 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isAckLoading, setIsAckLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Hardcoded for now based on requirement, TODO: get from user content
-  const CURRENT_USER_ID = "019b4c4c-969a-75ea-8ceb-8de5a5c41a26";
+  const { userId } = useAuthStore();
   const currentUserRecipientRecord = activeMemo?.recipients?.find(
-    (r: { userId: string; isAcknowledge: boolean }) =>
-      r.userId === CURRENT_USER_ID,
+    (r: { userId: string; isAcknowledge: boolean }) => r.userId === userId,
   );
 
   const isRead = currentUserRecipientRecord?.isRead ?? true;
@@ -57,11 +56,11 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const sortedRecipients = useMemo(() => {
     const list = [...recipients];
     return list.sort((a, b) => {
-      if (a.userId === CURRENT_USER_ID) return -1;
-      if (b.userId === CURRENT_USER_ID) return 1;
+      if (a.userId === userId) return -1;
+      if (b.userId === userId) return 1;
       return 0;
     });
-  }, [recipients, CURRENT_USER_ID]);
+  }, [recipients, userId]);
 
   // Handle versions derived from activeMemo data
   log.info("Active Memo Versions:", activeMemo?.versions);
@@ -78,15 +77,15 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     const loadMemo = async () => {
-      await fetchMemoById(memoId);
+      await fetchMemoById(userId, memoId);
     };
     loadMemo();
-  }, [memoId, fetchMemoById]);
+  }, [memoId, fetchMemoById, userId]);
 
   useEffect(() => {
     if (activeMemo && !isLoading && isRead === false) {
       log.info("Marking memo as read:", activeMemo.id);
-      markAsRead(activeMemo.id);
+      markAsRead(userId, activeMemo.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMemo?.id, isRead, isLoading, markAsRead]);
@@ -95,9 +94,12 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     if (isAcknowledged || !activeMemo) return;
     setIsAckLoading(true);
     try {
-      await acknowledgeMemo(activeMemo.id);
+      await acknowledgeMemo(userId, activeMemo.id);
       Alert.alert("Success", "Memo acknowledged successfully.", [
-        { text: "OK", onPress: () => fetchMemoById(activeMemo.id) },
+        {
+          text: "OK",
+          onPress: () => fetchMemoById(userId, activeMemo.id),
+        },
       ]);
     } catch (e) {
       Alert.alert("Error", `Failed to acknowledge memo. ${e}`);
@@ -131,8 +133,8 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleVersionClick = (versionId: string) => {
-    if (versionId === activeMemo?.id) return; // Already viewing
-    fetchMemoById(versionId);
+    if (versionId === activeMemo?.id) return;
+    fetchMemoById(userId, versionId);
   };
 
   if (isLoading || !activeMemo) {
@@ -303,7 +305,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             {sortedRecipients.map((item) => {
               const hasAck = item.isAcknowledge;
               const timestamp = item.acknowledgedAt;
-              const isCurrentUser = item.userId === CURRENT_USER_ID;
+              const isCurrentUser = item.userId === userId;
 
               return (
                 <View key={item.userId} className="mb-6">

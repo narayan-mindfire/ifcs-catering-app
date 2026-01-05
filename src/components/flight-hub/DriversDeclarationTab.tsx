@@ -169,7 +169,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
       <View className="flex-1">
         <ComplianceSignatureCard
           title="Security Seal is Intact"
-          toPrint={true}
+          toPrint={false}
           isCompliant={sealIntact || false}
           onToggleCompliance={handleToggleSealIntact}
           confirmationText={

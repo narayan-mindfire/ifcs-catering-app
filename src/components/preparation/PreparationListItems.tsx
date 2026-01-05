@@ -46,8 +46,7 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
       const isLoaded = item.loadedTruckFlag === "true";
 
       const isLockActive = item.isLockRequired && isAssembled;
-
-      // Memoize icons to avoid re-calculation on every render
+      const isSealActive = item.isSealRequired && isAssembled;
       const { PreparedIcon, SealIcon, AssemblyIcon, LoadIcon } = useMemo(() => {
         return {
           PreparedIcon: isPrepared ? BoxIconTrue : BoxIcon,
@@ -85,7 +84,27 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               onPress={() => onSealAction(item)}
               disabled={isUpdating}
             >
-              <SealIcon height={30} width={30} />
+              <View style={{ position: "relative" }}>
+                <SealIcon
+                  height={30}
+                  width={30}
+                  color={isSealActive ? "#008000" : "#9CA3AF"}
+                  style={{ opacity: isSealActive ? 1 : 0.6 }}
+                />
+                {!item.isSealRequired && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: 14,
+                      left: 0,
+                      right: 0,
+                      height: 2,
+                      backgroundColor: "#EF4444",
+                      transform: [{ rotate: "-45deg" }],
+                    }}
+                  />
+                )}
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity disabled={true}>

@@ -37,7 +37,7 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 const CustomHeader = () => {
-  return <Header userName={"Shitanshu"} onUserPress={() => {}} />;
+  return <Header onUserPress={() => {}} />;
 };
 
 export const AppNavigator = () => {

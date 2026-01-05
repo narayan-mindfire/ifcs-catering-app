@@ -17,6 +17,7 @@ export interface PreparationItem {
   assemblyProcessFlag: string;
   loadedTruckFlag: string;
   isLockRequired: boolean;
+  isSealRequired: boolean;
   isTrackConsumption: boolean;
   weight: number;
   availableWeight: number;

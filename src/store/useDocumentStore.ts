@@ -34,7 +34,6 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
   error: null,
 
   fetchFolderContent: async (folderId: string | null) => {
-    log.info("📁 [FETCH] Starting fetchFolderContent for:", folderId || "ROOT");
     set({ isLoading: true, error: null, currentFolderId: folderId });
 
     try {
@@ -88,7 +87,7 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
         error: null,
       });
     } catch (err: any) {
-      console.error("[ERROR] Fetch Documents Error:", err);
+      log.error("[ERROR] Fetch Documents Error:", err);
       set({
         error: err.message || "Failed to load documents",
         isLoading: false,
@@ -98,7 +97,6 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
   },
 
   searchDocuments: async (query: string) => {
-    log.info("[SEARCH] Starting global search for:", query);
     set({ isLoading: true, error: null });
 
     try {
@@ -124,7 +122,7 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
         error: null,
       });
     } catch (err: any) {
-      console.error("[ERROR] Search Error:", err);
+      log.error("[ERROR] Search Error:", err);
       set({
         error: "Failed to perform search",
         isLoading: false,
@@ -157,7 +155,7 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
         throw new Error("File system download failed");
       }
     } catch (err: any) {
-      console.error("[ERROR] Download workflow failed:", err);
+      log.error("[ERROR] Download workflow failed:", err);
       set({ error: "Download failed" });
     } finally {
       set({ isDownloading: false });

@@ -9,10 +9,10 @@ interface MemoState {
   isLoading: boolean;
   error: string | null;
 
-  fetchMemos: (tab: MemoTab, search?: string) => Promise<void>;
-  fetchMemoById: (id: string) => Promise<void>;
-  acknowledgeMemo: (id: string) => Promise<void>;
-  markAsRead: (id: string) => Promise<void>;
+  fetchMemos: (userId: string, tab: MemoTab, search?: string) => Promise<void>;
+  fetchMemoById: (id: string, userId: string) => Promise<void>;
+  acknowledgeMemo: (id: string, userId: string) => Promise<void>;
+  markAsRead: (id: string, userId: string) => Promise<void>;
 }
 
 export const useMemoStore = create<MemoState>((set, get) => ({
@@ -21,10 +21,10 @@ export const useMemoStore = create<MemoState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchMemos: async (tab: MemoTab, search?: string) => {
+  fetchMemos: async (userId: string, tab: MemoTab, search?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const flattenedMemos = await memoService.getMemos(tab, search);
+      const flattenedMemos = await memoService.getMemos(userId, tab, search);
       set({
         memos: flattenedMemos,
         isLoading: false,
@@ -39,10 +39,10 @@ export const useMemoStore = create<MemoState>((set, get) => ({
     }
   },
 
-  fetchMemoById: async (id: string) => {
+  fetchMemoById: async (userId: string, id: string) => {
     set({ isLoading: true, error: null, activeMemo: null });
     try {
-      const memo = await memoService.getMemoById(id);
+      const memo = await memoService.getMemoById(userId, id);
       set({
         activeMemo: memo,
         isLoading: false,
@@ -56,9 +56,9 @@ export const useMemoStore = create<MemoState>((set, get) => ({
     }
   },
 
-  acknowledgeMemo: async (id: string) => {
+  acknowledgeMemo: async (userId: string, id: string) => {
     try {
-      await memoService.acknowledgeMemo(id);
+      await memoService.acknowledgeMemo(userId, id);
 
       const currentActive = get().activeMemo;
       if (currentActive && currentActive.id === id) {
@@ -75,11 +75,10 @@ export const useMemoStore = create<MemoState>((set, get) => ({
     }
   },
 
-  markAsRead: async (id: string) => {
+  markAsRead: async (userId: string, id: string) => {
     try {
-      await memoService.markAsRead(id);
+      await memoService.markAsRead(userId, id);
 
-      // Update the active memo's read status
       const currentActive = get().activeMemo;
       if (currentActive && currentActive.id === id) {
         set({
@@ -87,7 +86,6 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         });
       }
 
-      // Update the memo in the memos list
       set((state) => ({
         memos: state.memos.map((m) =>
           m.id === id ? { ...m, isRead: true } : m,
@@ -95,7 +93,6 @@ export const useMemoStore = create<MemoState>((set, get) => ({
       }));
     } catch (err: any) {
       console.error("Mark as Read Error:", err);
-      // Don't throw - marking as read is not critical
     }
   },
 }));

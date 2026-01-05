@@ -48,28 +48,28 @@ export const SpotCheckHeader: React.FC<SpotCheckHeaderProps> = React.memo(
 
         {/* Table Header Row (Completed Checks Columns Only) */}
         <View className="bg-bg-tertiary rounded-t-xl flex-row px-4 py-3 border-b border-border-muted">
-          <Text className="flex-[0.7] text-sm font-semibold text-text-primary">
+          <Text className="flex-[0.7] text-lg font-semibold text-text-primary">
             Flight
           </Text>
-          <Text className="flex-[0.8] text-sm font-semibold text-text-primary">
+          <Text className="flex-[0.8] text-lg font-semibold text-text-primary">
             Route
           </Text>
-          <Text className="flex-[0.8] text-sm font-semibold text-text-primary">
+          <Text className="flex-[0.8] text-lg font-semibold text-text-primary">
             Departure
           </Text>
-          <Text className="flex-[0.5] text-sm font-semibold text-text-primary">
+          <Text className="flex-[0.5] text-lg font-semibold text-text-primary">
             Galley
           </Text>
-          <Text className="flex-[0.6] text-sm font-semibold text-text-primary">
+          <Text className="flex-[0.6] text-lg font-semibold text-text-primary">
             Stowage
           </Text>
-          <Text className="flex-[1.5] text-sm font-semibold text-text-primary">
+          <Text className="flex-[1.5] text-lg font-semibold text-text-primary">
             Category
           </Text>
-          <Text className="flex-[1] text-sm font-semibold text-text-primary">
+          <Text className="flex-[1] text-lg font-semibold text-text-primary">
             Carrier
           </Text>
-          <Text className="flex-[0.6] text-sm font-semibold text-text-primary text-right">
+          <Text className="flex-[0.6] text-lg font-semibold text-text-primary text-right">
             Status
           </Text>
         </View>
