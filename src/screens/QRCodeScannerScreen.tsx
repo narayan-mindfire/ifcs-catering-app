@@ -1,27 +1,39 @@
-import { StackNavigationProp } from "@react-navigation/stack";
+import { StackScreenProps } from "@react-navigation/stack";
 import React, { useCallback, useState } from "react";
 import { Alert, View } from "react-native";
 
 import { QRScanner } from "../components/common/QRScanner";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import { useScannerStore } from "../store/useScannerStore";
 import { log } from "../utils/logger";
 
-type QRCodeScannerScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "QRCodeScanner"
->;
+type Props = StackScreenProps<RootStackParamList, "QRCodeScanner">;
 
-interface Props {
-  navigation: QRCodeScannerScreenNavigationProp;
-}
-
-const QRCodeScannerScreen: React.FC<Props> = ({ navigation }) => {
+const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [scanned, setScanned] = useState(false);
+  const { title } = route.params || {};
+  const onScan = useScannerStore((state) => state.onScan);
+  const clearOnScan = useScannerStore((state) => state.clearOnScan);
+
+  // Cleanup store on unmount
+  React.useEffect(() => {
+    return () => {
+      clearOnScan();
+    };
+  }, [clearOnScan]);
 
   const handleBarCodeScanned = useCallback(
     (data: string) => {
       setScanned(true);
 
+      // Generic Mode: If a callback is provided via store, just call it and go back.
+      if (onScan) {
+        onScan(data);
+        navigation.goBack();
+        return;
+      }
+
+      // Legacy Mode: Spot Check specific logic
       try {
         const lines = data.split("\n");
 
@@ -63,16 +75,16 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation }) => {
         );
       }
     },
-    [navigation],
+    [navigation, onScan],
   );
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-black">
       <QRScanner
         onScan={handleBarCodeScanned}
         onClose={() => navigation.goBack()}
         scanned={scanned}
-        title="Scan Preparation Label"
+        title={title || "Scan Preparation Label"}
       />
     </View>
   );

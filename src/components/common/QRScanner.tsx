@@ -1,12 +1,6 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -113,7 +107,6 @@ export const QRScanner: React.FC<QRScannerProps> = ({
 
   return (
     <View className="flex-1 bg-black">
-      <StatusBar hidden={true} />
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"
@@ -124,61 +117,59 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         barcodeScannerSettings={{
           barcodeTypes: ["qr"],
         }}
+      />
+      <View
+        style={StyleSheet.absoluteFillObject}
+        className="flex-1 bg-black/60"
       >
-        <View className="flex-1 bg-black/60">
-          <View className="absolute top-12 right-8 z-10">
-            <TouchableOpacity
-              onPress={handleClose}
-              className="bg-black/40 p-3 rounded-full border border-white/20"
-            >
-              <Text className="text-white text-xl font-bold">✕</Text>
+        <View className="absolute top-12 right-8 z-10">
+          <TouchableOpacity
+            onPress={handleClose}
+            className="bg-black/40 p-3 rounded-full border border-white/20"
+          >
+            <Text className="text-white text-xl font-bold">✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-white font-medium text-xl mb-10 opacity-90">
+            {title}
+          </Text>
+
+          <View className="w-[300px] h-[300px] relative bg-transparent overflow-hidden">
+            <View className="absolute top-0 left-0 w-10 h-10 border-t-[6px] border-l-[6px] border-[#5046e5] rounded-tl-xl" />
+            <View className="absolute top-0 right-0 w-10 h-10 border-t-[6px] border-r-[6px] border-[#5046e5] rounded-tr-xl" />
+            <View className="absolute bottom-0 left-0 w-10 h-10 border-b-[6px] border-l-[6px] border-[#5046e5] rounded-bl-xl" />
+            <View className="absolute bottom-0 right-0 w-10 h-10 border-b-[6px] border-r-[6px] border-[#5046e5] rounded-br-xl" />
+            {!scanned && (
+              <Animated.View
+                style={[
+                  lineAnimatedStyle,
+                  {
+                    shadowColor: "#5046e5",
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 1,
+                    shadowRadius: 10,
+                    elevation: 5,
+                  },
+                ]}
+                className="w-full h-[2px] bg-[#5046e5] absolute top-0"
+              />
+            )}
+          </View>
+          <View className="flex-row items-center gap-4 mt-12 bg-black/40 px-6 py-3 rounded-full border border-white/10">
+            <TouchableOpacity onPress={() => setZoom(Math.max(0, zoom - 0.1))}>
+              <Text className="text-white text-3xl font-bold">-</Text>
+            </TouchableOpacity>
+            <Text className="text-white font-mono min-w-[60px] text-center">
+              {(zoom * 10).toFixed(1)}x
+            </Text>
+            <TouchableOpacity onPress={() => setZoom(Math.min(1, zoom + 0.1))}>
+              <Text className="text-white text-3xl font-bold">+</Text>
             </TouchableOpacity>
           </View>
-
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-white font-medium text-xl mb-10 opacity-90">
-              {title}
-            </Text>
-
-            <View className="w-[300px] h-[300px] relative bg-transparent overflow-hidden">
-              <View className="absolute top-0 left-0 w-10 h-10 border-t-[6px] border-l-[6px] border-[#5046e5] rounded-tl-xl" />
-              <View className="absolute top-0 right-0 w-10 h-10 border-t-[6px] border-r-[6px] border-[#5046e5] rounded-tr-xl" />
-              <View className="absolute bottom-0 left-0 w-10 h-10 border-b-[6px] border-l-[6px] border-[#5046e5] rounded-bl-xl" />
-              <View className="absolute bottom-0 right-0 w-10 h-10 border-b-[6px] border-r-[6px] border-[#5046e5] rounded-br-xl" />
-              {!scanned && (
-                <Animated.View
-                  style={[
-                    lineAnimatedStyle,
-                    {
-                      shadowColor: "#5046e5",
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 1,
-                      shadowRadius: 10,
-                      elevation: 5,
-                    },
-                  ]}
-                  className="w-full h-[2px] bg-[#5046e5] absolute top-0"
-                />
-              )}
-            </View>
-            <View className="flex-row items-center gap-4 mt-12 bg-black/40 px-6 py-3 rounded-full border border-white/10">
-              <TouchableOpacity
-                onPress={() => setZoom(Math.max(0, zoom - 0.1))}
-              >
-                <Text className="text-white text-3xl font-bold">-</Text>
-              </TouchableOpacity>
-              <Text className="text-white font-mono min-w-[60px] text-center">
-                {(zoom * 10).toFixed(1)}x
-              </Text>
-              <TouchableOpacity
-                onPress={() => setZoom(Math.min(1, zoom + 0.1))}
-              >
-                <Text className="text-white text-3xl font-bold">+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
-      </CameraView>
+      </View>
     </View>
   );
 };

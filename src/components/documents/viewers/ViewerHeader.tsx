@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 
-import { DownloadIcon, PrintIcon, ThreeDotsIcon } from "../../../assets/icons";
+import { DownloadIcon, PrintIcon } from "../../../assets/icons";
 
 interface ViewerHeaderProps {
   title: string;
@@ -33,13 +33,11 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
         return;
       }
 
-      // Print functionality is mainly for mobile
       if (Platform.OS !== "web") {
         await Print.printAsync({
           uri: fileUrl,
         });
       } else {
-        // For web, open print dialog
         window.print();
       }
     } catch (error) {
@@ -76,9 +74,6 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
         </TouchableOpacity>
         <TouchableOpacity className="p-2" onPress={handlePrint}>
           <PrintIcon color="#4F4B58" />
-        </TouchableOpacity>
-        <TouchableOpacity className="p-2">
-          <ThreeDotsIcon color="#4F4B58" />
         </TouchableOpacity>
       </View>
     </View>

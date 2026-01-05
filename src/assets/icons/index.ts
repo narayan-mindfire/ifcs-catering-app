@@ -18,14 +18,12 @@ import DeleteIcon from "./delete.svg";
 import DeliveryInactiveIcon from "./deliveryInactive.svg";
 import DocsIcon from "./docs.svg";
 import DocsIconDark from "./docsIconDark.svg";
-import ThreeDotsIcon from "./dots.svg";
 import DownloadIcon from "./download.svg";
 import DresserIcon from "./dresser.svg";
 import DropdownIcon from "./dropdown.svg";
 import DropdownIconAlt from "./dropdownIcon.svg";
 import DropdownRevIcon from "./dropdownIconRev.svg";
 import ExitIcon from "./exit.svg";
-// import NoFlightIcon from "./noflight.svg";
 import FilterIcon from "./filter.svg";
 import FlightsIcon from "./flights.svg";
 import FolderIcon from "./folder.svg";
@@ -85,10 +83,8 @@ import UtensilIcon from "./utensil.svg";
 import VideoIcon from "./video.svg";
 import VideoThinIcon from "./video-thin.svg";
 import WashingMachineIcon from "./washing-machine.svg";
-// --- Export all icons together ---
 export {
   ActionIcon,
-  // New
   AddIcon,
   AirplaneFlightIcon,
   AirplaneIcon,
@@ -165,7 +161,6 @@ export {
   StringIconTrue,
   StringInactiveIcon,
   TakeoffIcon,
-  ThreeDotsIcon,
   TimerIcon,
   TrayIcon,
   TrayIconActive,

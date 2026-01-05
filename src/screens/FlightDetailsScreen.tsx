@@ -130,7 +130,6 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           </Text>
         </View>
       </View>
-
       <Tab.Navigator
         style={{ flex: 1 }}
         tabBar={(props) => <CustomTabBar {...props} />}

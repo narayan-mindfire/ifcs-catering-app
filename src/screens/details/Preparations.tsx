@@ -1,20 +1,24 @@
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, { Suspense, useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 
-import { QRScanner } from "../../components/common/QRScanner";
 import { PreparationsModals } from "../../components/preparation/PreparationModal";
 import {
   ParsedQRData,
   PreparationsHeader,
+  ScanActionType,
 } from "../../components/preparation/PreparationsHeader";
 import { PreparationsList } from "../../components/preparation/PreparationsList";
 import { usePreparationActions } from "../../hooks/usePreparationActions";
 import { usePreparationData } from "../../hooks/usePreparationData";
 import { usePreparationModals } from "../../hooks/usePreparationModals";
+import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
+import { useScannerStore } from "../../store/useScannerStore";
 import { PreparationItem } from "../../types/preparations";
 import { log } from "../../utils/logger";
 
@@ -47,7 +51,11 @@ export const PreparationsScreen: React.FC = () => {
   const [pendingCurrentItem, setPendingCurrentItem] =
     useState<PreparationItem | null>(null);
 
-  const [isVerifyScannerVisible, setIsVerifyScannerVisible] = useState(false);
+  // New Scanner State lifted from Header
+
+  // New Scanner State lifted from Header
+
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const modals = usePreparationModals();
   const { filterOptions, sectionedData } = usePreparationData(
@@ -156,6 +164,72 @@ export const PreparationsScreen: React.FC = () => {
     [preparations],
   );
 
+  const parseQRData = (rawData: string): ParsedQRData | null => {
+    try {
+      const lines = rawData
+        .trim()
+        .split("\n")
+        .filter((line) => line.trim() !== "");
+
+      if (lines.length < 12) {
+        console.error("Invalid QR data format - insufficient lines");
+        return null;
+      }
+
+      return {
+        flightPrepId: lines[0].trim(),
+        flightId: lines[1].trim(),
+        flightPrepPackingStandardId: lines[2].trim(),
+        galleyConfigId: lines[3].trim(),
+        packingStandardId: lines[4].trim(),
+        parentStorageId: lines[5].trim(),
+        storageId: lines[6].trim(),
+        prepName: lines[7].trim(),
+        flightNumber: lines[8].trim(),
+        position: lines[9].trim(),
+        scheduledDepartUtc: lines[10].trim(),
+        rotationCode: lines[11].trim(),
+      };
+    } catch (error) {
+      console.error("Error parsing QR data:", error);
+      return null;
+    }
+  };
+
+  const handleScanPress = (actionType: ScanActionType) => {
+    // Set the callback in the global store
+    useScannerStore.getState().setOnScan((data) => {
+      if (actionType) {
+        const parsedData = parseQRData(data);
+        if (parsedData) {
+          handleScanAction(actionType, parsedData);
+        } else {
+          Alert.alert("Error", "Invalid QR code format");
+        }
+      }
+    });
+
+    navigation.navigate("QRCodeScanner", {
+      title: getScannerTitle(actionType),
+    });
+  };
+
+  // Helper for title (modified to take arg)
+  const getScannerTitle = (action: ScanActionType) => {
+    switch (action) {
+      case "prep":
+        return "Scan item to mark as prepared";
+      case "seal":
+        return "Scan item to verify seal";
+      case "assemble":
+        return "Scan item to mark as assembled";
+      case "load":
+        return "Scan item to mark as loaded";
+      default:
+        return "Align QR code within the frame";
+    }
+  };
+
   // Step 1: Initial Scan
   const handleScanAction = useCallback(
     async (
@@ -198,7 +272,14 @@ export const PreparationsScreen: React.FC = () => {
                 },
                 {
                   text: "Scan Now",
-                  onPress: () => setIsVerifyScannerVisible(true),
+                  onPress: () => {
+                    useScannerStore
+                      .getState()
+                      .setOnScan((data) => handleVerifyScan(data));
+                    navigation.navigate("QRCodeScanner", {
+                      title: "Scan CURRENT Flight Label to Confirm",
+                    });
+                  },
                 },
               ],
             );
@@ -232,54 +313,60 @@ export const PreparationsScreen: React.FC = () => {
           break;
       }
     },
-    [findPreparationItem, actions, selectedFlight?.id],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [findPreparationItem, actions, selectedFlight?.id, navigation],
   );
 
   // Step 2: Verification Scan (Scan 2)
-  const handleVerifyScan = async (data: string) => {
-    const lines = data.split("\n");
-    if (lines.length < 2) return;
+  const handleVerifyScan = useCallback(
+    async (data: string) => {
+      const lines = data.split("\n");
+      if (lines.length < 2) return;
 
-    const scannedCurrentPrepId = lines[0]?.trim();
-    const scannedFlightId = lines[1]?.trim();
+      const scannedCurrentPrepId = lines[0]?.trim();
+      const scannedFlightId = lines[1]?.trim();
 
-    // VALIDATION: Must match CURRENT flight
-    if (scannedFlightId !== selectedFlight?.id) {
-      Alert.alert(
-        "Mismatch",
-        "Wrong Flight! Please scan the label for the CURRENT flight.",
-      );
-      return;
-    }
+      // VALIDATION: Must match CURRENT flight
+      if (scannedFlightId !== selectedFlight?.id) {
+        Alert.alert(
+          "Mismatch",
+          "Wrong Flight! Please scan the label for the CURRENT flight.",
+        );
+        return;
+      }
 
-    // Find the item in our current list
-    const currentItem = findPreparationItem(scannedCurrentPrepId);
-    if (!currentItem) {
-      Alert.alert("Error", "Scanned item not found in current flight list.");
-      return;
-    }
+      // Find the item in our current list
+      const currentItem = findPreparationItem(scannedCurrentPrepId);
+      if (!currentItem) {
+        Alert.alert("Error", "Scanned item not found in current flight list.");
+        return;
+      }
 
-    log.info("Current Flight Verified. Fetching Old Data...");
+      log.info("Current Flight Verified. Fetching Old Data...");
+      // Store Current Item for later use in Step 3
+      setPendingCurrentItem(currentItem);
 
-    // Close Scanner
-    setIsVerifyScannerVisible(false);
+      // Fetch Old Data & Open Modal
+      if (pendingOldFlightData) {
+        await fetchPreparationById(
+          pendingOldFlightData.flightId,
+          pendingOldFlightData.flightPrepId,
+        );
 
-    // Store Current Item for later use in Step 3
-    setPendingCurrentItem(currentItem);
-
-    // Fetch Old Data & Open Modal
-    if (pendingOldFlightData) {
-      await fetchPreparationById(
-        pendingOldFlightData.flightId,
-        pendingOldFlightData.flightPrepId,
-      );
-
-      modals.openDetailModal({
-        id: pendingOldFlightData.flightPrepId,
-        ...pendingOldFlightData,
-      } as any);
-    }
-  };
+        modals.openDetailModal({
+          id: pendingOldFlightData.flightPrepId,
+          ...pendingOldFlightData,
+        } as any);
+      }
+    },
+    [
+      selectedFlight?.id,
+      findPreparationItem,
+      pendingOldFlightData,
+      fetchPreparationById,
+      modals,
+    ],
+  );
 
   // Step 3: Finish & Link (Triggered by Modal Button)
   const handleFinishConsumption = useCallback(async () => {
@@ -348,7 +435,7 @@ export const PreparationsScreen: React.FC = () => {
         selectedFilters={selectedFilters}
         onToggleFilter={handleToggleFilter}
         selectedFlight={selectedFlight}
-        onScanAction={handleScanAction}
+        onScanPress={handleScanPress}
       />
 
       <PreparationsList
@@ -357,18 +444,6 @@ export const PreparationsScreen: React.FC = () => {
         isUpdating={isUpdating}
         actions={actions}
       />
-
-      <Modal visible={isVerifyScannerVisible} animationType="slide">
-        <QRScanner
-          onScan={handleVerifyScan}
-          scanned={false}
-          onClose={() => {
-            setIsVerifyScannerVisible(false);
-            setPendingOldFlightData(null);
-          }}
-          title="Scan CURRENT Flight Label to Confirm"
-        />
-      </Modal>
     </View>
   );
 };

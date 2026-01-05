@@ -83,7 +83,6 @@ export const PreparationsList: React.FC<PreparationsListProps> = ({
           </Text>
         </View>
       </View>
-
       {isLoading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#B79EFA" />

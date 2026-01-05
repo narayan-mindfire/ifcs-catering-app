@@ -31,7 +31,9 @@ export type RootStackParamList = {
     date: string;
   };
   SpotCheckSelection: undefined;
-  QRCodeScanner: undefined;
+  QRCodeScanner: {
+    title?: string;
+  };
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -70,7 +72,7 @@ export const AppNavigator = () => {
         component={QRCodeScannerScreen}
         options={{
           headerShown: false,
-          presentation: "modal",
+          presentation: "transparentModal",
         }}
       />
     </Stack.Navigator>
