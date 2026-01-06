@@ -1,15 +1,9 @@
 import { BlurView } from "expo-blur";
 import React from "react";
-import { Dimensions, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SvgProps } from "react-native-svg";
 
 import { RedirectIcon } from "../../assets/icons";
-
-const { width } = Dimensions.get("window");
-
-const isLargeScreen = width > 1024;
-const titleFontSize = isLargeScreen ? 24 : 20;
-const countFontSize = isLargeScreen ? 24 : 20;
 
 interface NavigationCardProps {
   title: string;
@@ -43,17 +37,11 @@ export const NavigationCard: React.FC<NavigationCardProps> = ({
       <View className="items-start">
         <IconComponent width={40} height={40} style={{ marginBottom: 4 }} />
         <View className="flex-row items-baseline mt-2">
-          <Text
-            className="font-medium text-white"
-            style={{ fontSize: titleFontSize }}
-          >
+          <Text className="font-[24px] text-white" style={{ fontSize: 22 }}>
             {title}
           </Text>
           {count && (
-            <Text
-              className="text-white ml-[6px]"
-              style={{ fontSize: countFontSize }}
-            >
+            <Text className="text-white ml-[6px]" style={{ fontSize: 22 }}>
               ({count})
             </Text>
           )}

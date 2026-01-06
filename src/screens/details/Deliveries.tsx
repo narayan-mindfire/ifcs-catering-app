@@ -299,7 +299,7 @@ const DeliveriesScreen: React.FC = () => {
   );
 
   return (
-    <View className="flex-1 flex-row bg-bg-surface">
+    <View className="flex-1 flex-col lg:flex-row bg-bg-surface">
       <DeliverySidebar
         deliveries={deliveries}
         selectedDeliveryId={selectedDeliveryId}

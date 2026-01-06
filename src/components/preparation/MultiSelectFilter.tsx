@@ -48,7 +48,7 @@ export const MultiSelectFilter: React.FC<MultiSelectFilterProps> = ({
         onPress={toggleDropdown}
         className="flex-row items-center bg-bg-tertiary py-2.5 px-4 rounded-md mr-3"
       >
-        <FilterIcon width={25} height={25} />
+        <FilterIcon width={24} height={34} />
         <Text className="text-xl font-normal m-0.5 text-text-primary ml-2">
           {displayText}
         </Text>

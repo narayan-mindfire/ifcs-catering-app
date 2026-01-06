@@ -23,7 +23,7 @@ export const DeliverySidebar: React.FC<DeliverySidebarProps> = ({
   onDelete,
 }) => {
   return (
-    <View className="w-[260px] border-r border-border-muted p-4 bg-bg-surface">
+    <View className="w-full h-[300px] lg:w-[260px] lg:h-auto border-b lg:border-r lg:border-b-0 border-border-muted p-4 bg-bg-surface">
       <View className="pb-4 border-b border-border-muted mb-4">
         <Text className="text-lg font-semibold text-text-primary mb-3">
           Deliveries ({deliveries.length})
@@ -45,7 +45,7 @@ export const DeliverySidebar: React.FC<DeliverySidebarProps> = ({
         />
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView horizontal={true} className="flex-1">
         {deliveries.map((delivery) => (
           <Pressable
             key={delivery.id}
