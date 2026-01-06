@@ -52,7 +52,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             key={label}
             title={label}
             onPress={() => onScanPress(actionType)}
-            IconComponent={<ScanIcon height={28} width={28} />}
+            IconComponent={<ScanIcon height={28} width={24} />}
             style={{
               marginRight: 12,
               paddingVertical: 10,
@@ -68,7 +68,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
         ))}
       </View>
 
-      <View className="flex-1 flex-row justify-end">
+      <View className="flex-1 flex-row ms-3 justify-end">
         <MultiSelectFilter
           options={filterOptions}
           selectedOptions={selectedFilters}

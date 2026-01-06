@@ -2,7 +2,13 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
+import {
+  ImageBackground,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import {
   AirplaneIcon,
@@ -28,6 +34,9 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
   const navigation = useNavigation<NavigationProp>();
   const { selectedFlight } = useFlightData();
+
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
 
   const handleNavigate = (screen: SidebarScreenName) => {
     if (screen === "Flights") {
@@ -56,7 +65,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
           <Text style={styles.welcomeName}>{userName}</Text>
         </View>
 
-        <View style={styles.navigationSection}>
+        <View
+          style={[
+            styles.navigationSection,
+            { marginBottom: isPortrait ? 75 : 0 },
+          ]}
+        >
           <NavigationCard
             title="Flights"
             IconComponent={AirplaneIcon}

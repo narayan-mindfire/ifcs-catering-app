@@ -136,7 +136,7 @@ export const ComplianceSignatureCard: React.FC<
             />
           </View>
 
-          <View className="flex-row justify-between items-center">
+          <View className="flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
             <Text className="text-text-tertiary text-xs">
               Signed: {signedAt ? formatDate(String(signedAt)) : "Pending Save"}
             </Text>
