@@ -38,6 +38,7 @@ interface FlightPreparationModalProps {
   isSealed: boolean;
   isPrepared: boolean;
   lockRequired: boolean;
+  sealRequired: boolean;
 }
 
 const ValidationModal = ({
@@ -83,6 +84,7 @@ export const FlightPreparationDetailsModal: React.FC<
   isSealed: initialIsSealed,
   isPrepared: initialIsPrepared,
   lockRequired,
+  sealRequired,
 }) => {
   const {
     preparationDetail,
@@ -528,6 +530,7 @@ export const FlightPreparationDetailsModal: React.FC<
                   isSealed={isSealed}
                   isPrepared={isPrepared}
                   lockRequired={lockRequired}
+                  sealRequired={sealRequired}
                   onPreparedPress={handlePreparedAction}
                   onSealedPress={handleSealAction}
                   onLockedPress={handleLockedAction}

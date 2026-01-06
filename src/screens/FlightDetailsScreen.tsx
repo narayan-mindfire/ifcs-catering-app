@@ -126,6 +126,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             ROUTE: <Text className="text-text-secondary"> {flightRoute}</Text>
           </Text>
           <Text className="text-2xl font-semibold text-text-primary mr-5">
+            DATE:{" "}
             <Text className="text-text-secondary">{formattedDateString}</Text>
           </Text>
         </View>

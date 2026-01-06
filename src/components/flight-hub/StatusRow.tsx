@@ -8,6 +8,7 @@ interface StatusRowProps {
   isSealed: boolean;
   isPrepared: boolean;
   lockRequired: boolean;
+  sealRequired: boolean;
   onPreparedPress: () => void;
   onSealedPress: () => void;
   onLockedPress: () => void;
@@ -19,6 +20,7 @@ export const StatusRow: React.FC<StatusRowProps> = ({
   isSealed,
   isPrepared,
   lockRequired,
+  sealRequired,
   onPreparedPress,
   onSealedPress,
   onLockedPress,
@@ -30,21 +32,21 @@ export const StatusRow: React.FC<StatusRowProps> = ({
       icon: StringIcon,
       isActive: isSealed,
       onPress: onSealedPress,
-      disabled: false,
+      disabled: !sealRequired || isUpdating,
     },
     {
       label: "Locked",
       icon: LockIcon,
       isActive: isLocked,
       onPress: onLockedPress,
-      disabled: !lockRequired,
+      disabled: !lockRequired || isUpdating,
     },
     {
       label: "Prepared",
       icon: CheckIcon,
       isActive: isPrepared,
       onPress: onPreparedPress,
-      disabled: false,
+      disabled: isUpdating,
     },
   ];
 
@@ -54,7 +56,7 @@ export const StatusRow: React.FC<StatusRowProps> = ({
         <TouchableOpacity
           key={idx}
           onPress={status.onPress}
-          disabled={isUpdating || status.disabled}
+          disabled={status.disabled}
           activeOpacity={0.7}
           className={`flex-1 flex-row items-center justify-between border border-border-muted rounded-full px-3 py-2 ${
             status.disabled ? "bg-bg-quaternary opacity-60" : "bg-bg-tertiary"
@@ -62,7 +64,7 @@ export const StatusRow: React.FC<StatusRowProps> = ({
         >
           <View className="flex-row items-center gap-2">
             <View className="relative items-center justify-center">
-              {status.label === "Locked" && !lockRequired && (
+              {status.disabled && !isUpdating && (
                 <View
                   className="absolute h-[2px] bg-red-500"
                   style={{

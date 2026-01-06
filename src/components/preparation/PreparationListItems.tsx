@@ -80,9 +80,11 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               <PreparedIcon height={30} width={30} />
             </TouchableOpacity>
 
+            {/* Seal Action */}
             <TouchableOpacity
               onPress={() => onSealAction(item)}
-              disabled={isUpdating}
+              // Disabled if updating OR if seal is not required
+              disabled={isUpdating || !item.isSealRequired}
             >
               <View style={{ position: "relative" }}>
                 <SealIcon
@@ -107,7 +109,12 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity disabled={true}>
+            {/* Lock Action (Currently display only) */}
+            <TouchableOpacity
+              disabled={true}
+              // If you ever attach an onPress, remember to use:
+              // disabled={true || !item.isLockRequired}
+            >
               <View style={{ position: "relative" }}>
                 <LockOpenIcon
                   height={30}

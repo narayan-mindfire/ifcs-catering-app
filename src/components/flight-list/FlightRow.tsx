@@ -62,9 +62,9 @@ export const FlightRow: React.FC<Props> = memo(
     const routeText = useMemo(() => {
       if (isPaired && flightGroup.length > 1) {
         if (isFirstInGroup) {
-          const firstLeg = flightGroup[0];
-          const secondLeg = flightGroup[1];
-          return `${firstLeg.departureDestination}-${firstLeg.arrivalDestination}-${secondLeg.arrivalDestination}`;
+          const origin = flightGroup[0].departureDestination;
+          const destinations = flightGroup.map((leg) => leg.arrivalDestination);
+          return [origin, ...destinations].join("-");
         }
       }
       return (

@@ -3,7 +3,6 @@ import { Modal, Text, TouchableOpacity, View } from "react-native";
 
 import { ConfirmationModal } from "../common/ConfirmationModal";
 
-// Lazy load heavy components
 const FlightPreparationDetailsModal = lazy(() =>
   import("../flight-hub/FlightPreparationDetailsModal").then((m) => ({
     default: m.FlightPreparationDetailsModal,
@@ -127,12 +126,12 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
           visible={modals.detailModalVisible}
           onClose={modals.closeDetailModal}
           preparationId={modals.selectedItem.id}
-          flightId={activeFlightId} // Use the resolved ID
-          // Use status from hook state
+          flightId={activeFlightId}
           isLocked={modals.selectedPrepStatus.isLocked}
           isSealed={modals.selectedPrepStatus.isSealed}
-          isPrepared={modals.selectedPrepStatus.isCompleted} // mapped to isCompleted in hook
+          isPrepared={modals.selectedPrepStatus.isCompleted}
           lockRequired={modals.selectedItem.isLockRequired}
+          sealRequired={modals.selectedItem.isSealRequired}
           // Consumption Props
           // isConsumptionMode={isConsumptionMode}
           // onFinishConsumption={onFinishConsumption}
