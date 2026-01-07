@@ -1,6 +1,6 @@
 import { StackScreenProps } from "@react-navigation/stack";
 import React, { useCallback, useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 
 import { QRScanner } from "../components/common/QRScanner";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -11,7 +11,7 @@ type Props = StackScreenProps<RootStackParamList, "QRCodeScanner">;
 
 const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [scanned, setScanned] = useState(false);
-  const { title } = route.params || {};
+  const { title, continuous } = route.params || {};
   const onScan = useScannerStore((state) => state.onScan);
   const clearOnScan = useScannerStore((state) => state.clearOnScan);
 
@@ -24,12 +24,20 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleBarCodeScanned = useCallback(
     (data: string) => {
+      if (scanned) return;
       setScanned(true);
 
-      // Generic Mode: If a callback is provided via store, just call it and go back.
+      // Generic Mode: If a callback is provided via store
       if (onScan) {
         onScan(data);
-        navigation.goBack();
+        if (continuous) {
+          // Reset after delay for continuous scanning
+          setTimeout(() => {
+            setScanned(false);
+          }, 1500);
+        } else {
+          navigation.goBack();
+        }
         return;
       }
 
@@ -75,7 +83,7 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
         );
       }
     },
-    [navigation, onScan],
+    [navigation, onScan, continuous, scanned],
   );
 
   return (
@@ -86,6 +94,13 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
         scanned={scanned}
         title={title || "Scan Preparation Label"}
       />
+      {scanned && continuous && (
+        <View className="absolute top-1/2 left-0 right-0 items-center justify-center">
+          <View className="bg-green-500 px-6 py-3 rounded-full">
+            <Text className="text-white font-bold text-lg">Scanned!</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 };

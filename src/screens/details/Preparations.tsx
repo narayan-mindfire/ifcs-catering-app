@@ -211,6 +211,7 @@ export const PreparationsScreen: React.FC = () => {
 
     navigation.navigate("QRCodeScanner", {
       title: getScannerTitle(actionType),
+      continuous: true,
     });
   };
 
@@ -278,6 +279,7 @@ export const PreparationsScreen: React.FC = () => {
                       .setOnScan((data) => handleVerifyScan(data));
                     navigation.navigate("QRCodeScanner", {
                       title: "Scan CURRENT Flight Label to Confirm",
+                      continuous: true,
                     });
                   },
                 },
