@@ -75,7 +75,7 @@ export const flightPreparationService = {
     userId: string,
   ): Promise<any[]> => {
     const response = await apiClient.get<any>(
-      `/flights/${flightId}/deliveries/user/signatures`,
+      `/flights/${flightId}/users/signatures`,
       {
         params: { userId },
       },
@@ -100,7 +100,7 @@ export const flightPreparationService = {
     };
 
     const response = await apiClient.post<AddUserSignatureResponse>(
-      `/flights/${flightId}/deliveries/user-signatures`,
+      `/flights/${flightId}/users/signatures`,
       payload,
     );
 
