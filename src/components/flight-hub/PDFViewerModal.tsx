@@ -2,7 +2,6 @@ import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 import Pdf from "react-native-pdf";
 
-import { PrintIcon } from "../../assets/icons";
 import { log } from "../../utils/logger";
 
 interface PdfViewerModalProps {
@@ -33,13 +32,7 @@ export const PdfViewerModal: React.FC<PdfViewerModalProps> = ({
               <TouchableOpacity
                 onPress={onClose}
                 className="p-2 flex-row items-center"
-              >
-                <PrintIcon />
-                <Text className="text-bg-button text-base font-medium">
-                  {" "}
-                  Print
-                </Text>
-              </TouchableOpacity>
+              ></TouchableOpacity>
               <TouchableOpacity onPress={onClose} className="p-2">
                 <Text className="text-bg-button text-base font-medium">
                   Close

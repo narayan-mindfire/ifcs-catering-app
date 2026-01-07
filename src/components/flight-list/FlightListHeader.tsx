@@ -69,12 +69,12 @@ export const FlightListHeader: React.FC = () => {
             <Text className="text-sm font-medium text-black">Flight #</Text>
           </View>
         </View>
-        <View className="flex-[3] px-1">
+        <View className="flex-[4] px-1">
           <View className="justify-center py-3">
             <Text className="text-sm font-medium text-black">Type</Text>
           </View>
         </View>
-        <View className="flex-[7] px-1">
+        <View className="flex-[6] px-1">
           <View className="justify-center py-3">
             <Text className="text-sm font-medium text-black">Date</Text>
           </View>

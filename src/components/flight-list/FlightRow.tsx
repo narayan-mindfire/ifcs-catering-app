@@ -8,8 +8,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ArrowIcon, DropdownIcon } from "../../assets/icons";
-import { EmairatesIcon } from "../../assets/logos";
+import { ArrowIcon, DropdownIcon, IFCSLogoIcon } from "../../assets/icons";
+// import { EmairatesIcon } from "../../assets/logos";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { Flight } from "../../types/flight";
 import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
@@ -185,7 +185,7 @@ export const FlightRow: React.FC<Props> = memo(
               style={{ width: 40, height: 40, resizeMode: "contain" }}
             />
           ) : (
-            <EmairatesIcon width={50} height={50} />
+            <IFCSLogoIcon width={50} height={50} />
           )}
         </View>
 
@@ -214,7 +214,7 @@ export const FlightRow: React.FC<Props> = memo(
 
         <View className="flex-[7] py-2.5 px-1 justify-center">
           <Text
-            className={`text-xs mb-0.5 uppercase ${departureData.colorClass}`}
+            className={`text-[9px] mb-0.5 uppercase ${departureData.colorClass}`}
           >
             {departureData.label}
           </Text>
@@ -228,7 +228,7 @@ export const FlightRow: React.FC<Props> = memo(
 
         <View className="flex-[7] py-2.5 px-1 justify-center">
           <Text
-            className={`text-xs mb-0.5 uppercase ${arrivalData.colorClass}`}
+            className={`text-[9px] mb-0.5 uppercase ${arrivalData.colorClass}`}
           >
             {arrivalData.label}
           </Text>

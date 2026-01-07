@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { DropdownIcon, UserIcon } from "../../assets/icons";
-import { EmairatesIcon } from "../../assets/logos";
+// import { EmairatesIcon } from "../../assets/logos";
 import { useAuthStore } from "../../store/useAuthStore";
 
 export const Header: React.FC<{ onUserPress: () => void }> = ({
@@ -34,17 +34,31 @@ export const Header: React.FC<{ onUserPress: () => void }> = ({
           onPress={onUserPress}
         >
           <View className="w-[35px] h-[35px] rounded-full justify-center items-center mr-2">
-            <UserIcon />
+            {user && user.picture ? (
+              <Image
+                source={{ uri: user.picture }}
+                style={{ width: 30, height: 30 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <UserIcon />
+            )}
           </View>
 
           <Text className="text-base md:text-lg font-semibold text-text-secondary mr-1.5">
-            {user ? `${user.firstName}` : "Loading..."} <DropdownIcon />
+            {user ? `${user.firstName} ${user.lastName}` : "Loading..."}{" "}
+            <DropdownIcon />
           </Text>
         </TouchableOpacity>
 
         <View className="absolute right-5 bottom-[-30px] z-10">
-          <View className="bg-red-700 w-[65px] h-[60px] md:w-[60px] md:h-[65px] rounded-lg justify-center items-center">
-            <EmairatesIcon height={65} width={60} />
+          <View className="w-[65px] h-[60px] md:w-[60px] md:h-[65px] rounded-lg justify-center items-center">
+            <Image
+              source={require("../../assets/images/Oman_Catering.png")}
+              // source={require("../../assets/images/oman.png")}
+              style={{ width: 75, height: 70 }}
+              resizeMode="contain"
+            />
           </View>
         </View>
       </View>

@@ -1,5 +1,11 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import { AddIcon } from "../../assets/icons";
 import { Delivery } from "../../types/deliveries";
@@ -22,8 +28,11 @@ export const DeliverySidebar: React.FC<DeliverySidebarProps> = ({
   onAdd,
   onDelete,
 }) => {
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 1024;
+
   return (
-    <View className="w-full h-[300px] lg:w-[260px] lg:h-auto border-b lg:border-r lg:border-b-0 border-border-muted p-4 bg-bg-surface">
+    <View className="w-full lg:w-[260px] lg:h-auto border-b lg:border-r lg:border-b-0 border-border-muted p-4 bg-bg-surface">
       <View className="pb-4 border-b border-border-muted mb-4">
         <Text className="text-lg font-semibold text-text-primary mb-3">
           Deliveries ({deliveries.length})
@@ -45,19 +54,26 @@ export const DeliverySidebar: React.FC<DeliverySidebarProps> = ({
         />
       </View>
 
-      <ScrollView horizontal={true} className="flex-1">
+      <ScrollView
+        horizontal={!isLargeScreen}
+        className={isLargeScreen ? "flex-1" : "flex-grow-0"}
+        showsHorizontalScrollIndicator={false}
+      >
         {deliveries.map((delivery) => (
           <Pressable
             key={delivery.id}
             onPress={() => onSelect(delivery.id)}
             onLongPress={() => onDelete(delivery.id)}
-            className={`p-3 rounded-lg mb-2 ${
+            className={`p-3 rounded-lg ${
+              isLargeScreen ? "mb-2 w-full" : "mr-2 w-[160px]"
+            } ${
               selectedDeliveryId === delivery.id
                 ? "bg-bg-accent border border-bg-primary"
                 : "bg-bg-tertiary"
             }`}
           >
             <Text
+              numberOfLines={1}
               className={`text-base ${
                 selectedDeliveryId === delivery.id
                   ? "text-text-primary font-semibold"
