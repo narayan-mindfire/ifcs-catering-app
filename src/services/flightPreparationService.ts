@@ -6,6 +6,7 @@ import {
   PreparationItem,
   PrintData,
 } from "../types/preparations";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -38,6 +39,7 @@ export const flightPreparationService = {
     if (response.data.success) {
       return response.data.data;
     }
+    log.info("PREPARATION BY ID WE GOT: ", response.data.data);
     throw new Error(
       response.data.message || "Failed to fetch preparation details",
     );
