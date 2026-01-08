@@ -22,7 +22,8 @@
         },
         "NSPhotoLibraryUsageDescription": "Allow IFCS to access your photo library to save downloaded files.",
         "NSPhotoLibraryAddUsageDescription": "Allow IFCS to save downloaded files to your photo library.",
-        "NSCameraUsageDescription": "We need camera access to scan flight QR codes."
+        "NSCameraUsageDescription": "We need camera access to scan flight QR codes.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -32,7 +33,18 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.narayanp.ifcscateringapp"
+      "package": "com.narayanp.ifcscateringapp",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -53,6 +65,11 @@
           "isAccessMediaLocationEnabled": true
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "44a1a9f3-fc70-4eab-99fb-d1bb3c3c5137"
+      }
+    }
   }
 }
