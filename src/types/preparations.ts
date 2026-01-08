@@ -175,6 +175,7 @@ export interface FlightPreparationModalProps {
   preparationId: string;
   flightId: string;
   isLockRequired: boolean;
+  isConsumptionMode: boolean;
 }
 
 export interface EquipmentItem {
@@ -265,6 +266,7 @@ export interface PreparationDetailData {
   door: string | null;
   aircraftConfigGalleyPosition: AircraftConfigGalleyPosition;
   packingStandard: PackingStandard;
+  isTrackConsumption: boolean;
 }
 
 export interface PreparationDetailResponse {

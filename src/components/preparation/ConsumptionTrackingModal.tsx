@@ -12,7 +12,7 @@ import {
 
 import { ImageIcon } from "../../assets/icons";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
-import { ConsumptionTrackingRecord } from "../../types/consumption"; // Import this
+import { ConsumptionTrackingRecord } from "../../types/consumption";
 import { PackingStandardItem } from "../../types/preparations";
 import { AppButton } from "../common/AppButton";
 
@@ -20,7 +20,7 @@ interface ConsumptionModalProps {
   visible: boolean;
   onClose: () => void;
   item: PackingStandardItem | null;
-  existingRecord?: ConsumptionTrackingRecord | null; // NEW PROP
+  existingRecord?: ConsumptionTrackingRecord | null;
   flightId: string;
   preparationId: string;
   packingStandardId?: string;
@@ -37,7 +37,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   visible,
   onClose,
   item,
-  existingRecord, // Destructure new prop
+  existingRecord,
   flightId,
   preparationId,
   packingStandardId,
@@ -47,7 +47,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
 }) => {
   const [remainingInput, setRemainingInput] = useState<string>("");
 
-  // Get both actions from store
   const {
     createConsumptionRecord,
     updateConsumptionRecord,
@@ -57,14 +56,11 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
 
   const isLoading = isCreating || isUpdating;
 
-  // INITIALIZATION LOGIC
   useEffect(() => {
     if (visible && item) {
       if (existingRecord) {
-        // Mode: UPDATE - Pre-fill with existing returnedQty
         setRemainingInput(existingRecord.returnedQty.toString());
       } else {
-        // Mode: CREATE - Reset to empty
         setRemainingInput("");
       }
     }
@@ -116,7 +112,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
       }
 
       if (resultSuccess) {
-        // Optional: Reduced verbosity for updates to make it snappier
         if (!existingRecord) {
           Alert.alert(
             "Success",
@@ -138,12 +133,10 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
 
   const Content = (
     <View className="w-[650px] bg-bg-surface rounded-2xl overflow-hidden shadow-2xl border border-border-muted">
-      {/* --- HEADER --- */}
       <View className="p-5 border-b border-border-muted bg-bg-quaternary flex-row justify-between items-center">
         <Text className="text-xl font-bold text-text-primary uppercase tracking-wide">
           {item.name || "Item Details"}
         </Text>
-        {/* Visual Indicator for Update Mode */}
         {existingRecord && (
           <View className="bg-blue-100 px-3 py-1 rounded-full border border-blue-200">
             <Text className="text-blue-700 text-xs font-bold uppercase">
@@ -153,7 +146,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         )}
       </View>
 
-      {/* ... [IMAGE AND LOCATION INFO SECTIONS REMAIN EXACTLY THE SAME] ... */}
       <View className="flex-row p-6 gap-6">
         <View className="w-48 h-48 bg-bg-tertiary rounded-xl border border-border-muted items-center justify-center overflow-hidden shadow-sm">
           {item.picture ? (
@@ -197,7 +189,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         </View>
       </View>
 
-      {/* --- QUANTITY INPUT SECTION --- */}
       <View className="bg-bg-quaternary px-8 py-6 border-t border-border-muted flex-row items-center justify-between">
         <View className="items-center">
           <Text className="text-sm font-semibold text-text-muted mb-1 uppercase">
@@ -236,7 +227,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         </View>
       </View>
 
-      {/* --- FOOTER ACTIONS --- */}
       <View className="p-5 border-t border-border-muted flex-row justify-end gap-3 bg-bg-surface">
         <AppButton
           title="Cancel"
@@ -247,7 +237,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         />
 
         <AppButton
-          // Dynamic Title
           title={
             isLoading ? "Saving..." : existingRecord ? "Update" : "Confirm"
           }
@@ -261,7 +250,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
     </View>
   );
 
-  // ... (Overlay/Modal wrapper logic remains the same)
   if (presentationStyle === "overlay") {
     return (
       <View className="absolute inset-0 z-50 bg-black/70 justify-center items-center px-4">

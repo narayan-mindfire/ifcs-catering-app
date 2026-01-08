@@ -30,13 +30,14 @@ const ValidationModal = lazy(() =>
 );
 
 interface PreparationsModalsProps {
-  modals: any; // Ideally use the return type of usePreparationModals
+  modals: any;
   selectedFlight: any;
   onSaveSignature: (signature: string) => void;
   onSaveSealNumber: (sealNumber: number) => void;
-  // NEW: Props for consumption flow
+
+  // ✅ Props for consumption flow logic
   isConsumptionMode?: boolean;
-  consumptionFlightId?: string; // ID of the old flight
+  consumptionFlightId?: string;
   onFinishConsumption?: () => void;
 }
 
@@ -47,10 +48,9 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
   onSaveSealNumber,
   isConsumptionMode = false,
   consumptionFlightId,
-  // onFinishConsumption,
+  onFinishConsumption, // ✅ Passed down
 }) => {
   // Determine which flight ID to use
-  // If in consumption mode, use the scanned old flight ID. Otherwise, use current selected flight.
   const activeFlightId =
     isConsumptionMode && consumptionFlightId
       ? consumptionFlightId
@@ -132,9 +132,8 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
           isPrepared={modals.selectedPrepStatus.isCompleted}
           lockRequired={modals.selectedItem.isLockRequired}
           sealRequired={modals.selectedItem.isSealRequired}
-          // Consumption Props
-          // isConsumptionMode={isConsumptionMode}
-          // onFinishConsumption={onFinishConsumption}
+          isConsumptionMode={isConsumptionMode}
+          onFinishConsumption={onFinishConsumption}
         />
       )}
     </>

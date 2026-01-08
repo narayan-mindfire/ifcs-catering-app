@@ -39,6 +39,8 @@ interface FlightPreparationModalProps {
   isPrepared: boolean;
   lockRequired: boolean;
   sealRequired: boolean;
+  isConsumptionMode?: boolean;
+  onFinishConsumption?: () => void;
 }
 
 const ValidationModal = ({
@@ -85,6 +87,8 @@ export const FlightPreparationDetailsModal: React.FC<
   isPrepared: initialIsPrepared,
   lockRequired,
   sealRequired,
+  isConsumptionMode = false,
+  onFinishConsumption,
 }) => {
   const {
     preparationDetail,
@@ -149,19 +153,20 @@ export const FlightPreparationDetailsModal: React.FC<
   const [selectedConsumptionRecord, setSelectedConsumptionRecord] =
     useState<ConsumptionTrackingRecord | null>(null);
 
-  // const userId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
   const { userId } = useAuthStore();
 
   useEffect(() => {
     if (visible && flightId && preparationId) {
       fetchPreparationById(flightId, preparationId);
       fetchDeliveries(flightId);
-      fetchConsumptionRecords(flightId, {
-        flightPreparationId: preparationId,
-        limit: 100,
-      });
+      if (isConsumptionMode) {
+        fetchConsumptionRecords(flightId, {
+          flightPreparationId: preparationId,
+          limit: 100,
+        });
+      }
     }
-  }, [visible, flightId, preparationId]);
+  }, [visible, flightId, preparationId, isConsumptionMode]);
 
   useEffect(() => {
     const checkSignature = async () => {
@@ -223,7 +228,7 @@ export const FlightPreparationDetailsModal: React.FC<
     if (!preparationDetail) return;
 
     const packingStd = preparationDetail.packingStandard;
-    const parentContents = packingStd?.items || []; // Items directly in the equipment (not in drawers)
+    const parentContents = packingStd?.items || [];
     const drawers = packingStd?.containers || [];
     const equipmentName = packingStd?.equipmentItem?.name || "";
     const parentName = packingStd?.name || "Equipment Contents";
@@ -287,12 +292,9 @@ export const FlightPreparationDetailsModal: React.FC<
   };
 
   const handleOpenConsumptionModal = (item: PackingStandardItem) => {
-    // 1. Find if a record already exists for this item
     const existingRecord = consumptionRecords.find(
       (r) => r.flightPrepPackingStandardItemId === item.id,
     );
-
-    // 2. Set the state
     setSelectedConsumptionRecord(existingRecord || null);
     setConsumptionItem(item);
     setConsumptionModalVisible(true);
@@ -658,7 +660,8 @@ export const FlightPreparationDetailsModal: React.FC<
                     <ScrollView>
                       {selectedDrawerContents.length > 0 ? (
                         selectedDrawerContents.map((item, index) => {
-                          const isTrackable = !item.isTrackConsumption || true;
+                          const isTrackable =
+                            preparationDetail?.isTrackConsumption ?? false;
                           const isTracked = consumptionRecords.some(
                             (r) =>
                               r.flightPrepPackingStandardItemId === item.id,
@@ -666,7 +669,8 @@ export const FlightPreparationDetailsModal: React.FC<
 
                           let rowStyle =
                             "bg-bg-surface border-b border-border-muted";
-                          if (isTrackable) {
+
+                          if (isConsumptionMode && isTrackable) {
                             if (isTracked) {
                               rowStyle =
                                 "bg-blue-50 border-b border-blue-200 border-l-[4px] border-l-blue-500";
@@ -681,7 +685,7 @@ export const FlightPreparationDetailsModal: React.FC<
                               key={item.id || index}
                               className={`flex-row p-3 items-center ${rowStyle}`}
                               onPress={() => {
-                                if (isTrackable) {
+                                if (isConsumptionMode && isTrackable) {
                                   handleOpenConsumptionModal(item);
                                 } else {
                                   handleImagePress(item.picture, item.name);
@@ -710,7 +714,11 @@ export const FlightPreparationDetailsModal: React.FC<
                                       resizeMode="cover"
                                     />
                                   ) : (
-                                    <ImageIcon width={25} height={25} />
+                                    <ImageIcon
+                                      width={25}
+                                      height={25}
+                                      color="#9CA3AF"
+                                    />
                                   )}
                                 </TouchableOpacity>
                               </View>
@@ -731,6 +739,16 @@ export const FlightPreparationDetailsModal: React.FC<
             )}
 
             <View className="p-4 border-t border-border-muted items-end bg-bg-surface flex-row justify-end gap-3">
+              {isConsumptionMode && (
+                <TouchableOpacity
+                  onPress={onFinishConsumption}
+                  className="bg-green-600 py-3 px-8 rounded-xl"
+                >
+                  <Text className="text-white font-semibold">
+                    Finish & Link
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={onClose}
                 className="bg-bg-button py-3 px-8 rounded-xl"
@@ -746,10 +764,9 @@ export const FlightPreparationDetailsModal: React.FC<
             onClose={() => {
               setConsumptionModalVisible(false);
               setConsumptionItem(null);
-              setSelectedConsumptionRecord(null); // Reset record on close
+              setSelectedConsumptionRecord(null);
             }}
             item={consumptionItem}
-            // PASS THE RECORD HERE
             existingRecord={selectedConsumptionRecord}
             locationInfo={{
               galley:

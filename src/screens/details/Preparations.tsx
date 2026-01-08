@@ -1,6 +1,12 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { Suspense, useCallback, useEffect, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
 
 import { PreparationsModals } from "../../components/preparation/PreparationModal";
@@ -45,15 +51,15 @@ export const PreparationsScreen: React.FC = () => {
   const [hasUserSignature, setHasUserSignature] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // ✅ FIX: Use Ref to hold data across async closures (Alerts/Timeouts)
+  const pendingOldFlightDataRef = useRef<ParsedQRData | null>(null);
+
+  // Keep State for UI/Modals updates
   const [pendingOldFlightData, setPendingOldFlightData] =
     useState<ParsedQRData | null>(null);
 
   const [pendingCurrentItem, setPendingCurrentItem] =
     useState<PreparationItem | null>(null);
-
-  // New Scanner State lifted from Header
-
-  // New Scanner State lifted from Header
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
@@ -257,8 +263,9 @@ export const PreparationsScreen: React.FC = () => {
         else {
           log.info("Old Flight Detected. Starting Step 2 (Scan Current).");
 
-          // 1. Store Old Data Reference
+          // 1. Store Old Data Reference (Sync Ref & State)
           setPendingOldFlightData(scannedData);
+          pendingOldFlightDataRef.current = scannedData;
 
           // 2. IMMEDIATELY Open Verification Scanner
           setTimeout(() => {
@@ -269,7 +276,10 @@ export const PreparationsScreen: React.FC = () => {
                 {
                   text: "Cancel",
                   style: "cancel",
-                  onPress: () => setPendingOldFlightData(null),
+                  onPress: () => {
+                    setPendingOldFlightData(null);
+                    pendingOldFlightDataRef.current = null;
+                  },
                 },
                 {
                   text: "Scan Now",
@@ -337,7 +347,6 @@ export const PreparationsScreen: React.FC = () => {
         return;
       }
 
-      // Find the item in our current list
       const currentItem = findPreparationItem(scannedCurrentPrepId);
       if (!currentItem) {
         Alert.alert("Error", "Scanned item not found in current flight list.");
@@ -345,28 +354,34 @@ export const PreparationsScreen: React.FC = () => {
       }
 
       log.info("Current Flight Verified. Fetching Old Data...");
-      // Store Current Item for later use in Step 3
       setPendingCurrentItem(currentItem);
 
-      // Fetch Old Data & Open Modal
-      if (pendingOldFlightData) {
-        await fetchPreparationById(
-          pendingOldFlightData.flightId,
-          pendingOldFlightData.flightPrepId,
-        );
+      // ✅ FIX: Read from Ref instead of State to avoid stale closure
+      const oldData = pendingOldFlightDataRef.current;
+
+      if (oldData) {
+        log.info("back up", oldData);
+        navigation.goBack(); // Close Scanner
+        log.info("BACKED - Opening Modal");
+
+        await fetchPreparationById(oldData.flightId, oldData.flightPrepId);
 
         modals.openDetailModal({
-          id: pendingOldFlightData.flightPrepId,
-          ...pendingOldFlightData,
+          id: oldData.flightPrepId,
+          ...oldData,
         } as any);
+      } else {
+        log.error("REF LOST - Data unavailable");
+        Alert.alert("Error", "Session lost. Please try scanning again.");
+        navigation.goBack();
       }
     },
     [
       selectedFlight?.id,
       findPreparationItem,
-      pendingOldFlightData,
       fetchPreparationById,
       modals,
+      navigation,
     ],
   );
 
@@ -374,8 +389,11 @@ export const PreparationsScreen: React.FC = () => {
   const handleFinishConsumption = useCallback(async () => {
     modals.closeDetailModal();
 
-    if (!selectedFlight?.id || !pendingOldFlightData || !pendingCurrentItem) {
+    const oldData = pendingOldFlightDataRef.current; // Read from Ref
+
+    if (!selectedFlight?.id || !oldData || !pendingCurrentItem) {
       setPendingOldFlightData(null);
+      pendingOldFlightDataRef.current = null;
       setPendingCurrentItem(null);
       return;
     }
@@ -389,7 +407,7 @@ export const PreparationsScreen: React.FC = () => {
     const linkSuccess = await linkPriorPrep(
       selectedFlight.id,
       pendingCurrentItem.id, // Current
-      pendingOldFlightData.flightPrepId, // Prior
+      oldData.flightPrepId, // Prior
     );
 
     if (linkSuccess) {
@@ -407,11 +425,11 @@ export const PreparationsScreen: React.FC = () => {
 
     // Cleanup
     setPendingOldFlightData(null);
+    pendingOldFlightDataRef.current = null;
     setPendingCurrentItem(null);
   }, [
     modals,
     selectedFlight?.id,
-    pendingOldFlightData,
     pendingCurrentItem,
     actions,
     linkPriorPrep,
@@ -426,6 +444,7 @@ export const PreparationsScreen: React.FC = () => {
           selectedFlight={selectedFlight}
           onSaveSignature={handleSaveSignature}
           onSaveSealNumber={handleSaveSealNumber}
+          // We use State here for UI reactivity, which updates fine on re-renders
           isConsumptionMode={!!pendingOldFlightData && !!pendingCurrentItem}
           consumptionFlightId={pendingOldFlightData?.flightId}
           onFinishConsumption={handleFinishConsumption}
