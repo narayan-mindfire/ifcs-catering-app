@@ -75,7 +75,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
       }
     }, 500);
     return () => clearTimeout(delayInput);
-  }, [localFlightNum, filters.flight, setFilters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localFlightNum]);
 
   const openDatePicker = useCallback((field: "start" | "end") => {
     setActiveDateField(field);
