@@ -22,7 +22,7 @@ import { StationSelector } from "../components/flight-list/StationSelector";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
 import { Flight } from "../types/flight";
-import { formatDate } from "../utils/dateFormatter";
+import { formatDate, formatDateToLocalISO } from "../utils/dateFormatter";
 import { log } from "../utils/logger";
 
 type FlightsScreenRouteProp = RouteProp<RootStackParamList, "Flights">;
@@ -37,8 +37,6 @@ interface Props {
 }
 
 type DateFieldType = "start" | "end" | null;
-
-const formatDateToISO = (date: Date) => date.toISOString().split("T")[0];
 
 const FlightsScreen: React.FC<Props> = ({ navigation }) => {
   const {
@@ -112,8 +110,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
       }
 
       setFilters({
-        startDate: newStart ? formatDateToISO(newStart) : undefined,
-        endDate: newEnd ? formatDateToISO(newEnd) : undefined,
+        startDate: newStart ? formatDateToLocalISO(newStart) : undefined,
+        endDate: newEnd ? formatDateToLocalISO(newEnd) : undefined,
       });
 
       setActiveDateField(null);
