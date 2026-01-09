@@ -155,4 +155,17 @@ export const flightPreparationService = {
       );
     }
   },
+
+  deleteUserSignature: async (
+    flightId: string,
+    signatureId: string,
+  ): Promise<void> => {
+    const response = await apiClient.delete(
+      `/flights/${flightId}/users/signatures/${signatureId}`,
+    );
+
+    if (response.status !== 204 && !response.data.success) {
+      throw new Error(response.data.message || "Failed to delete signature");
+    }
+  },
 };

@@ -63,6 +63,10 @@ interface FlightPreparationState {
     currentPrepId: string,
     oldPrepId: string,
   ) => Promise<boolean>;
+  deleteUserSignature: (
+    flightId: string,
+    signatureId: string,
+  ) => Promise<boolean>;
 }
 
 export const useFlightPreparationStore = create<FlightPreparationState>(
@@ -131,7 +135,15 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
 
         set((state) => ({
           preparations: state.preparations.map((item) =>
-            item.id === preparationId ? { ...item, ...updatedItem } : item,
+            item.id === preparationId
+              ? {
+                  ...item,
+                  ...updatedItem,
+                  isSealRequired: item.isSealRequired,
+                  isLockRequired: item.isLockRequired,
+                  isTrackConsumption: item.isTrackConsumption,
+                }
+              : item,
           ),
           isUpdating: false,
         }));
@@ -237,6 +249,24 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           isUpdating: false,
           error: err.message || "Failed to link prior preparation",
         });
+        return false;
+      }
+    },
+
+    deleteUserSignature: async (flightId, signatureId) => {
+      try {
+        await flightPreparationService.deleteUserSignature(
+          flightId,
+          signatureId,
+        );
+        set((state) => ({
+          userSignatures: state.userSignatures.filter(
+            (sig) => sig.id !== signatureId,
+          ),
+        }));
+        return true;
+      } catch (err: any) {
+        console.error("Delete Signature Error:", err);
         return false;
       }
     },

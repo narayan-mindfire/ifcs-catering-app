@@ -34,6 +34,7 @@ import ImageThinIcon from "./image-thin.svg";
 import InfoIcon from "./info.svg";
 import ListChecksIcon from "./listChecks.svg";
 import LockIcon from "./lock.svg";
+import LockActiveIcon from "./lockActive.svg";
 import LockInactiveIcon from "./locked.svg";
 import MemosIcon from "./memos.svg";
 import NoFlightsIcon from "./noflight.svg";
@@ -83,6 +84,7 @@ import UtensilIcon from "./utensil.svg";
 import VideoIcon from "./video.svg";
 import VideoThinIcon from "./video-thin.svg";
 import WashingMachineIcon from "./washing-machine.svg";
+
 export {
   ActionIcon,
   AddIcon,
@@ -125,6 +127,7 @@ export {
   ImageThinIcon,
   InfoIcon,
   ListChecksIcon,
+  LockActiveIcon,
   LockIcon,
   LockInactiveIcon,
   LockOpenIcon,

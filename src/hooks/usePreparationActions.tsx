@@ -168,10 +168,68 @@ export const usePreparationActions = ({
         return;
       }
 
-      log.info("[handleSealAction] Opening SEAL modal");
       modals.openSeal(item);
 
       log.info("[handleSealAction] END");
+    },
+    [selectedFlight, hasUserSignature, modals, updatePreparationFlag],
+  );
+
+  const handleLockAction = useCallback(
+    async (item: PreparationItem) => {
+      if (!selectedFlight?.id) return;
+
+      const isPrepared = !!item.isContentPrepared;
+      const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+      const isLocked = !!item.lockTagNumber && item.lockTagNumber !== "";
+      const isAssembled = item.assemblyProcessFlag === "true";
+
+      if (isLocked) {
+        if (isAssembled) {
+          modals.showValidationMessage(
+            "Cannot remove lock. Please disassemble first.",
+          );
+          return;
+        }
+
+        modals.openConfirm({
+          title: "Remove Lock",
+          message: "Are you sure you want to remove the lock from this item?",
+          actionType: "disable",
+          onConfirm: async () => {
+            modals.closeConfirm();
+            const success = await updatePreparationFlag(
+              selectedFlight.id,
+              item.id,
+              {
+                action: "lock",
+                lockTagNumber: null,
+              },
+            );
+            if (success) Alert.alert("Success", "Lock removed");
+          },
+        });
+        return;
+      }
+
+      if (!isPrepared) {
+        modals.showValidationMessage(
+          "Please complete preparation first before locking.",
+        );
+        return;
+      }
+
+      if (item.isSealRequired && !isSealed) {
+        modals.showValidationMessage("Please seal the item before locking.");
+        return;
+      }
+
+      if (!hasUserSignature) {
+        modals.openSignature(item);
+        return;
+      }
+
+      modals.openLock(item);
     },
     [selectedFlight, hasUserSignature, modals, updatePreparationFlag],
   );
@@ -209,9 +267,16 @@ export const usePreparationActions = ({
           },
         });
       } else {
-        if (!isSealed) {
+        if (item.isSealRequired && !isSealed) {
           modals.showValidationMessage(
             "Please complete sealing first before assembly.",
+          );
+          return;
+        }
+        const isLocked = !!item.lockTagNumber && item.lockTagNumber !== "";
+        if (item.isLockRequired && !isLocked) {
+          modals.showValidationMessage(
+            "Please complete locking first before assembly.",
           );
           return;
         }
@@ -279,6 +344,7 @@ export const usePreparationActions = ({
     handleOpenPdf,
     handlePreparedAction,
     handleSealAction,
+    handleLockAction,
     handleAssemblyAction,
     handleLoadAction,
     handleOpenDetailModal: modals.openDetailModal,

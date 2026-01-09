@@ -8,6 +8,7 @@ import {
   TabType,
 } from "../../components/deliveries/DeliveryTabs";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
+import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import {
   CrewCompliance,
@@ -254,9 +255,39 @@ const DeliveriesScreen: React.FC = () => {
     [flightId, selectedDeliveryId, addSignature, updateDelivery],
   );
 
+  const { deleteUserSignature } = useFlightPreparationStore();
+
   const handleDeletePreparer = useCallback(
-    (id: string) => {
+    async (id: string) => {
       if (!selectedDeliveryId || !flightId) return;
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          id,
+        );
+
+      if (isUuid) {
+        Alert.alert(
+          "Confirm Delete",
+          "Are you sure you want to delete this signature?",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Delete",
+              style: "destructive",
+              onPress: async () => {
+                const success = await deleteUserSignature(flightId, id);
+                if (success) {
+                  Alert.alert("Success", "Signature deleted successfully");
+                } else {
+                  Alert.alert("Error", "Failed to delete signature");
+                }
+              },
+            },
+          ],
+        );
+        return;
+      }
+
       Alert.alert(
         "Confirm Delete",
         "Are you sure you want to remove this preparer?",
@@ -295,7 +326,7 @@ const DeliveriesScreen: React.FC = () => {
         ],
       );
     },
-    [flightId, selectedDeliveryId, updateDelivery],
+    [flightId, selectedDeliveryId, updateDelivery, deleteUserSignature],
   );
 
   return (

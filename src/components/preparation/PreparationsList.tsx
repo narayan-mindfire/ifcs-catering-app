@@ -12,6 +12,7 @@ interface PreparationsListProps {
     handleOpenPdf: (item: PreparationItem) => void;
     handlePreparedAction: (item: PreparationItem) => void;
     handleSealAction: (item: PreparationItem) => void;
+    handleLockAction: (item: PreparationItem) => void;
     handleAssemblyAction: (item: PreparationItem) => void;
     handleLoadAction: (item: PreparationItem) => void;
     handleOpenDetailModal: (item: PreparationItem) => void;
@@ -32,6 +33,7 @@ export const PreparationsList: React.FC<PreparationsListProps> = ({
         onOpenPdf={actions.handleOpenPdf}
         onPreparedAction={actions.handlePreparedAction}
         onSealAction={actions.handleSealAction}
+        onLockAction={actions.handleLockAction}
         onAssemblyAction={actions.handleAssemblyAction}
         onLoadAction={actions.handleLoadAction}
         onOpenDetailModal={actions.handleOpenDetailModal}

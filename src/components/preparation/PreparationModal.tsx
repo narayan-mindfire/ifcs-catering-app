@@ -23,6 +23,11 @@ const SealNumberModal = lazy(() =>
     default: m.SealNumberModal,
   })),
 );
+const LockNumberModal = lazy(() =>
+  import("../preparation/LockNumberModal").then((m) => ({
+    default: m.LockNumberModal,
+  })),
+);
 const ValidationModal = lazy(() =>
   import("../preparation/ValidationModal").then((m) => ({
     default: m.ValidationModal,
@@ -34,8 +39,8 @@ interface PreparationsModalsProps {
   selectedFlight: any;
   onSaveSignature: (signature: string) => void;
   onSaveSealNumber: (sealNumber: number) => void;
+  onSaveLockNumber: (lockNumber: number) => void;
 
-  // ✅ Props for consumption flow logic
   isConsumptionMode?: boolean;
   consumptionFlightId?: string;
   onFinishConsumption?: () => void;
@@ -46,11 +51,11 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
   selectedFlight,
   onSaveSignature,
   onSaveSealNumber,
+  onSaveLockNumber,
   isConsumptionMode = false,
   consumptionFlightId,
-  onFinishConsumption, // ✅ Passed down
+  onFinishConsumption,
 }) => {
-  // Determine which flight ID to use
   const activeFlightId =
     isConsumptionMode && consumptionFlightId
       ? consumptionFlightId
@@ -81,6 +86,12 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
         isOpen={modals.sealModalVisible}
         onClose={modals.closeSeal}
         onSave={onSaveSealNumber}
+      />
+
+      <LockNumberModal
+        isOpen={modals.lockModalVisible}
+        onClose={modals.closeLock}
+        onSave={onSaveLockNumber}
       />
 
       <ConfirmationModal

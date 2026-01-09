@@ -163,6 +163,21 @@ export const PreparationsScreen: React.FC = () => {
     [modals, selectedFlight?.id, updatePreparationFlag],
   );
 
+  const handleSaveLockNumber = useCallback(
+    async (lockNumber: number) => {
+      modals.closeLock();
+      if (!modals.currentActionItem || !selectedFlight?.id) return;
+      const success = await updatePreparationFlag(
+        selectedFlight.id,
+        modals.currentActionItem.id,
+        { action: "lock", lockTagNumber: lockNumber },
+      );
+      if (success) Alert.alert("Success", `Lock applied: ${lockNumber}`);
+      modals.clearCurrentAction();
+    },
+    [modals, selectedFlight?.id, updatePreparationFlag],
+  );
+
   const findPreparationItem = useCallback(
     (flightPrepId: string) => {
       return preparations.find((prep) => prep.id === flightPrepId);
@@ -444,6 +459,7 @@ export const PreparationsScreen: React.FC = () => {
           selectedFlight={selectedFlight}
           onSaveSignature={handleSaveSignature}
           onSaveSealNumber={handleSaveSealNumber}
+          onSaveLockNumber={handleSaveLockNumber}
           // We use State here for UI reactivity, which updates fine on re-renders
           isConsumptionMode={!!pendingOldFlightData && !!pendingCurrentItem}
           consumptionFlightId={pendingOldFlightData?.flightId}

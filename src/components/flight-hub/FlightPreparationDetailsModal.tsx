@@ -26,6 +26,7 @@ import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
 import { SealNumberModal } from "../preparation/SealNumberModal";
 import { CartVisualizer } from "./CartVisulaizer";
 import { ContainerVisualizer } from "./ContainerVisualizer";
+import { OvenVisualizer } from "./OvenVisualizer";
 import { SignatureModal } from "./SharedComponents";
 import { StatusRow } from "./StatusRow";
 
@@ -223,7 +224,6 @@ export const FlightPreparationDetailsModal: React.FC<
   };
 
   const derivedEquipmentType = getDerivedEquipmentType();
-
   useEffect(() => {
     if (!preparationDetail) return;
 
@@ -616,6 +616,14 @@ export const FlightPreparationDetailsModal: React.FC<
                         />
                       ) : derivedEquipmentType === "Cart" ? (
                         <CartVisualizer
+                          cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                          numberOfDrawers={containers.length}
+                          drawers={containers}
+                          defaultOpenDrawer={activeDrawerIndex}
+                          onDrawerClick={handleDrawerClick}
+                        />
+                      ) : derivedEquipmentType === "Oven" ? (
+                        <OvenVisualizer
                           cabinetFrameImg={packingStd?.equipmentItem?.picture}
                           numberOfDrawers={containers.length}
                           drawers={containers}

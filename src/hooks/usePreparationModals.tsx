@@ -27,6 +27,7 @@ export const usePreparationModals = () => {
   );
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const [sealModalVisible, setSealModalVisible] = useState(false);
+  const [lockModalVisible, setLockModalVisible] = useState(false); // New state
   const [currentActionItem, setCurrentActionItem] =
     useState<PreparationItem | null>(null);
   const [signatureModalVisible, setSignatureModalVisible] = useState(false);
@@ -113,6 +114,18 @@ export const usePreparationModals = () => {
     setCurrentActionItem(null);
   }, []);
 
+  const openLock = useCallback((item?: PreparationItem) => {
+    if (item) {
+      setCurrentActionItem(item);
+    }
+    setLockModalVisible(true);
+  }, []);
+
+  const closeLock = useCallback(() => {
+    setLockModalVisible(false);
+    setCurrentActionItem(null);
+  }, []);
+
   const openConfirm = useCallback((data: ConfirmModalData) => {
     setConfirmModalData(data);
     setConfirmModalVisible(true);
@@ -132,6 +145,7 @@ export const usePreparationModals = () => {
     selectedItem,
     dropdownPos,
     sealModalVisible,
+    lockModalVisible, // New state
     currentActionItem,
     signatureModalVisible,
     confirmModalVisible,
@@ -150,6 +164,8 @@ export const usePreparationModals = () => {
     closeSignature,
     openSeal,
     closeSeal,
+    openLock, // New handler
+    closeLock, // New handler
     openConfirm,
     closeConfirm,
     clearCurrentAction,

@@ -23,6 +23,7 @@ export interface PreparationItem {
   availableWeight: number;
   quantity: number;
   sealTagNumber: string;
+  lockTagNumber: string;
 
   qrCodeUrl: string;
   dynamicLoadingQrCodeUrl: string;
@@ -50,9 +51,10 @@ export interface PreparationItem {
 }
 
 export interface PreparationFlagUpdatePayload {
-  action: "assembly" | "seal" | "load" | "prepared";
+  action: "assembly" | "seal" | "lock" | "load" | "prepared";
   assemblyProcessFlag?: boolean;
   sealTagNumber?: number | string | null;
+  lockTagNumber?: number | string | null;
   loadedTruckFlag?: boolean;
   isContentPrepared?: boolean;
 }

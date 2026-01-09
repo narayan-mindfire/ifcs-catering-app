@@ -9,6 +9,7 @@ import {
   DeliveryIcon,
   DeliveryIconTrue,
   InfoIcon,
+  LockActiveIcon,
   LockOpenIcon,
   QrIcon,
   StringIcon,
@@ -22,6 +23,7 @@ interface PreparationListItemProps {
   onOpenPdf: (item: PreparationItem) => void;
   onPreparedAction: (item: PreparationItem) => void;
   onSealAction: (item: PreparationItem) => void;
+  onLockAction: (item: PreparationItem) => void;
   onAssemblyAction: (item: PreparationItem) => void;
   onLoadAction: (item: PreparationItem) => void;
   onOpenDetailModal: (item: PreparationItem) => void;
@@ -36,25 +38,27 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
       onOpenPdf,
       onPreparedAction,
       onSealAction,
+      onLockAction,
       onAssemblyAction,
       onLoadAction,
       onOpenDetailModal,
     }) => {
       const isPrepared = !!item.isContentPrepared;
       const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
+      const isLocked = !!item.lockTagNumber && item.lockTagNumber !== "";
       const isAssembled = item.assemblyProcessFlag === "true";
       const isLoaded = item.loadedTruckFlag === "true";
 
-      const isLockActive = item.isLockRequired && isAssembled;
-      const isSealActive = item.isSealRequired && isAssembled;
-      const { PreparedIcon, SealIcon, AssemblyIcon, LoadIcon } = useMemo(() => {
-        return {
-          PreparedIcon: isPrepared ? BoxIconTrue : BoxIcon,
-          SealIcon: isSealed ? StringIconTrue : StringIcon,
-          AssemblyIcon: isAssembled ? CheckIconTrue : CheckIcon,
-          LoadIcon: isLoaded ? DeliveryIconTrue : DeliveryIcon,
-        };
-      }, [isPrepared, isSealed, isAssembled, isLoaded]);
+      const { PreparedIcon, SealIcon, LockIcon, AssemblyIcon, LoadIcon } =
+        useMemo(() => {
+          return {
+            PreparedIcon: isPrepared ? BoxIconTrue : BoxIcon,
+            SealIcon: isSealed ? StringIconTrue : StringIcon,
+            LockIcon: isLocked ? LockActiveIcon : LockOpenIcon,
+            AssemblyIcon: isAssembled ? CheckIconTrue : CheckIcon,
+            LoadIcon: isLoaded ? DeliveryIconTrue : DeliveryIcon,
+          };
+        }, [isPrepared, isSealed, isAssembled, isLoaded, isLocked]);
 
       return (
         <View className="flex-row items-center px-4 py-2 border-b border-bg-tertiary bg-bg-surface">
@@ -80,18 +84,15 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               <PreparedIcon height={30} width={30} />
             </TouchableOpacity>
 
-            {/* Seal Action */}
             <TouchableOpacity
               onPress={() => onSealAction(item)}
-              // Disabled if updating OR if seal is not required
               disabled={isUpdating || !item.isSealRequired}
             >
               <View style={{ position: "relative" }}>
                 <SealIcon
                   height={30}
                   width={30}
-                  color={isSealActive ? "#008000" : "#9CA3AF"}
-                  style={{ opacity: isSealActive ? 1 : 0.6 }}
+                  color={isSealed ? "#008000" : "#9CA3AF"}
                 />
                 {!item.isSealRequired && (
                   <View
@@ -109,18 +110,15 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               </View>
             </TouchableOpacity>
 
-            {/* Lock Action (Currently display only) */}
             <TouchableOpacity
-              disabled={true}
-              // If you ever attach an onPress, remember to use:
-              // disabled={true || !item.isLockRequired}
+              onPress={() => onLockAction(item)}
+              disabled={isUpdating && item.isLockRequired}
             >
               <View style={{ position: "relative" }}>
-                <LockOpenIcon
+                <LockIcon
                   height={30}
                   width={30}
-                  color={isLockActive ? "#008000" : "#9CA3AF"}
-                  style={{ opacity: isLockActive ? 1 : 0.6 }}
+                  color={isLocked ? "#008000" : "#9CA3AF"}
                 />
                 {!item.isLockRequired && (
                   <View
