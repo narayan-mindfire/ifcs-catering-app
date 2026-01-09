@@ -4,11 +4,7 @@ import { Text, View } from "react-native";
 export const FlightListHeader: React.FC = () => {
   return (
     <View className="bg-bg-quaternary border-b border-border-secondary">
-      {/* Row 1: Group Header 
-        Added w-[30px] spacer at the start to offset the Dropdown column 
-      */}
       <View className="flex-row items-stretch bg-bg-tertiary border-b border-border-muted px-2.5">
-        {/* SPACER for Dropdown Column */}
         <View className="w-[30px]" />
 
         <View className="flex-[57]">
@@ -27,7 +23,6 @@ export const FlightListHeader: React.FC = () => {
           </View>
         </View>
 
-        {/* PAX Group: flex 5 */}
         <View className="flex-[5]">
           <View className="flex-row justify-center items-center py-2.5">
             <Text className="text-base font-semibold text-text-primary pr-[22px]">
@@ -36,7 +31,6 @@ export const FlightListHeader: React.FC = () => {
           </View>
         </View>
 
-        {/* Spot Group: flex 4 */}
         <View className="flex-[4]">
           <View className="flex-row justify-center items-center py-2.5">
             <Text className="text-base font-semibold text-text-primary">
@@ -46,14 +40,9 @@ export const FlightListHeader: React.FC = () => {
         </View>
       </View>
 
-      {/* Row 2: Column Header 
-        Added w-[30px] spacer at the start to offset the Dropdown column 
-      */}
       <View className="flex-row items-stretch bg-border-secondary px-2.5">
-        {/* SPACER for Dropdown Column */}
         <View className="w-[30px]" />
 
-        {/* Flight columns */}
         <View className="flex-[6] px-1">
           <View className="justify-center py-3">
             <Text className="text-sm font-medium text-black">Airline</Text>
@@ -95,7 +84,6 @@ export const FlightListHeader: React.FC = () => {
           </View>
         </View>
 
-        {/* Aircraft columns */}
         <View className="flex-[10] px-1 border-r border-black mr-1">
           <View className="justify-center py-3">
             <Text className="text-sm font-medium text-black text-center">

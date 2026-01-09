@@ -50,7 +50,7 @@ interface FlightPreparationState {
   checkUserSignature: (
     flightId: string,
     deliveryId: string,
-    userId: string,
+    userId?: string,
   ) => Promise<boolean>;
   addUserSignature: (
     flightId: string,
@@ -174,13 +174,13 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     checkUserSignature: async (
       flightId: string,
       deliveryId: string,
-      userId: string,
+      userId?: string,
     ): Promise<boolean> => {
       try {
-        const signatures = await flightPreparationService.getUserSignatures(
-          flightId,
-          userId,
-        );
+        const signatures = userId
+          ? await flightPreparationService.getUserSignatures(flightId, userId)
+          : await flightPreparationService.getUserSignatures(flightId);
+
         set({ userSignatures: signatures });
         return signatures.length > 0;
       } catch (err: any) {

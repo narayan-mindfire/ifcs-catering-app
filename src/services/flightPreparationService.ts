@@ -74,12 +74,12 @@ export const flightPreparationService = {
 
   getUserSignatures: async (
     flightId: string,
-    userId: string,
+    userId?: string,
   ): Promise<any[]> => {
     const response = await apiClient.get<any>(
       `/flights/${flightId}/users/signatures`,
       {
-        params: { userId },
+        params: userId ? { userId } : undefined,
       },
     );
 
@@ -88,6 +88,7 @@ export const flightPreparationService = {
         ? response.data.data
         : [response.data.data];
     }
+
     return [];
   },
 
