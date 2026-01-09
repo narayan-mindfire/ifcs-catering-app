@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ifcscatering.app",
+      "bundleIdentifier": "com.ifcs-catering.app",
       "newArchEnabled": true,
       "infoPlist": {
         "NSAppTransportSecurity": {
