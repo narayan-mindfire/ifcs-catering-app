@@ -17,6 +17,7 @@ interface ViewerHeaderProps {
   isDownloading: boolean;
   fileUrl?: string;
   children?: React.ReactNode;
+  showPrint?: boolean;
 }
 
 export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
@@ -25,6 +26,7 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
   isDownloading,
   fileUrl,
   children,
+  showPrint = true,
 }) => {
   const handlePrint = async () => {
     try {
@@ -40,8 +42,16 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
       } else {
         window.print();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Print error:", error);
+      // Suppress error alert if it's likely a user cancellation or benign issue
+      if (
+        error?.message?.toLowerCase().includes("cancel") ||
+        error?.message?.toLowerCase().includes("dismiss") ||
+        error?.message?.toLowerCase().includes("printing did not complete")
+      ) {
+        return;
+      }
       Alert.alert("Print Error", "Failed to print the document");
     }
   };
@@ -72,9 +82,11 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
             <DownloadIcon color="#4F4B58" />
           )}
         </TouchableOpacity>
-        <TouchableOpacity className="p-2" onPress={handlePrint}>
-          <PrintIcon color="#4F4B58" />
-        </TouchableOpacity>
+        {showPrint && (
+          <TouchableOpacity className="p-2" onPress={handlePrint}>
+            <PrintIcon color="#4F4B58" />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
