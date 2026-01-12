@@ -112,7 +112,7 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
 
             <TouchableOpacity
               onPress={() => onLockAction(item)}
-              disabled={isUpdating && item.isLockRequired}
+              disabled={isUpdating && !item.isLockRequired}
             >
               <View style={{ position: "relative" }}>
                 <LockIcon

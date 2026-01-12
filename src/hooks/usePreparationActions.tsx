@@ -102,6 +102,12 @@ export const usePreparationActions = ({
         hasUserSignature,
       });
 
+      if (!item.isSealRequired && !isSealed) {
+        log.info("[handleSealAction] BLOCKED → Sealing not required");
+        Alert.alert("Info", "Sealing is not required for this item.");
+        return;
+      }
+
       if (isSealed) {
         log.info("[handleSealAction] BRANCH → item is SEALED");
 
@@ -183,6 +189,11 @@ export const usePreparationActions = ({
       const isSealed = !!item.sealTagNumber && item.sealTagNumber !== "";
       const isLocked = !!item.lockTagNumber && item.lockTagNumber !== "";
       const isAssembled = item.assemblyProcessFlag === "true";
+
+      if (!item.isLockRequired && !isLocked) {
+        Alert.alert("Info", "Locking is not required for this item.");
+        return;
+      }
 
       if (isLocked) {
         if (isAssembled) {

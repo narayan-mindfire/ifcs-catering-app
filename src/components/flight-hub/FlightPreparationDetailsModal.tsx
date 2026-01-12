@@ -362,6 +362,8 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSealAction = async () => {
     if (!flightId || !preparationDetail) return;
 
+    if (!sealRequired && !isSealed) return;
+
     if (isSealed) {
       if (isLocked) {
         setValidationMsg("Cannot remove seal. Please unlock first.");
@@ -402,6 +404,8 @@ export const FlightPreparationDetailsModal: React.FC<
 
   const handleLockedAction = async () => {
     if (!flightId || !preparationDetail) return;
+
+    if (!lockRequired && !isLocked) return;
 
     if (isLocked) {
       setConfirmModalData({

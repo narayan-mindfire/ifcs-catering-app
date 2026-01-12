@@ -243,6 +243,8 @@ export const PreparationsScreen: React.FC = () => {
         return "Scan item to mark as prepared";
       case "seal":
         return "Scan item to verify seal";
+      case "lock":
+        return "Scan item to verify lock";
       case "assemble":
         return "Scan item to mark as assembled";
       case "load":
@@ -255,7 +257,13 @@ export const PreparationsScreen: React.FC = () => {
   // Step 1: Initial Scan
   const handleScanAction = useCallback(
     async (
-      actionType: "prep" | "seal" | "assemble" | "load" | "consumption",
+      actionType:
+        | "prep"
+        | "seal"
+        | "lock"
+        | "assemble"
+        | "load"
+        | "consumption",
       scannedData: ParsedQRData,
     ) => {
       log.info("Scan 1 Received:", actionType, scannedData);
@@ -331,6 +339,9 @@ export const PreparationsScreen: React.FC = () => {
       switch (actionType) {
         case "seal":
           await actions.handleSealAction(item);
+          break;
+        case "lock":
+          await actions.handleLockAction(item);
           break;
         case "assemble":
           await actions.handleAssemblyAction(item);
