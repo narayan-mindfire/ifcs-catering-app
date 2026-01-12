@@ -10,6 +10,7 @@ import {
 
 import { RedirectDarkIcon } from "../../assets/icons";
 import { useTimerStore } from "../../store/useTimerStore";
+import { formatTodayDate } from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
 
 const mockTasks = [
@@ -173,7 +174,7 @@ const ShiftControlCard: React.FC = () => {
       <View className="bg-bg-surface rounded-2xl p-5 shadow-sm">
         <View className="flex-row justify-between items-center mb-5">
           <Text className="text-[22px] font-medium text-text-primary">
-            Thu 11 13, Thu
+            {formatTodayDate()}
           </Text>
           {/* <Switch
             trackColor={{ false: "#767577", true: "#b399f9ff" }}

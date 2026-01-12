@@ -3,10 +3,13 @@ import "./global.css";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import React from "react";
-import { ActivityIndicator } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
+import React, { useCallback } from "react";
+import { View } from "react-native";
 
 import { AppNavigator } from "./src/navigation/AppNavigator";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -14,13 +17,21 @@ export default function App() {
     roboto: require("./assets/fonts/Roboto.ttf"),
   });
 
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
   if (!fontsLoaded) {
-    return <ActivityIndicator />;
+    return null;
   }
 
   return (
-    <NavigationContainer>
-      <AppNavigator />
-    </NavigationContainer>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </View>
   );
 }

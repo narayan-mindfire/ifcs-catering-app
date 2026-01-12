@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -24,7 +24,8 @@
         "NSPhotoLibraryAddUsageDescription": "Allow IFCS to save downloaded files to your photo library.",
         "NSCameraUsageDescription": "We need camera access to scan flight QR codes.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "95UM4848X5"
     },
     "android": {
       "adaptiveIcon": {

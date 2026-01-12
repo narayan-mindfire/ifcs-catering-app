@@ -10,7 +10,7 @@ const getTodayDateString = () => new Date().toISOString().split("T")[0];
 const INITIAL_FILTERS: FlightFilters = {
   page: 1,
   limit: 50,
-  sortBy: "groundPairing", // As requested
+  sortBy: "scheduledDeparture",
   order: "asc",
   startDate: getTodayDateString(),
   endDate: getTodayDateString(),

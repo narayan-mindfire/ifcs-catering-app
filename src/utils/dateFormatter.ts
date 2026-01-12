@@ -68,3 +68,19 @@ export const formatDateToLocalISO = (date: Date): string => {
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+
+export const formatTodayDate = () => {
+  const date = new Date();
+
+  const dayName = date.toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+
+  const dayNumber = date.getDate();
+
+  const monthName = date.toLocaleDateString("en-US", {
+    month: "short",
+  });
+
+  return `${dayName}, ${dayNumber} ${monthName}`;
+};
