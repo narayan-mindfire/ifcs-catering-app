@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   Modal,
   ScrollView,
-  Switch,
+  // Switch,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
+import { RedirectDarkIcon } from "../../assets/icons";
+import { useTimerStore } from "../../store/useTimerStore";
 import { AppButton } from "../common/AppButton";
 
 const mockTasks = [
@@ -72,14 +74,12 @@ const EndShiftModal: React.FC<{
               End Shift?
             </Text>
 
-            {/* --- FIXED BUTTON SECTION --- */}
             <TouchableOpacity onPress={onClose} className="p-1">
               <View className="w-6 h-6 relative justify-center items-center">
                 <View className="w-6 h-0.5 bg-text-secondary absolute rotate-45" />
                 <View className="w-6 h-0.5 bg-text-secondary absolute -rotate-45" />
               </View>
             </TouchableOpacity>
-            {/* ---------------------------- */}
           </View>
 
           <Text className="text-lg text-text-secondary mb-3">
@@ -116,28 +116,39 @@ const EndShiftModal: React.FC<{
 };
 
 const ShiftControlCard: React.FC = () => {
-  type ShiftState = "OFF" | "ON" | "BREAK";
-  const [shiftState, setShiftState] = useState<ShiftState>("OFF");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [currentSessionTime, setCurrentSessionTime] = useState(0);
-  const [totalWorkingTimeToday, setTotalWorkingTimeToday] = useState(0);
-  const [isEnabled, setIsEnabled] = React.useState(false);
-  const [showEndShiftModal, setShowEndShiftModal] = useState(false);
-  const toggleSwitch = () => setIsEnabled((prev) => !prev);
+  const {
+    shiftState,
+    totalWorkingTimeToday,
+    currentSessionDuration,
+    startShift,
+    pauseShift,
+    resumeShift,
+    endShift,
+    syncTime,
+  } = useTimerStore();
 
+  // const [isEnabled, setIsEnabled] = React.useState(false);
+  const [showEndShiftModal, setShowEndShiftModal] = useState(false);
+  // const toggleSwitch = () => setIsEnabled((prev) => !prev);
+
+  // Sync timer every second if shift is ON
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
     if (shiftState === "ON") {
-      const intervalId = setInterval(() => {
-        setCurrentSessionTime((prev) => prev + 1);
-        setTotalWorkingTimeToday((prev) => prev + 1);
+      syncTime(); // Immediate sync on mount/resume
+      intervalId = setInterval(() => {
+        syncTime();
       }, 1000);
-      return () => clearInterval(intervalId);
     }
-  }, [shiftState]);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [shiftState, syncTime]);
+
+  const displayTime = totalWorkingTimeToday + currentSessionDuration;
 
   const handleStartShift = () => {
-    setCurrentSessionTime(0);
-    setShiftState("ON");
+    startShift();
   };
 
   const handleEndShiftClick = () => {
@@ -145,13 +156,16 @@ const ShiftControlCard: React.FC = () => {
   };
 
   const handleEndShiftConfirm = () => {
-    setCurrentSessionTime(0);
-    setShiftState("OFF");
+    endShift();
     setShowEndShiftModal(false);
   };
 
   const handleBreakToggle = () => {
-    setShiftState((prev) => (prev === "ON" ? "BREAK" : "ON"));
+    if (shiftState === "ON") {
+      pauseShift();
+    } else {
+      resumeShift();
+    }
   };
 
   return (
@@ -161,12 +175,12 @@ const ShiftControlCard: React.FC = () => {
           <Text className="text-[22px] font-medium text-text-primary">
             Thu 11 13, Thu
           </Text>
-          <Switch
+          {/* <Switch
             trackColor={{ false: "#767577", true: "#b399f9ff" }}
             thumbColor={isEnabled ? "#602AF3" : "#f4f3f4"}
             onValueChange={toggleSwitch}
             value={isEnabled}
-          />
+          /> */}
         </View>
 
         <View className="flex-row mb-5">
@@ -182,7 +196,7 @@ const ShiftControlCard: React.FC = () => {
               Today&apos;s Working Time
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {formatTime(totalWorkingTimeToday)}
+              {formatTime(displayTime)}
             </Text>
           </View>
         </View>
@@ -239,7 +253,6 @@ const TasksCard: React.FC = () => {
     <View className="flex-1 mt-5 bg-bg-surface rounded-2xl p-5 shadow-sm">
       <Text className="text-xl font-bold mb-4 text-text-primary">My Tasks</Text>
 
-      {/* Header */}
       <View className="flex-row bg-bg-tertiary py-4 px-3.5 rounded-[10px] mb-1.5">
         <Text className="flex-1 text-lg font-bold text-text-secondary">ID</Text>
         <Text className="flex-[3] text-lg font-bold text-text-secondary">
@@ -278,10 +291,8 @@ const TasksCard: React.FC = () => {
             <Text className="flex-[2] text-lg text-text-primary">
               {task.status}
             </Text>
-            <TouchableOpacity className="flex-[2] items-end">
-              <Text className="text-xl font-bold text-text-secondary px-2">
-                ...
-              </Text>
+            <TouchableOpacity className="flex-[2] items-end pe-10">
+              <RedirectDarkIcon />
             </TouchableOpacity>
           </View>
         ))}
