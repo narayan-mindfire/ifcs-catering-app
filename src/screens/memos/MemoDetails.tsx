@@ -274,7 +274,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         ]}
       />
       <View className="flex-1 flex-row bg-white">
-        {/* LEFT SIDEBAR - Only show if not portrait */}
         {!isPortrait && hasVersions && (
           <View className="w-72 bg-gray-50 border-r border-gray-200 p-4">
             <View className="mb-4">
@@ -286,11 +285,9 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         )}
 
-        {/* MAIN CONTENT - Always visible, takes full width in portrait */}
         <View className="flex-1">
           <ScrollView className="flex-1">
             <View className="p-8">
-              {/* PORTRAIT CONTROLS */}
               {isPortrait && (
                 <View className="flex-row gap-3 mb-6">
                   {hasVersions && (
@@ -314,7 +311,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               )}
 
-              {/* Memo Header */}
               <View className="flex-row items-center justify-between mb-4">
                 <View className="flex-row items-center gap-2">
                   {activeMemo.version && (
@@ -350,7 +346,21 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 </Text>
               </View>
 
-              {/* Message Body */}
+              {activeMemo.memoHeaders && activeMemo.memoHeaders.length > 0 && (
+                <View className="mb-6 gap-2">
+                  {activeMemo.memoHeaders.map((header, index) => (
+                    <View
+                      key={index}
+                      className="border border-bg-button p-3 rounded-lg"
+                    >
+                      <Text className="text-bg-button bg-bg-accent font-medium text-base">
+                        {header}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
               <View className="mb-8">
                 <Text className="text-lg font-semibold text-gray-900 mb-4">
                   Message

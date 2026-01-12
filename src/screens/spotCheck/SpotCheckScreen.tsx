@@ -42,6 +42,18 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const uniqueSpotCheckLogs = useMemo(() => {
+    const map = new Map<string, any>();
+
+    spotCheckLogs.forEach((item) => {
+      if (!map.has(item.id)) {
+        map.set(item.id, item);
+      }
+    });
+
+    return Array.from(map.values());
+  }, [spotCheckLogs]);
+
   // Initial fetch
   useEffect(() => {
     fetchSpotCheckLogs(userId);
@@ -109,9 +121,10 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
     [navigation, flightId],
   );
 
-  const handleScanPress = useCallback(() => {
-    navigation.navigate("QRCodeScanner");
-  }, [navigation]);
+  const handleScanPress = useCallback(
+    () => navigation.navigate("QRCodeScanner", { continuous: false }),
+    [navigation],
+  );
 
   const renderHeader = useCallback(
     () => (
@@ -165,7 +178,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
           </View>
         ) : (
           <FlatList
-            data={spotCheckLogs}
+            data={uniqueSpotCheckLogs}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             ListHeaderComponent={renderHeader}

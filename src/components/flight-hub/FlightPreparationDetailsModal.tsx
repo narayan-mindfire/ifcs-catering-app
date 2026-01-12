@@ -23,6 +23,7 @@ import {
 } from "../../types/preparations";
 import { ConfirmationModal } from "../common/ConfirmationModal";
 import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
+import { LockNumberModal } from "../preparation/LockNumberModal";
 import { SealNumberModal } from "../preparation/SealNumberModal";
 import { CartVisualizer } from "./CartVisulaizer";
 import { ContainerVisualizer } from "./ContainerVisualizer";
@@ -92,6 +93,7 @@ export const FlightPreparationDetailsModal: React.FC<
   onFinishConsumption,
 }) => {
   const {
+    preparations,
     preparationDetail,
     fetchPreparationById,
     isPrepLoading,
@@ -123,8 +125,8 @@ export const FlightPreparationDetailsModal: React.FC<
     string | null | undefined
   >("");
 
-  // Modals State
   const [sealModalVisible, setSealModalVisible] = useState(false);
+  const [lockModalVisible, setLockModalVisible] = useState(false);
   const [signatureModalVisible, setSignatureModalVisible] = useState(false);
   const [hasUserSignature, setHasUserSignature] = useState(false);
 
@@ -151,6 +153,7 @@ export const FlightPreparationDetailsModal: React.FC<
   const [isPrepared, setIsPrepared] = useState(initialIsPrepared);
   const [isSealed, setIsSealed] = useState(initialIsSealed);
   const [isLocked, setIsLocked] = useState(initialIsLocked);
+  const preparation = preparations.find((p) => p.id === preparationId);
   const [selectedConsumptionRecord, setSelectedConsumptionRecord] =
     useState<ConsumptionTrackingRecord | null>(null);
 
@@ -188,17 +191,16 @@ export const FlightPreparationDetailsModal: React.FC<
   }, [deliveries, flightId, selectedDeliveryId, visible]);
 
   useEffect(() => {
-    if (preparationDetail) {
+    if (preparation) {
       setIsSealed(
-        !!preparationDetail.sealTagNumber &&
-          preparationDetail.sealTagNumber !== "",
+        !!preparation.sealTagNumber && preparation.sealTagNumber !== "",
       );
       setIsLocked(
-        preparationDetail.assemblyProcessFlag === "inprogress" ||
-          preparationDetail.assemblyProcessFlag === "completed",
+        !!preparation.lockTagNumber && preparation.lockTagNumber !== "",
       );
+      setIsPrepared(preparation.isContentPrepared);
     }
-  }, [preparationDetail]);
+  }, [preparation]);
 
   const getDerivedEquipmentType = () => {
     if (!preparationDetail) return "";
@@ -403,38 +405,44 @@ export const FlightPreparationDetailsModal: React.FC<
 
     if (isLocked) {
       setConfirmModalData({
-        title: "Disable Assembly",
-        message: "Are you sure you want to mark this as not assembled?",
+        title: "Unlock",
+        message: "Are you sure you want to unlock this item?",
         actionType: "disable",
         onConfirm: async () => {
           setConfirmModalVisible(false);
           const success = await updatePreparationFlag(
             flightId,
             preparationDetail.id,
-            { action: "assembly", assemblyProcessFlag: false },
+            { action: "lock", lockTagNumber: null },
           );
           if (success) {
             setIsLocked(false);
-            Alert.alert("Success", "Assembly status updated");
+            Alert.alert("Success", "Unlocked successfully");
           }
         },
       });
       setConfirmModalVisible(true);
     } else {
       if (!isSealed) {
-        setValidationMsg("Please complete sealing first before assembly.");
+        setValidationMsg("Please complete sealing first before locking.");
         setShowValidation(true);
         return;
       }
-      const success = await updatePreparationFlag(
-        flightId,
-        preparationDetail.id,
-        { action: "assembly", assemblyProcessFlag: true },
-      );
-      if (success) {
-        setIsLocked(true);
-        Alert.alert("Success", "Marked as assembled");
-      }
+      setLockModalVisible(true);
+    }
+  };
+
+  const handleSaveLockNumber = async (lockNumber: number) => {
+    setLockModalVisible(false);
+    if (!flightId || !preparationDetail) return;
+    const success = await updatePreparationFlag(
+      flightId,
+      preparationDetail.id,
+      { action: "lock", lockTagNumber: lockNumber },
+    );
+    if (success) {
+      setIsLocked(true);
+      Alert.alert("Success", `Locked with tag number: ${lockNumber}`);
     }
   };
 
@@ -668,13 +676,13 @@ export const FlightPreparationDetailsModal: React.FC<
                     <ScrollView>
                       {selectedDrawerContents.length > 0 ? (
                         selectedDrawerContents.map((item, index) => {
-                          const isTrackable =
+                          let isTrackable =
                             preparationDetail?.isTrackConsumption ?? false;
                           const isTracked = consumptionRecords.some(
                             (r) =>
                               r.flightPrepPackingStandardItemId === item.id,
                           );
-
+                          isTrackable = !isTrackable;
                           let rowStyle =
                             "bg-bg-surface border-b border-border-muted";
 
@@ -752,9 +760,7 @@ export const FlightPreparationDetailsModal: React.FC<
                   onPress={onFinishConsumption}
                   className="bg-green-600 py-3 px-8 rounded-xl"
                 >
-                  <Text className="text-white font-semibold">
-                    Finish & Link
-                  </Text>
+                  <Text className="text-white font-semibold">Finish</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
@@ -790,6 +796,11 @@ export const FlightPreparationDetailsModal: React.FC<
             isOpen={sealModalVisible}
             onClose={() => setSealModalVisible(false)}
             onSave={handleSaveSealNumber}
+          />
+          <LockNumberModal
+            isOpen={lockModalVisible}
+            onClose={() => setLockModalVisible(false)}
+            onSave={handleSaveLockNumber}
           />
           <SignatureModal
             isOpen={signatureModalVisible}

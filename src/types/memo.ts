@@ -45,6 +45,7 @@ export interface Memo {
   priority: number; // 1, 2, 3
   status: MemoStatus;
   flightId: string | null;
+  memoHeaders?: string[];
   createdByUserId: string;
   createdAt: string;
   updatedAt: string;

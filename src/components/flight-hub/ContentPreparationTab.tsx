@@ -101,7 +101,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
                 {item.userType}
               </Text>
               <Text className="flex-1 text-text-primary text-lg">
-                {item.raic || "-"}
+                {item.userBadgeNumber || "-"}
               </Text>
 
               <View className="flex-[2]">

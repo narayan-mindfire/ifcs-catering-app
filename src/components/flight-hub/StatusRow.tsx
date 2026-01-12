@@ -1,7 +1,7 @@
 import React from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-import { CheckIcon, LockIcon, StringIcon } from "../../assets/icons";
+import { BoxIcon, LockIcon, StringIcon } from "../../assets/icons";
 
 interface StatusRowProps {
   isLocked: boolean;
@@ -28,6 +28,13 @@ export const StatusRow: React.FC<StatusRowProps> = ({
 }) => {
   const statuses = [
     {
+      label: "Prepared",
+      icon: BoxIcon,
+      isActive: isPrepared,
+      onPress: onPreparedPress,
+      disabled: isUpdating,
+    },
+    {
       label: "Sealed",
       icon: StringIcon,
       isActive: isSealed,
@@ -40,13 +47,6 @@ export const StatusRow: React.FC<StatusRowProps> = ({
       isActive: isLocked,
       onPress: onLockedPress,
       disabled: !lockRequired || isUpdating,
-    },
-    {
-      label: "Prepared",
-      icon: CheckIcon,
-      isActive: isPrepared,
-      onPress: onPreparedPress,
-      disabled: isUpdating,
     },
   ];
 

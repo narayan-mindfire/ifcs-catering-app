@@ -261,6 +261,7 @@ export interface PreparationDetailData {
   priority: number | null;
   equipment: string;
   sealTagNumber: string | null;
+  lockTagNumber: string | null;
   assemblyProcessFlag: string | null;
   loadedTruckFlag: string | null;
   labelUrl: string | null;
@@ -269,6 +270,7 @@ export interface PreparationDetailData {
   aircraftConfigGalleyPosition: AircraftConfigGalleyPosition;
   packingStandard: PackingStandard;
   isTrackConsumption: boolean;
+  isContentPrepared: boolean;
 }
 
 export interface PreparationDetailResponse {
