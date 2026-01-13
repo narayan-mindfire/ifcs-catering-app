@@ -65,7 +65,9 @@
           "savePhotosPermission": "Allow IFCS to save photos.",
           "isAccessMediaLocationEnabled": true
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-video"
     ],
     "extra": {
       "eas": {
