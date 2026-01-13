@@ -51,27 +51,18 @@ export const usePreparationActions = ({
           actionType: "disable",
           onConfirm: async () => {
             modals.closeConfirm();
-            const success = await updatePreparationFlag(
-              selectedFlight.id,
-              item.id,
-              {
-                action: "prepared",
-                isContentPrepared: false,
-              },
-            );
-            if (success) Alert.alert("Success", "Preparation status updated");
+            await updatePreparationFlag(selectedFlight.id, item.id, {
+              action: "prepared",
+              isContentPrepared: false,
+            });
           },
         });
       } else {
-        const success = await updatePreparationFlag(
-          selectedFlight.id,
-          item.id,
-          {
-            action: "prepared",
-            isContentPrepared: true,
-          },
-        );
-        if (success) Alert.alert("Success", "Marked as prepared");
+        await updatePreparationFlag(selectedFlight.id, item.id, {
+          action: "prepared",
+          isContentPrepared: true,
+        });
+        // if (success) Alert.alert("Success", "Marked as prepared");
       }
     },
     [selectedFlight?.id, updatePreparationFlag, modals],
@@ -148,7 +139,7 @@ export const usePreparationActions = ({
 
             if (success) {
               log.info("[handleSealAction] Seal removed successfully");
-              Alert.alert("Success", "Seal removed");
+              // Alert.alert("Success", "Seal removed");
             } else {
               console.warn("[handleSealAction] Failed to remove seal");
             }
@@ -209,15 +200,10 @@ export const usePreparationActions = ({
           actionType: "disable",
           onConfirm: async () => {
             modals.closeConfirm();
-            const success = await updatePreparationFlag(
-              selectedFlight.id,
-              item.id,
-              {
-                action: "lock",
-                lockTagNumber: null,
-              },
-            );
-            if (success) Alert.alert("Success", "Lock removed");
+            await updatePreparationFlag(selectedFlight.id, item.id, {
+              action: "lock",
+              lockTagNumber: null,
+            });
           },
         });
         return;
@@ -266,15 +252,10 @@ export const usePreparationActions = ({
           actionType: "disable",
           onConfirm: async () => {
             modals.closeConfirm();
-            const success = await updatePreparationFlag(
-              selectedFlight.id,
-              item.id,
-              {
-                action: "assembly",
-                assemblyProcessFlag: false,
-              },
-            );
-            if (success) Alert.alert("Success", "Assembly status updated");
+            await updatePreparationFlag(selectedFlight.id, item.id, {
+              action: "assembly",
+              assemblyProcessFlag: false,
+            });
           },
         });
       } else {
@@ -291,15 +272,10 @@ export const usePreparationActions = ({
           );
           return;
         }
-        const success = await updatePreparationFlag(
-          selectedFlight.id,
-          item.id,
-          {
-            action: "assembly",
-            assemblyProcessFlag: true,
-          },
-        );
-        if (success) Alert.alert("Success", "Marked as assembled");
+        await updatePreparationFlag(selectedFlight.id, item.id, {
+          action: "assembly",
+          assemblyProcessFlag: true,
+        });
       }
     },
     [selectedFlight?.id, updatePreparationFlag, modals],
@@ -319,15 +295,10 @@ export const usePreparationActions = ({
           actionType: "disable",
           onConfirm: async () => {
             modals.closeConfirm();
-            const success = await updatePreparationFlag(
-              selectedFlight.id,
-              item.id,
-              {
-                action: "load",
-                loadedTruckFlag: false,
-              },
-            );
-            if (success) Alert.alert("Success", "Load status updated");
+            await updatePreparationFlag(selectedFlight.id, item.id, {
+              action: "load",
+              loadedTruckFlag: false,
+            });
           },
         });
       } else {
@@ -337,15 +308,10 @@ export const usePreparationActions = ({
           );
           return;
         }
-        const success = await updatePreparationFlag(
-          selectedFlight.id,
-          item.id,
-          {
-            action: "load",
-            loadedTruckFlag: true,
-          },
-        );
-        if (success) Alert.alert("Success", "Marked as loaded");
+        await updatePreparationFlag(selectedFlight.id, item.id, {
+          action: "load",
+          loadedTruckFlag: true,
+        });
       }
     },
     [selectedFlight?.id, updatePreparationFlag, modals],

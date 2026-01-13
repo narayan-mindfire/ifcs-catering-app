@@ -152,12 +152,11 @@ export const PreparationsScreen: React.FC = () => {
     async (sealNumber: number) => {
       modals.closeSeal();
       if (!modals.currentActionItem || !selectedFlight?.id) return;
-      const success = await updatePreparationFlag(
+      await updatePreparationFlag(
         selectedFlight.id,
         modals.currentActionItem.id,
         { action: "seal", sealTagNumber: sealNumber },
       );
-      if (success) Alert.alert("Success", `Seal applied: ${sealNumber}`);
       modals.clearCurrentAction();
     },
     [modals, selectedFlight?.id, updatePreparationFlag],

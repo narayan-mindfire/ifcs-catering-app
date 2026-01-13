@@ -334,28 +334,18 @@ export const FlightPreparationDetailsModal: React.FC<
         actionType: "disable",
         onConfirm: async () => {
           setConfirmModalVisible(false);
-          const success = await updatePreparationFlag(
-            flightId,
-            preparationDetail.id,
-            { action: "prepared", isContentPrepared: false },
-          );
-          if (success) {
-            setIsPrepared(false);
-            Alert.alert("Success", "Preparation status updated");
-          }
+          await updatePreparationFlag(flightId, preparationDetail.id, {
+            action: "prepared",
+            isContentPrepared: false,
+          });
         },
       });
       setConfirmModalVisible(true);
     } else {
-      const success = await updatePreparationFlag(
-        flightId,
-        preparationDetail.id,
-        { action: "prepared", isContentPrepared: true },
-      );
-      if (success) {
-        setIsPrepared(true);
-        Alert.alert("Success", "Marked as prepared");
-      }
+      await updatePreparationFlag(flightId, preparationDetail.id, {
+        action: "prepared",
+        isContentPrepared: true,
+      });
     }
   };
 
@@ -439,15 +429,10 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSaveLockNumber = async (lockNumber: number) => {
     setLockModalVisible(false);
     if (!flightId || !preparationDetail) return;
-    const success = await updatePreparationFlag(
-      flightId,
-      preparationDetail.id,
-      { action: "lock", lockTagNumber: lockNumber },
-    );
-    if (success) {
-      setIsLocked(true);
-      Alert.alert("Success", `Locked with tag number: ${lockNumber}`);
-    }
+    await updatePreparationFlag(flightId, preparationDetail.id, {
+      action: "lock",
+      lockTagNumber: lockNumber,
+    });
   };
 
   const handleSaveSignature = async (signature: string) => {
@@ -490,15 +475,10 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSaveSealNumber = async (sealNumber: number) => {
     setSealModalVisible(false);
     if (!flightId || !preparationDetail) return;
-    const success = await updatePreparationFlag(
-      flightId,
-      preparationDetail.id,
-      { action: "seal", sealTagNumber: sealNumber },
-    );
-    if (success) {
-      setIsSealed(true);
-      Alert.alert("Success", `Seal applied with tag number: ${sealNumber}`);
-    }
+    await updatePreparationFlag(flightId, preparationDetail.id, {
+      action: "seal",
+      sealTagNumber: sealNumber,
+    });
   };
 
   const packingStd = preparationDetail?.packingStandard;
