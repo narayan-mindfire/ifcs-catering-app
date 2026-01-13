@@ -1,8 +1,11 @@
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   Modal,
+  Platform,
   ScrollView,
-  // Switch,
   Text,
   TouchableOpacity,
   View,
@@ -10,7 +13,6 @@ import {
 
 import { RedirectDarkIcon } from "../../assets/icons";
 import { useTimerStore } from "../../store/useTimerStore";
-import { formatTodayDate } from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
 
 const mockTasks = [
@@ -30,26 +32,85 @@ const mockTasks = [
     id: "3",
     task: "Loading Bay",
     flight: "WY267",
-    time: "03:30 pm", // Dep time
+    time: "03:30 pm",
   },
   {
     id: "4",
     task: "HACCP - Kitchen Audit",
-    flight: "WY251", // N/A for audit
+    flight: "WY251",
     time: "05:00 pm",
   },
 ];
 
-const formatTime = (totalSeconds: number) => {
+// const formatTime = (totalSeconds: number) => {
+//   const hours = Math.floor(totalSeconds / 3600);
+//   const minutes = Math.floor((totalSeconds % 3600) / 60);
+//   const seconds = totalSeconds % 60;
+
+//   const formattedHours = String(hours).padStart(2, "0");
+//   const formattedMinutes = String(minutes).padStart(2, "0");
+//   const formattedSeconds = String(seconds).padStart(2, "0");
+
+//   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+// };
+
+const formatTimeHoursMinutes = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  const formattedHours = String(hours).padStart(2, "0");
-  const formattedMinutes = String(minutes).padStart(2, "0");
-  const formattedSeconds = String(seconds).padStart(2, "0");
+  return `${String(hours).padStart(2, "0")} Hrs ${String(minutes).padStart(2, "0")} Mins ${String(seconds).padStart(2, "0")} Secs`;
+};
 
-  return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+const formatDateDisplay = (date: Date) => {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const dayName = days[date.getDay()];
+  const monthName = months[date.getMonth()];
+  const day = date.getDate();
+  const year = date.getFullYear();
+
+  return `${dayName}, ${monthName} ${day} ${year}`;
+};
+
+const isSameDay = (date1: Date, date2: Date) => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
+// Generate consistent random worked time for a given date (7-8 hours range)
+const getWorkedTimeForDate = (date: Date): number => {
+  const dateString = date.toDateString();
+  let hash = 0;
+  for (let i = 0; i < dateString.length; i++) {
+    hash = (hash << 5) - hash + dateString.charCodeAt(i);
+    hash = hash & hash;
+  }
+
+  // Generate hours between 7-8 (25200-28800 seconds)
+  const minSeconds = 7 * 3600; // 7 hours
+  const maxSeconds = 8 * 3600; // 8 hours
+  const range = maxSeconds - minSeconds;
+
+  const randomSeconds = minSeconds + (Math.abs(hash) % range);
+  return randomSeconds;
 };
 
 const EndShiftModal: React.FC<{
@@ -90,7 +151,7 @@ const EndShiftModal: React.FC<{
           <View className="flex-row gap-3">
             <TouchableOpacity
               onPress={onClose}
-              className="flex-1 bg-bg-surface border-2 border-border-secondary py-3.5 rounded-xl"
+              className="flex-1 bg-bg-surface border-2 border-border-muted py-3.5 rounded-xl"
             >
               <Text className="text-center text-lg font-semibold text-text-primary">
                 No, Don&apos;t End.
@@ -124,15 +185,18 @@ const ShiftControlCard: React.FC = () => {
     syncTime,
   } = useTimerStore();
 
-  // const [isEnabled, setIsEnabled] = React.useState(false);
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
-  // const toggleSwitch = () => setIsEnabled((prev) => !prev);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const today = new Date();
+  const isToday = isSameDay(selectedDate, today);
 
   // Sync timer every second if shift is ON
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
     if (shiftState === "ON") {
-      syncTime(); // Immediate sync on mount/resume
+      syncTime();
       intervalId = setInterval(() => {
         syncTime();
       }, 1000);
@@ -142,7 +206,10 @@ const ShiftControlCard: React.FC = () => {
     };
   }, [shiftState, syncTime]);
 
-  const displayTime = totalWorkingTimeToday + currentSessionDuration;
+  // Calculate display time based on selected date
+  const displayTime = isToday
+    ? totalWorkingTimeToday + currentSessionDuration
+    : getWorkedTimeForDate(selectedDate);
 
   const handleStartShift = () => {
     startShift();
@@ -165,76 +232,201 @@ const ShiftControlCard: React.FC = () => {
     }
   };
 
+  const handlePreviousDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setSelectedDate(newDate);
+  };
+
+  const handleNextDay = () => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + 1);
+
+    // Don't allow future dates
+    if (!isSameDay(newDate, today) && newDate <= today) {
+      setSelectedDate(newDate);
+    } else if (isSameDay(newDate, today)) {
+      setSelectedDate(today);
+    }
+  };
+
+  const openDatePicker = () => {
+    setShowDatePicker(true);
+  };
+
+  const onDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+      if (event.type === "set" && date) {
+        if (date <= today) {
+          setSelectedDate(date);
+        }
+      }
+    } else {
+      if (date && date <= today) {
+        setSelectedDate(date);
+      }
+    }
+  };
+
+  const confirmDateIOS = () => {
+    setShowDatePicker(false);
+  };
+
+  const canGoNext = !isSameDay(selectedDate, today);
+
   return (
     <>
-      <View className="bg-bg-surface rounded-2xl p-5 shadow-sm">
-        <View className="flex-row justify-between items-center mb-5">
-          <Text className="text-[22px] font-medium text-text-primary">
-            {formatTodayDate()}
-          </Text>
-          {/* <Switch
-            trackColor={{ false: "#767577", true: "#b399f9ff" }}
-            thumbColor={isEnabled ? "#602AF3" : "#f4f3f4"}
-            onValueChange={toggleSwitch}
-            value={isEnabled}
-          /> */}
+      <View className="bg-bg-surface border-border-muted border-2 rounded-2xl">
+        <View className="flex-row items-center justify-between px-5 py-4 border-b border-border-muted">
+          <TouchableOpacity
+            onPress={handlePreviousDay}
+            className="w-12 h-12 bg-bg-tertiary rounded-xl items-center justify-center"
+          >
+            <Text className="text-2xl text-text-primary font-bold">‹</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={openDatePicker}>
+            <Text className="text-[22px] font-semibold text-text-primary">
+              {formatDateDisplay(selectedDate)}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleNextDay}
+            disabled={!canGoNext}
+            className={`w-12 h-12 rounded-xl items-center justify-center ${
+              canGoNext ? "bg-bg-tertiary" : "bg-border-muted"
+            }`}
+          >
+            <Text
+              className={`text-2xl font-bold ${
+                canGoNext ? "text-text-primary" : "text-text-muted"
+              }`}
+            >
+              ›
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        <View className="flex-row mb-5">
-          <View className="flex-[3.5] pr-2.5">
-            <Text className="text-lg text-text-secondary mb-1">My Shift</Text>
-            <Text className="text-lg font-bold text-text-primary">
-              10:00 AM - 6:00 PM
-            </Text>
-          </View>
+        <View className="px-5 py-0 border-b border-border-muted">
+          <View className="flex-row">
+            <View className="flex-1 pr-3 py-2">
+              <Text className="text-sm text-text-tertiary mb-2">Shift</Text>
+              <Text className="text-xl font-semibold text-text-primary">
+                Morning
+              </Text>
+            </View>
 
-          <View className="flex-[2.5] pl-2.5">
-            <Text className="text-lg text-text-secondary mb-1">
-              Today&apos;s Working Time
-            </Text>
-            <Text className="text-lg font-bold text-text-primary">
-              {formatTime(displayTime)}
-            </Text>
+            <View className="w-px bg-border-secondary" />
+
+            <View className="flex-1 px-3 py-2">
+              <Text className="text-sm text-text-tertiary mb-2">
+                Shift Time
+              </Text>
+              <Text className="text-lg font-semibold text-text-primary">
+                10:00 AM - 6:00 PM
+              </Text>
+            </View>
+
+            <View className="w-px bg-border-secondary" />
+
+            <View className="flex-1 pl-3 py-2">
+              <Text className="text-sm text-text-tertiary mb-2">
+                Worked Time
+              </Text>
+              <Text className="text-lg font-bold text-text-primary">
+                {formatTimeHoursMinutes(displayTime)}
+              </Text>
+            </View>
           </View>
         </View>
 
-        <View className="flex-row justify-between">
-          {shiftState === "OFF" ? (
-            <AppButton
-              title="Start Shift"
-              type="primary"
-              onPress={handleStartShift}
-              style={{ flex: 1 }}
-            />
-          ) : (
-            <>
+        <View className="px-5 py-4">
+          <View className="flex-row justify-between">
+            {shiftState === "OFF" || !isToday ? (
               <AppButton
-                title={shiftState === "BREAK" ? "On Break" : "Start a Break"}
-                type={shiftState === "BREAK" ? "primary" : "secondary"}
-                onPress={handleBreakToggle}
-                IconComponent={
-                  shiftState === "BREAK" ? (
-                    <View className="w-2.5 h-3 border-l-[4px] border-r-[4px] border-text-surface mr-2" />
-                  ) : (
-                    <View className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-text-primary mr-2" />
-                  )
-                }
-                style={{ flex: 3, marginRight: 10 }}
+                title="Start Shift"
+                type="primary"
+                onPress={handleStartShift}
+                style={{ flex: 1 }}
+                disabled={!isToday}
               />
+            ) : (
+              <>
+                <AppButton
+                  title={shiftState === "BREAK" ? "On Break" : "Start a Break"}
+                  type={shiftState === "BREAK" ? "primary" : "secondary"}
+                  onPress={handleBreakToggle}
+                  IconComponent={
+                    shiftState === "BREAK" ? (
+                      <View className="w-2.5 h-3 border-l-[4px] border-r-[4px] border-text-surface mr-2" />
+                    ) : (
+                      <View className="w-0 h-0 border-t-[6px] border-b-[6px] border-l-[10px] border-t-transparent border-b-transparent border-l-text-primary mr-2" />
+                    )
+                  }
+                  style={{ flex: 3, marginRight: 10 }}
+                  disabled={!isToday}
+                />
 
-              <AppButton
-                title="End Shift"
-                type="danger"
-                onPress={handleEndShiftClick}
-                IconComponent={
-                  <View className="w-2.5 h-2.5 bg-text-surface rounded-sm mr-2" />
-                }
-                style={{ flex: 1, marginLeft: 10 }}
-              />
-            </>
-          )}
+                <AppButton
+                  title="End Shift"
+                  type="danger"
+                  onPress={handleEndShiftClick}
+                  IconComponent={
+                    <View className="w-2.5 h-2.5 bg-text-surface rounded-sm mr-2" />
+                  }
+                  style={{ flex: 1, marginLeft: 10 }}
+                  disabled={!isToday}
+                />
+              </>
+            )}
+          </View>
         </View>
       </View>
+
+      {showDatePicker && (
+        <View className="bg-black/50 absolute top-0 left-0 right-0 bottom-0 z-[1000] justify-center items-center">
+          <View className="bg-bg-surface rounded-xl p-4 shadow-lg min-w-[300px]">
+            <Text className="text-lg font-bold mb-4 text-center text-text-primary">
+              Select Date
+            </Text>
+
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={selectedDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "inline" : "default"}
+              onChange={onDateChange}
+              maximumDate={today}
+              accentColor="#602AF3"
+              textColor="#602AF3"
+              style={{ height: Platform.OS === "ios" ? 300 : "auto" }}
+            />
+
+            {Platform.OS === "ios" && (
+              <View className="flex-row justify-between mt-4 gap-3">
+                <TouchableOpacity
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-tertiary"
+                  onPress={() => setShowDatePicker(false)}
+                >
+                  <Text className="text-text-primary text-base font-semibold">
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="flex-1 py-3 rounded-lg items-center bg-bg-button"
+                  onPress={confirmDateIOS}
+                >
+                  <Text className="text-text-surface text-base font-semibold">
+                    Done
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
 
       <EndShiftModal
         visible={showEndShiftModal}
@@ -250,7 +442,6 @@ const TasksCard: React.FC = () => {
     <View className="flex-1 mt-5 bg-bg-surface rounded-2xl p-5 shadow-sm">
       <Text className="text-xl font-bold mb-4 text-text-primary">My Tasks</Text>
 
-      {/* Table Header */}
       <View className="flex-row bg-bg-tertiary py-4 px-3.5 rounded-[10px] mb-1.5">
         <Text className="flex-[3] text-lg font-bold text-text-secondary">
           Task Description
@@ -266,7 +457,6 @@ const TasksCard: React.FC = () => {
         </Text>
       </View>
 
-      {/* Table Body */}
       <ScrollView className="flex-1">
         {mockTasks.map((task) => (
           <View

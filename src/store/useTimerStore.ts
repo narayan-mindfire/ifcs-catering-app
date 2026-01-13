@@ -60,9 +60,19 @@ export const useTimerStore = create<TimerStoreState>()(
       },
 
       endShift: () => {
+        const { lastSessionStartTime, totalWorkingTimeToday } = get();
+        let finalWorkingTime = totalWorkingTimeToday;
+
+        if (lastSessionStartTime) {
+          const sessionSeconds = Math.floor(
+            (Date.now() - lastSessionStartTime) / 1000,
+          );
+          finalWorkingTime = totalWorkingTimeToday + sessionSeconds;
+        }
+
         set({
           shiftState: "OFF",
-          totalWorkingTimeToday: 0,
+          totalWorkingTimeToday: finalWorkingTime,
           lastSessionStartTime: null,
           currentSessionDuration: 0,
         });
