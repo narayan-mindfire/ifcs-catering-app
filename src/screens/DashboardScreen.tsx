@@ -4,6 +4,7 @@ import { useWindowDimensions, View } from "react-native";
 import { UserDropdown } from "../components/common/UserDropdown";
 import { MainContent } from "../components/dashboard/MainContent";
 import { Sidebar } from "../components/dashboard/Sidebar";
+import { useAuthStore } from "../store/useAuthStore";
 import { log } from "../utils/logger";
 
 const useAuth = () => ({
@@ -14,6 +15,7 @@ const DashboardContent: React.FC = () => {
   const { width } = useWindowDimensions();
   const { signOut } = useAuth();
   const [isUserDropdownVisible, setIsUserDropdownVisible] = useState(false);
+  const { user } = useAuthStore();
 
   const layoutStyles = useMemo(() => {
     const isLargeScreen = width > 1024;
@@ -32,7 +34,10 @@ const DashboardContent: React.FC = () => {
           className="ml-5 mr-2.5"
           style={{ flex: layoutStyles.sidebarFlex }}
         >
-          <Sidebar userName="Shitanshu" />
+          <Sidebar
+            userName={user?.firstName + " " + user?.lastName}
+            position={"OAC Operations"}
+          />
         </View>
 
         <View

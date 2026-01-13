@@ -22,7 +22,7 @@ export const getDriversDeclaration = (d: Delivery): DriversDeclaration => ({
 export const getCrewCompliance = (d: Delivery): CrewCompliance => ({
   isCompliant: false,
   confirmationText:
-    "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
+    "I certify that\n\n\ a.In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
   signature: d.crewSignature || null,
   signedAt: d.crewSignatureTimestampDisplay
     ? new Date(d.crewSignatureTimestampDisplay)

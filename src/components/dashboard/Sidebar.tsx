@@ -29,9 +29,10 @@ type SidebarScreenName = "SpotCheck" | "Flights" | "Memos" | "Documents";
 
 interface SidebarProps {
   userName: string;
+  position: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ userName, position }) => {
   const navigation = useNavigation<NavigationProp>();
   const { selectedFlight } = useFlightData();
 
@@ -63,6 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName }) => {
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeText}>Welcome</Text>
           <Text style={styles.welcomeName}>{userName}</Text>
+          <Text style={styles.position}>{position}</Text>
         </View>
 
         <View
@@ -118,6 +120,12 @@ const styles = StyleSheet.create({
   welcomeName: {
     fontSize: 48,
     fontWeight: "bold",
+    color: "#ffffff",
+  },
+  position: {
+    fontSize: 18,
+    paddingLeft: 8,
+    fontWeight: "300",
     color: "#ffffff",
   },
   navigationSection: {

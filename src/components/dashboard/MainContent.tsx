@@ -15,32 +15,28 @@ import { AppButton } from "../common/AppButton";
 
 const mockTasks = [
   {
-    id: "101",
-    task: "Load Galley 1",
-    flight: "EK203",
-    time: "10:30",
-    status: "Pending",
+    id: "1",
+    task: "Prep & Seal",
+    flight: "WY251",
+    time: "07:20 am",
   },
   {
-    id: "102",
-    task: "Check Seals",
-    flight: "EK203",
-    time: "10:45",
-    status: "Pending",
+    id: "2",
+    task: "Prep & Seal",
+    flight: "WY223",
+    time: "12:15 pm",
   },
   {
-    id: "103",
-    task: "Final Count",
-    flight: "BA198",
-    time: "11:00",
-    status: "In Progress",
+    id: "3",
+    task: "Loading Bay",
+    flight: "WY267",
+    time: "03:30 pm", // Dep time
   },
   {
-    id: "104",
-    task: "Deliver Docs",
-    flight: "BA198",
-    time: "11:15",
-    status: "Completed",
+    id: "4",
+    task: "HACCP - Kitchen Audit",
+    flight: "WY251", // N/A for audit
+    time: "05:00 pm",
   },
 ];
 
@@ -254,32 +250,29 @@ const TasksCard: React.FC = () => {
     <View className="flex-1 mt-5 bg-bg-surface rounded-2xl p-5 shadow-sm">
       <Text className="text-xl font-bold mb-4 text-text-primary">My Tasks</Text>
 
+      {/* Table Header */}
       <View className="flex-row bg-bg-tertiary py-4 px-3.5 rounded-[10px] mb-1.5">
-        <Text className="flex-1 text-lg font-bold text-text-secondary">ID</Text>
         <Text className="flex-[3] text-lg font-bold text-text-secondary">
-          Task
+          Task Description
         </Text>
         <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Flight#
+          Flight #
         </Text>
         <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Time
+          Time / Dep
         </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Status
-        </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary text-right">
+        <Text className="flex-[1] text-lg font-bold text-text-secondary text-right">
           Action
         </Text>
       </View>
 
+      {/* Table Body */}
       <ScrollView className="flex-1">
         {mockTasks.map((task) => (
           <View
             key={task.id}
-            className="flex-row py-4 border-b border-bg-tertiary items-center"
+            className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
           >
-            <Text className="flex-1 text-lg text-text-primary">{task.id}</Text>
             <Text className="flex-[3] text-lg text-text-primary">
               {task.task}
             </Text>
@@ -289,10 +282,7 @@ const TasksCard: React.FC = () => {
             <Text className="flex-[2] text-lg text-text-primary">
               {task.time}
             </Text>
-            <Text className="flex-[2] text-lg text-text-primary">
-              {task.status}
-            </Text>
-            <TouchableOpacity className="flex-[2] items-end pe-10">
+            <TouchableOpacity className="flex-[1] items-end">
               <RedirectDarkIcon />
             </TouchableOpacity>
           </View>

@@ -164,7 +164,7 @@ const SecurityComplianceTab: React.FC<SecurityComplianceTabProps> = ({
           isCompliant={isCompliant || false}
           onToggleCompliance={handleToggleCompliance}
           confirmationText={
-            "The in-flight supplies have gone through the following procedures: \n\n a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation."
+            "I Certify that:\nThe in-flight supplies have gone through the following procedures: \n\n a. implemented appropriate measures to monitor the activities of staff preparing in-flight supplies(i.e, supervision/CCTV), so it will be preventive to insert prohibited items within a product.\n\n b. tamper - evident seals used to secure catering, carts and containers are affixed via trained and authorized person and checked against authorized documentation."
           }
           signature={signature || null}
           signedAt={securityCompliance?.signedAt ?? null}

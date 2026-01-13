@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { userService } from "../services/authService";
 import { User } from "../types/user";
 
-const HARDCODED_USER_ID = "019b8a3e-3efa-74ba-bf46-877dca7aebd4";
+const HARDCODED_USER_ID = "019b8a3e-3efa-74ba-bf47-9f8ff42dbdb9";
 
 interface AuthStore {
   userId: string;

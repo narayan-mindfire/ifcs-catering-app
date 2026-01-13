@@ -70,15 +70,13 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
     }
   }, [crewCompliance, reset]);
 
-  // 3. Handle Submit
   const onSubmit = async (data: CrewComplianceSchema) => {
     setIsSaving(true);
     await onUpdateCompliance({
       isCompliant: data.isCompliant,
       confirmationText:
-        "In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
+        "I certify that:\n\n a.In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition",
       signature: data.signature,
-      // If signature changed, update timestamp, else keep old one
       signedAt:
         data.signature !== crewCompliance?.signature
           ? new Date()
@@ -87,7 +85,6 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
       crewName: data.crewName,
       staffNumber: data.staffNumber,
     });
-    // Reset "dirty" state with the new saved values
     reset(data);
     setIsSaving(false);
   };
@@ -172,12 +169,13 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
           title="CREW Catering Security Measures Compliance"
           isCompliant={isCompliant || false}
           onToggleCompliance={handleToggleCompliance}
-          confirmationText="In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition"
+          confirmationText={
+            "I certify that:\na. In-flight supplies have been loaded into the aircraft in secure condition, and all seals are in secure condition"
+          }
           signature={signature || null}
           signedAt={crewCompliance?.signedAt || null}
           onSign={() => setShowSignatureModal(true)}
         />
-        {/* Display Signature Validation Error */}
         {errors.signature && (
           <View className="bg-red-50 border border-red-200 p-2 rounded-lg mt-2">
             <Text className="text-red-600 text-center font-medium">
