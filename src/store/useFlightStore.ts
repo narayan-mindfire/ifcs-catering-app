@@ -4,6 +4,7 @@ import { destinationService } from "../services/destinationService"; // Import n
 import { flightService } from "../services/flightService";
 import { Destination } from "../types/destination"; // Import new type
 import { Flight, FlightFilters } from "../types/flight";
+import { log } from "../utils/logger";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
 
@@ -136,7 +137,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         isLoading: false,
       });
     } catch (err: any) {
-      console.error("Fetch Flight Error:", err);
+      log.error("Fetch Flight Error:", err);
       set({
         error: err.message || "Failed to fetch flight details",
         isLoading: false,
@@ -197,7 +198,7 @@ export const useFlightStore = create<FlightStore>((set, get) => ({
         isDestinationsLoading: false,
       });
     } catch (error) {
-      console.error("Failed to fetch destinations", error);
+      log.error("Failed to fetch destinations", error);
       set({ isDestinationsLoading: false }); // Don't block UI on failure, just empty list
     }
   },

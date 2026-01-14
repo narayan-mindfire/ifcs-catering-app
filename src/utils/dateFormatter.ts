@@ -1,3 +1,5 @@
+import { log } from "./logger";
+
 export const formatDateDetail = (
   dateInput: string | Date | null | undefined,
 ) => {
@@ -57,7 +59,7 @@ export const formatTimeWithOffset = (
 
     return shiftedDate.toISOString().substring(11, 16);
   } catch (error) {
-    console.error("Error formatting time with offset", error);
+    log.error("Error formatting time with offset", error);
     return "--:--";
   }
 };

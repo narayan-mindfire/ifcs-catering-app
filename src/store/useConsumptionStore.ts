@@ -7,6 +7,7 @@ import {
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
 } from "../types/consumption";
+import { log } from "../utils/logger";
 
 interface ConsumptionTrackingStore {
   records: ConsumptionTrackingRecord[];
@@ -79,7 +80,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           error.message ||
           (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isLoading: false, records: [] });
-        console.error("Error fetching consumption records:", error);
+        log.error("Error fetching consumption records:", error);
         return false;
       }
     },
@@ -104,7 +105,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           error.message ||
           (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isLoading: false, selectedRecord: null });
-        console.error("Error fetching consumption record:", error);
+        log.error("Error fetching consumption record:", error);
         return false;
       }
     },
@@ -128,7 +129,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           error.message ||
           (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isCreating: false });
-        console.error("Error creating consumption record:", error);
+        log.error("Error creating consumption record:", error);
         return { success: false };
       }
     },
@@ -161,7 +162,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           error.message ||
           (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isUpdating: false });
-        console.error("Error updating consumption record:", error);
+        log.error("Error updating consumption record:", error);
         return false;
       }
     },
@@ -187,7 +188,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           error.message ||
           (error.response?.data?.message && "Unknown error occurred");
         set({ error: errorMessage, isDeleting: false });
-        console.error("Error deleting consumption record:", error);
+        log.error("Error deleting consumption record:", error);
         return false;
       }
     },

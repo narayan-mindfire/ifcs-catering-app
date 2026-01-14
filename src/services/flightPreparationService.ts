@@ -147,7 +147,7 @@ export const flightPreparationService = {
         );
       }
     } catch (error: any) {
-      console.error("Link Prior Prep API Error:", error);
+      log.error("Link Prior Prep API Error:", error);
       throw new Error(
         error.response?.data?.message ||
           error.message ||

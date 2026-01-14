@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import { memoService } from "../services/memoService";
 import { Memo, MemoTab } from "../types/memo";
+import { log } from "../utils/logger";
 
 interface MemoState {
   memos: Memo[];
@@ -30,7 +31,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         isLoading: false,
       });
     } catch (err: any) {
-      console.error("Fetch Memos Error:", err);
+      log.error("Fetch Memos Error:", err);
       set({
         error: "Failed to fetch memos",
         isLoading: false,
@@ -48,7 +49,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         isLoading: false,
       });
     } catch (err: any) {
-      console.error("Fetch Memo Detail Error:", err);
+      log.error("Fetch Memo Detail Error:", err);
       set({
         error: "Failed to load memo details",
         isLoading: false,
@@ -70,7 +71,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         memos: state.memos.filter((m) => m.id !== id),
       }));
     } catch (err: any) {
-      console.error("Acknowledge Error:", err);
+      log.error("Acknowledge Error:", err);
       throw err;
     }
   },
@@ -92,7 +93,7 @@ export const useMemoStore = create<MemoState>((set, get) => ({
         ),
       }));
     } catch (err: any) {
-      console.error("Mark as Read Error:", err);
+      log.error("Mark as Read Error:", err);
     }
   },
 }));

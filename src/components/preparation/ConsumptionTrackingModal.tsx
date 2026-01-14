@@ -14,6 +14,7 @@ import { ImageIcon } from "../../assets/icons";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
 import { ConsumptionTrackingRecord } from "../../types/consumption";
 import { PackingStandardItem } from "../../types/preparations";
+import { log } from "../../utils/logger";
 import { AppButton } from "../common/AppButton";
 
 interface ConsumptionModalProps {
@@ -126,7 +127,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         );
       }
     } catch (error) {
-      console.error("Error saving consumption:", error);
+      log.error("Error saving consumption:", error);
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
     }
   };
