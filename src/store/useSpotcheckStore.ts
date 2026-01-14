@@ -58,7 +58,7 @@ export const useSpotCheckStore = create<SpotCheckStore>((set) => ({
       set({ spotCheckLogs: logs, isLogsLoading: false });
       log.info("=========== LOGS =============\n", logs);
     } catch (err: any) {
-      console.error("Fetch Spot Check Logs Error:", err);
+      log.error("Fetch Spot Check Logs Error:", err);
       set({ isLogsLoading: false });
     }
   },

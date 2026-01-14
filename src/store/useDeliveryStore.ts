@@ -50,7 +50,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         isLoading: false,
       });
     } catch (err: any) {
-      console.error("Fetch Deliveries Error:", err);
+      log.error("Fetch Deliveries Error:", err);
       set({
         error: "Failed to fetch deliveries",
         isLoading: false,
@@ -77,7 +77,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         isLoading: false,
       }));
     } catch (err: any) {
-      console.error("Create Delivery Error:", err);
+      log.error("Create Delivery Error:", err);
       set({ error: "Failed to create delivery", isLoading: false });
     }
   },
@@ -100,7 +100,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         ),
       }));
     } catch (err: any) {
-      console.error("Update Delivery Error:", err);
+      log.error("Update Delivery Error:", err);
       set({ error: "Failed to update delivery" });
     }
   },
@@ -127,7 +127,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         ),
       }));
     } catch (err: any) {
-      console.error("Add Signature Error:", err);
+      log.error("Add Signature Error:", err);
       if (err.response) {
         log.info("Error Status:", err.response.status);
         log.info("Error Data:", JSON.stringify(err.response.data, null, 2));
@@ -146,7 +146,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
             : state.selectedDeliveryId,
       }));
     } catch (err: any) {
-      console.error("Delete Delivery Error:", err);
+      log.error("Delete Delivery Error:", err);
       set({ error: "Failed to delete delivery" });
     }
   },
@@ -159,7 +159,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
       );
       return { success: true, fileUrl };
     } catch (err: any) {
-      console.error("Print Delivery Error:", err);
+      log.error("Print Delivery Error:", err);
       return {
         success: false,
         error:

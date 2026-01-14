@@ -154,13 +154,13 @@ const CrewComplianceTab: React.FC<CrewComplianceTabProps> = ({
             }}
           />
 
-          {!isDirty && crewCompliance?.crewName && (
+          {/* {!isDirty && crewCompliance?.crewName && (
             <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
               <Text className="text-sm text-text-primary text-center font-medium">
                 ✓ Information Synced
               </Text>
             </View>
-          )}
+          )} */}
         </View>
       </View>
 

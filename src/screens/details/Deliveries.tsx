@@ -21,6 +21,7 @@ import {
   getDriversDeclaration,
   getSecurityCompliance,
 } from "../../utils/deliveriesHelper";
+import { log } from "../../utils/logger";
 
 const DeliveriesScreen: React.FC = () => {
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
@@ -134,7 +135,7 @@ const DeliveriesScreen: React.FC = () => {
       try {
         await Promise.all(promises);
       } catch (err) {
-        console.error("Error saving Security Declaration:", err);
+        log.error("Error saving Security Declaration:", err);
         Alert.alert("Error", "Failed to save some changes.");
       }
     },
@@ -175,7 +176,7 @@ const DeliveriesScreen: React.FC = () => {
       try {
         await Promise.all(promises);
       } catch (err) {
-        console.error("Error saving Crew Declaration:", err);
+        log.error("Error saving Crew Declaration:", err);
         Alert.alert("Error", "Failed to save some changes.");
       }
     },
@@ -224,7 +225,7 @@ const DeliveriesScreen: React.FC = () => {
       try {
         await Promise.all(promises);
       } catch (err) {
-        console.error("Error saving driver declaration:", err);
+        log.error("Error saving driver declaration:", err);
         Alert.alert("Error", "Failed to save some changes.");
       }
     },

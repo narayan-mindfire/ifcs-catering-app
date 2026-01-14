@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 
 import { DocumentFile } from "../../../types/documents";
+import { log } from "../../../utils/logger";
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {
@@ -29,7 +30,7 @@ export const VideoViewer: React.FC<ViewerProps> = ({
           playThroughEarpieceAndroid: false,
         });
       } catch (error) {
-        console.error("Failed to set audio mode", error);
+        log.error("Failed to set audio mode", error);
       }
     };
 

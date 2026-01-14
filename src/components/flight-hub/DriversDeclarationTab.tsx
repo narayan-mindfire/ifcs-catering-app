@@ -47,7 +47,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
 
   const sealIntact = watch("sealIntact");
   const signature = watch("signature");
-  const driverName = watch("driverName");
+  // const driverName = watch("driverName");
 
   useEffect(() => {
     if (driversDeclaration) {
@@ -157,13 +157,13 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
           }}
         />
 
-        {!isDirty && driverName && (
+        {/* {!isDirty && driverName && (
           <View className="mt-4 p-3 bg-bg-accent rounded-lg border border-bg-primary">
             <Text className="text-sm text-text-primary text-center font-medium">
               ✓ Information Synced
             </Text>
           </View>
-        )}
+        )} */}
       </View>
 
       <View className="flex-1">

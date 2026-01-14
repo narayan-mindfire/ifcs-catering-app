@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { DownloadIcon, PrintIcon } from "../../../assets/icons";
+import { log } from "../../../utils/logger";
 
 interface ViewerHeaderProps {
   title: string;
@@ -43,8 +44,7 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
         window.print();
       }
     } catch (error: any) {
-      console.error("Print error:", error);
-      // Suppress error alert if it's likely a user cancellation or benign issue
+      log.error("Print error:", error);
       if (
         error?.message?.toLowerCase().includes("cancel") ||
         error?.message?.toLowerCase().includes("dismiss") ||

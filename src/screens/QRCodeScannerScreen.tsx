@@ -65,7 +65,7 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
           throw new Error("QR Code format invalid: Not enough fields");
         }
       } catch (error) {
-        console.error("Scan Error:", error);
+        log.error("Scan Error:", error);
         Alert.alert(
           "Invalid QR Code",
           "This QR code does not match the expected flight preparation format.",

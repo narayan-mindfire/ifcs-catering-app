@@ -2,6 +2,8 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { Alert } from "react-native";
 
+import { log } from "../../utils/logger";
+
 export const downloadFileHelper = async (
   url: string,
   fileName: string,
@@ -28,7 +30,7 @@ export const downloadFileHelper = async (
       return false;
     }
   } catch (error) {
-    console.error("Download helper error:", error);
+    log.error("Download helper error:", error);
     Alert.alert("Download Error", "Could not download file.");
     return false;
   }

@@ -6,6 +6,7 @@ import {
   PreparationFlagUpdatePayload,
   PreparationItem,
 } from "../types/preparations";
+import { log } from "../utils/logger";
 
 export interface UserSignature {
   id: string;
@@ -89,7 +90,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           isLoading: false,
         });
       } catch (err: any) {
-        console.error("Fetch Preparations Error:", err);
+        log.error("Fetch Preparations Error:", err);
         set({
           error:
             err.response?.data?.message ||
@@ -112,7 +113,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
           isPrepLoading: false,
         });
       } catch (err: any) {
-        console.error("Fetch Detail Error:", err);
+        log.error("Fetch Detail Error:", err);
         set({
           error:
             err.response?.data?.message ||
@@ -196,7 +197,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         set({ userSignatures: signatures });
         return signatures.length > 0;
       } catch (err: any) {
-        console.error("Check User Signature Error:", err);
+        log.error("Check User Signature Error:", err);
         set({ userSignatures: [] });
         return false;
       }
@@ -223,12 +224,11 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         await get().checkUserSignature(flightId, deliveryId, userId);
         return true;
       } catch (err: any) {
-        console.error("Add User Signature Error:", err);
+        log.error("Add User Signature Error:", err);
         return false;
       }
     },
 
-    // 👇 UPDATED REAL IMPLEMENTATION 👇
     linkPriorPrep: async (
       flightId: string,
       currentPrepId: string,
@@ -244,7 +244,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         set({ isUpdating: false });
         return true;
       } catch (err: any) {
-        console.error("Link Prior Prep Error:", err);
+        log.error("Link Prior Prep Error:", err);
         set({
           isUpdating: false,
           error: err.message || "Failed to link prior preparation",
@@ -266,7 +266,7 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
         }));
         return true;
       } catch (err: any) {
-        console.error("Delete Signature Error:", err);
+        log.error("Delete Signature Error:", err);
         return false;
       }
     },

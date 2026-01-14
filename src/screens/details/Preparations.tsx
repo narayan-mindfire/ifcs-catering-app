@@ -192,7 +192,7 @@ export const PreparationsScreen: React.FC = () => {
         .filter((line) => line.trim() !== "");
 
       if (lines.length < 12) {
-        console.error("Invalid QR data format - insufficient lines");
+        log.error("Invalid QR data format - insufficient lines");
         return null;
       }
 
@@ -211,7 +211,7 @@ export const PreparationsScreen: React.FC = () => {
         rotationCode: lines[11].trim(),
       };
     } catch (error) {
-      console.error("Error parsing QR data:", error);
+      log.error("Error parsing QR data:", error);
       return null;
     }
   };

@@ -4,6 +4,7 @@ import Pdf from "react-native-pdf";
 
 import { RotateRightIcon } from "../../../assets/icons";
 import { DocumentFile } from "../../../types/documents";
+import { log } from "../../../utils/logger";
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {
@@ -132,7 +133,7 @@ export const PdfViewer: React.FC<ViewerProps> = ({
           onLoadComplete={(numberOfPages) => setTotalPages(numberOfPages)}
           onPageChanged={(page) => setCurrentPage(page)}
           onScaleChanged={(newScale) => setScale(newScale)}
-          onError={(error) => console.error("PDF load error", error)}
+          onError={(error) => log.error("PDF load error", error)}
           style={{
             flex: 1,
             width: "100%",

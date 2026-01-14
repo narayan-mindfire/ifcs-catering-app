@@ -133,7 +133,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
       await Sharing.shareAsync(downloadRes.uri);
     } catch (error) {
-      console.error("Download error:", error);
+      log.error("Download error:", error);
       Alert.alert("Error", "Could not download file.");
     } finally {
       setDownloadingId(null);
