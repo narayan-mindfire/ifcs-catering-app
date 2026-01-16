@@ -220,6 +220,10 @@ export interface PackingStandardItem {
   position?: string | null;
   picture?: string | null;
 
+  foodOrderItemId?: string;
+  mealId?: string;
+  flightPreparationDynamicItemId?: string;
+
   createdAt: string;
   updatedAt: string;
 }

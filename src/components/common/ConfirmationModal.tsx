@@ -8,6 +8,8 @@ interface ConfirmationModalProps {
   title: string;
   message: string;
   actionType: "disable" | "enable";
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -17,6 +19,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   title,
   message,
   actionType,
+  confirmText,
+  cancelText,
 }) => {
   return (
     <Modal transparent visible={isOpen} animationType="fade">
@@ -36,7 +40,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               className="flex-1 bg-bg-tertiary py-3 rounded-lg border border-border-muted"
             >
               <Text className="text-text-primary font-semibold text-center">
-                Cancel
+                {cancelText || "Cancel"}
               </Text>
             </TouchableOpacity>
 
@@ -47,7 +51,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
               }`}
             >
               <Text className="text-white font-semibold text-center">
-                {actionType === "disable" ? "Disable" : "Confirm"}
+                {confirmText ||
+                  (actionType === "disable" ? "Disable" : "Confirm")}
               </Text>
             </TouchableOpacity>
           </View>

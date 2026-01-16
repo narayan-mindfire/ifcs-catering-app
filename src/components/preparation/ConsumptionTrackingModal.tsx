@@ -71,9 +71,12 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   if (presentationStyle === "overlay" && !visible) return null;
 
   const totalQty = item.quantity || 0;
-  const remainingQty = Math.min(parseInt(remainingInput) || 0, totalQty);
+  const rawRemainingQty = parseInt(remainingInput) || 0;
+  const remainingQty = Math.min(rawRemainingQty, totalQty);
   const refillQty = Math.max(0, totalQty - remainingQty);
   const consumedQty = totalQty - remainingQty;
+
+  const isInvalid = rawRemainingQty > totalQty;
 
   const handleSave = async () => {
     if (!flightId || remainingInput === "") {
@@ -81,34 +84,45 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
       return;
     }
 
+    if (isInvalid) return;
+
     try {
       let resultSuccess = false;
 
-      // LOGIC SPLIT: CREATE vs UPDATE
+      const commonPayload = {
+        qty: totalQty,
+        consumedQty: consumedQty,
+        addQty: 0,
+        returnedQty: remainingQty,
+      };
+
       if (existingRecord) {
-        // --- UPDATE FLOW ---
         const success = await updateConsumptionRecord(
           flightId,
           existingRecord.id,
-          {
-            qty: totalQty,
-            consumedQty: consumedQty,
-            addQty: 0,
-            returnedQty: remainingQty,
-          },
+          commonPayload,
         );
         resultSuccess = success;
       } else {
-        // --- CREATE FLOW ---
-        const result = await createConsumptionRecord(flightId, {
+        let createPayload: any = {
           flightPreparationId: preparationId,
-          flightPrepPackingStandardId: packingStandardId,
-          flightPrepPackingStandardItemId: packingStandardItemId || item.id,
-          qty: totalQty,
-          consumedQty: consumedQty,
-          addQty: 0,
-          returnedQty: remainingQty,
-        });
+          ...commonPayload,
+        };
+
+        if (item.isDynamic) {
+          createPayload.flightPreparationDynamicItemId =
+            item.flightPreparationDynamicItemId || item.id;
+          createPayload.foodOrderItemId = item.foodOrderItemId;
+          createPayload.mealId = item.mealId;
+
+          createPayload.flightPrepPackingStandardId = undefined;
+          createPayload.flightPrepPackingStandardItemId = undefined;
+        } else {
+          createPayload.flightPrepPackingStandardId = packingStandardId;
+          createPayload.flightPrepPackingStandardItemId =
+            packingStandardItemId || item.id;
+        }
+        const result = await createConsumptionRecord(flightId, createPayload);
         resultSuccess = result.success;
       }
 
@@ -204,18 +218,29 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
           <Text className="text-sm font-bold text-bg-button mb-2 uppercase">
             Enter Leftover
           </Text>
-          <View className="bg-bg-surface rounded-xl border-2 border-bg-button w-32 h-16 justify-center items-center shadow-sm">
+          <View
+            className={`bg-bg-surface rounded-xl border-2 w-32 h-16 justify-center items-center shadow-sm ${
+              isInvalid ? "border-red-500 bg-red-50" : "border-bg-button"
+            }`}
+          >
             <TextInput
               value={remainingInput}
               onChangeText={setRemainingInput}
               keyboardType="numeric"
               placeholder="#"
               placeholderTextColor="#A09CAB"
-              className="text-3xl font-bold text-center text-text-primary w-full h-full p-0"
+              className={`text-3xl font-bold text-center w-full h-full p-0 ${
+                isInvalid ? "text-red-500" : "text-text-primary"
+              }`}
               autoFocus
               editable={!isLoading}
             />
           </View>
+          {isInvalid && (
+            <Text className="text-red-500 text-xs font-bold mt-1">
+              Max: {totalQty}
+            </Text>
+          )}
         </View>
 
         <View className="items-center">
@@ -243,7 +268,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
           }
           onPress={handleSave}
           type="primary"
-          disabled={remainingInput === "" || isLoading}
+          disabled={remainingInput === "" || isLoading || isInvalid}
           loading={isLoading}
           style={{ width: 140 }}
         />
@@ -254,7 +279,12 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   if (presentationStyle === "overlay") {
     return (
       <View className="absolute inset-0 z-50 bg-black/70 justify-center items-center px-4">
-        {Content}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          className="flex-1 justify-center items-center w-full"
+        >
+          {Content}
+        </KeyboardAvoidingView>
       </View>
     );
   }

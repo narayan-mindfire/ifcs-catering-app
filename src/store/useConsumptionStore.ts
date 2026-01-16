@@ -1,3 +1,4 @@
+import { success } from "zod";
 import { create } from "zustand";
 
 import { consumptionService } from "../services/consumptionService";
@@ -59,7 +60,6 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
     total: 0,
     currentFilters: {},
 
-    // Fetch all consumption tracking records for a flight
     fetchConsumptionRecords: async (flightId, filters = {}) => {
       set({ isLoading: true, error: null, currentFilters: filters });
 
@@ -68,7 +68,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           flightId,
           filters,
         );
-
+        log.error("Fetched Consumption Records:", data);
         set({
           records: data,
           total: total,
@@ -122,6 +122,8 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           total: state.total + 1,
           isCreating: false,
         }));
+
+        log.info("Created Consumption Record:", newRecord, "SUCCESS?", success);
 
         return { success: true, record: newRecord };
       } catch (error: any) {

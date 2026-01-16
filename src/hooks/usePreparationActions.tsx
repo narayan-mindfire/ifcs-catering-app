@@ -75,7 +75,7 @@ export const usePreparationActions = ({
       log.info("[handleSealAction] selectedFlight:", selectedFlight);
 
       if (!selectedFlight?.id) {
-        console.warn("[handleSealAction] EXIT → selectedFlight.id missing");
+        log.warn("[handleSealAction] EXIT → selectedFlight.id missing");
         return;
       }
 
@@ -103,7 +103,7 @@ export const usePreparationActions = ({
         log.info("[handleSealAction] BRANCH → item is SEALED");
 
         if (isLocked) {
-          console.warn("[handleSealAction] BLOCKED → item is LOCKED");
+          log.warn("[handleSealAction] BLOCKED → item is LOCKED");
           modals.showValidationMessage(
             "Cannot remove seal. Please unlock first.",
           );
@@ -141,7 +141,7 @@ export const usePreparationActions = ({
               log.info("[handleSealAction] Seal removed successfully");
               // Alert.alert("Success", "Seal removed");
             } else {
-              console.warn("[handleSealAction] Failed to remove seal");
+              log.warn("[handleSealAction] Failed to remove seal");
             }
           },
         });
@@ -152,7 +152,7 @@ export const usePreparationActions = ({
       log.info("[handleSealAction] BRANCH → item is NOT sealed");
 
       if (!isPrepared) {
-        console.warn("[handleSealAction] BLOCKED → item not prepared");
+        log.warn("[handleSealAction] BLOCKED → item not prepared");
         modals.showValidationMessage(
           "Please complete preparation first before sealing.",
         );
@@ -160,7 +160,7 @@ export const usePreparationActions = ({
       }
 
       if (!hasUserSignature) {
-        console.warn("[handleSealAction] BLOCKED → user signature missing");
+        log.warn("[handleSealAction] BLOCKED → user signature missing");
         modals.openSignature(item);
         return;
       }

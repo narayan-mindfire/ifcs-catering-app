@@ -140,6 +140,8 @@ export const FlightPreparationDetailsModal: React.FC<
     message: string;
     actionType: "disable" | "enable";
     onConfirm: () => void;
+    confirmText?: string;
+    cancelText?: string;
   }>({
     title: "",
     message: "",
@@ -481,6 +483,66 @@ export const FlightPreparationDetailsModal: React.FC<
     });
   };
 
+  const handleFinishConsumption = () => {
+    if (!preparationDetail || !onFinishConsumption) return;
+
+    // Collect all items (top-level and inside containers)
+    const packingStd = preparationDetail.packingStandard;
+    const allItems: PackingStandardItem[] = [];
+
+    // Top level items
+    if (packingStd?.items) {
+      allItems.push(...packingStd.items);
+    }
+
+    // Items in containers
+    if (packingStd?.containers) {
+      packingStd.containers.forEach((container) => {
+        if (container.items) {
+          allItems.push(...container.items);
+        }
+      });
+    }
+
+    // Find untracked items
+    const untrackedItems = allItems.filter((item) => {
+      const isTrackable =
+        preparationDetail.isTrackConsumption || item.isTrackConsumption;
+
+      if (!isTrackable) return false;
+
+      const isTracked = consumptionRecords.some((r) => {
+        if (item.isDynamic) {
+          return (
+            r.flightPreparationDynamicItemId ===
+            (item.flightPreparationDynamicItemId || item.id)
+          );
+        }
+        return r.flightPrepPackingStandardItemId === item.id;
+      });
+
+      return !isTracked;
+    });
+
+    if (untrackedItems.length > 0) {
+      setConfirmModalData({
+        title: "Incomplete Tracking",
+        message: "You have untracked items. Do you want to finish anyway?",
+        actionType: "enable",
+        confirmText: "Finish & Close",
+        cancelText: "Continue Tracking",
+        onConfirm: () => {
+          setConfirmModalVisible(false);
+          onFinishConsumption();
+        },
+      });
+      setConfirmModalVisible(true);
+      return;
+    }
+
+    onFinishConsumption();
+  };
+
   const packingStd = preparationDetail?.packingStandard;
   const containers = packingStd?.containers || [];
   const positionImage =
@@ -661,12 +723,20 @@ export const FlightPreparationDetailsModal: React.FC<
                       {selectedDrawerContents.length > 0 ? (
                         selectedDrawerContents.map((item, index) => {
                           let isTrackable =
-                            preparationDetail?.isTrackConsumption ?? false;
-                          const isTracked = consumptionRecords.some(
-                            (r) =>
-                              r.flightPrepPackingStandardItemId === item.id,
-                          );
-                          isTrackable = !isTrackable;
+                            preparationDetail.isTrackConsumption ||
+                            item.isTrackConsumption;
+
+                          const isTracked = consumptionRecords.some((r) => {
+                            if (item.isDynamic) {
+                              return (
+                                r.flightPreparationDynamicItemId ===
+                                (item.flightPreparationDynamicItemId || item.id)
+                              );
+                            }
+                            return (
+                              r.flightPrepPackingStandardItemId === item.id
+                            );
+                          });
                           let rowStyle =
                             "bg-bg-surface border-b border-border-muted";
 
@@ -741,7 +811,7 @@ export const FlightPreparationDetailsModal: React.FC<
             <View className="p-4 border-t border-border-muted items-end bg-bg-surface flex-row justify-end gap-3">
               {isConsumptionMode && (
                 <TouchableOpacity
-                  onPress={onFinishConsumption}
+                  onPress={handleFinishConsumption}
                   className="bg-green-600 py-3 px-8 rounded-xl"
                 >
                   <Text className="text-white font-semibold">Finish</Text>
@@ -799,6 +869,8 @@ export const FlightPreparationDetailsModal: React.FC<
             title={confirmModalData.title}
             message={confirmModalData.message}
             actionType={confirmModalData.actionType}
+            confirmText={confirmModalData.confirmText}
+            cancelText={confirmModalData.cancelText}
           />
           <ValidationModal
             visible={showValidation}
