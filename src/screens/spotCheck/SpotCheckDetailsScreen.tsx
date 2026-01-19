@@ -17,6 +17,7 @@ import { AppButton } from "../../components/common/AppButton";
 import { BreadCrumb } from "../../components/common/BreadCrumbs";
 import { CartVisualizer } from "../../components/flight-hub/CartVisulaizer";
 import { ContainerVisualizer } from "../../components/flight-hub/ContainerVisualizer";
+import { OvenVisualizer } from "../../components/flight-hub/OvenVisualizer";
 import { FailReasonModal } from "../../components/SpotCheck/FailedReasonModal";
 import { FlightInfoHeader } from "../../components/SpotCheck/FlightDetailsHeader";
 import { RootStackParamList } from "../../navigation/AppNavigator";
@@ -361,6 +362,21 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           drawers={containers}
           defaultOpenDrawer={activeDrawerIndex}
           onDrawerClick={handleDrawerClick}
+        />
+      );
+    }
+    if (derivedEquipmentType === "Oven") {
+      return (
+        <OvenVisualizer
+          cabinetFrameImg={cabinetImage}
+          numberOfDrawers={containers.length}
+          drawers={containers}
+          defaultOpenDrawer={activeDrawerIndex}
+          onDrawerClick={(idx: any) =>
+            idx !== null && containers[idx]
+              ? handleDrawerClick(idx, containers[idx])
+              : handleDrawerClick(null, null)
+          }
         />
       );
     }
