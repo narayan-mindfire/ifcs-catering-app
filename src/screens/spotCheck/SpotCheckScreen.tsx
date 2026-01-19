@@ -6,6 +6,7 @@ import {
   FlatList,
   RefreshControl,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -20,6 +21,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useSpotCheckStore } from "../../store/useSpotcheckStore";
 import { formatDate, formatDateDetail } from "../../utils/dateFormatter";
+import { SpotCheckDetailsModal } from "./SpotCheckFailedDetailsModal";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;
 type SpotCheckScreenNavigationProp = StackNavigationProp<
@@ -42,24 +44,23 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<any | null>(null);
+
   const uniqueSpotCheckLogs = useMemo(() => {
     const map = new Map<string, any>();
-
     spotCheckLogs.forEach((item) => {
       if (!map.has(item.id)) {
         map.set(item.id, item);
       }
     });
-
     return Array.from(map.values());
   }, [spotCheckLogs]);
 
-  // Initial fetch
   useEffect(() => {
     fetchSpotCheckLogs(userId);
   }, [userId, fetchSpotCheckLogs]);
 
-  // Pull-to-refresh handler (iOS native)
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
@@ -68,6 +69,16 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
       setIsRefreshing(false);
     }
   }, [fetchSpotCheckLogs, userId]);
+
+  const handleItemPress = useCallback((item: any) => {
+    setSelectedLog(item);
+    setModalVisible(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalVisible(false);
+    setSelectedLog(null);
+  }, []);
 
   const flightInfo = useMemo(() => {
     if (!flightId) {
@@ -80,7 +91,6 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
         destination: "-",
       };
     }
-
     if (!selectedFlight) {
       return {
         flight: "Loading...",
@@ -91,7 +101,6 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
         destination: "...",
       };
     }
-
     return {
       flight: selectedFlight.flightNumber || "N/A",
       route: `${selectedFlight.departureStation?.code || ""} - ${
@@ -156,13 +165,18 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
       };
 
       return (
-        <CompletedCheckListItem
-          item={mappedItem}
-          isLastItem={index === spotCheckLogs.length - 1}
-        />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => handleItemPress(item)}
+        >
+          <CompletedCheckListItem
+            item={mappedItem}
+            isLastItem={index === spotCheckLogs.length - 1}
+          />
+        </TouchableOpacity>
       );
     },
-    [spotCheckLogs.length],
+    [spotCheckLogs.length, handleItemPress],
   );
 
   const showLoading = (flightId && isFlightLoading) || isLogsLoading;
@@ -200,6 +214,12 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
             }
           />
         )}
+
+        <SpotCheckDetailsModal
+          visible={modalVisible}
+          onClose={closeModal}
+          data={selectedLog}
+        />
       </View>
     </>
   );
