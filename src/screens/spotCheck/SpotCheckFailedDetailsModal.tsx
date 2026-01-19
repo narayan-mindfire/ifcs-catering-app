@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { NoFlightsIcon } from "../../assets/icons";
+import { FlightsIcon, NoFlightsIcon } from "../../assets/icons";
 import { formatDateDetail } from "../../utils/dateFormatter";
 
 interface Props {
@@ -54,7 +54,7 @@ export const SpotCheckDetailsModal: React.FC<Props> = ({
                 Check Details
               </Text>
               <Text className="text-sm text-text-secondary">
-                ID: {data.id.toUpperCase()}
+                ID: {data.id.slice(0, 8).toUpperCase()}...
               </Text>
             </View>
             <TouchableOpacity
@@ -66,7 +66,6 @@ export const SpotCheckDetailsModal: React.FC<Props> = ({
           </View>
 
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-            {/* Status Banner */}
             <View
               className={`p-6 items-center justify-center ${
                 isPass ? "bg-green-50" : "bg-red-50"
@@ -77,14 +76,14 @@ export const SpotCheckDetailsModal: React.FC<Props> = ({
                   isPass ? "bg-green-100" : "bg-red-100"
                 }`}
               >
-                <NoFlightsIcon />
+                {isPass ? <NoFlightsIcon /> : <FlightsIcon />}
               </View>
               <Text
                 className={`text-xl font-bold ${
                   isPass ? "text-green-700" : "text-red-700"
                 }`}
               >
-                Check Failed
+                {isPass ? "Passed Check" : "Check Failed"}
               </Text>
               {!isPass && compliance?.reason && (
                 <Text className="text-red-600 mt-1 font-medium">
@@ -98,12 +97,13 @@ export const SpotCheckDetailsModal: React.FC<Props> = ({
                 <Text className="text-base font-bold text-text-primary mb-4">
                   Non-Compliance Report
                 </Text>
+
                 <View className="bg-bg-quaternary p-4 rounded-xl border border-border-muted mb-4">
                   <Text className="text-xs text-text-tertiary mb-1">
                     Inspector Remarks
                   </Text>
                   <Text className="text-text-secondary italic">
-                    &quot;
+                    &rdquo;
                     {compliance.remarks || "No additional remarks provided."}
                     &quot;
                   </Text>

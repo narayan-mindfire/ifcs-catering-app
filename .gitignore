@@ -42,3 +42,6 @@ yarn-error.*
 
 #environment files
 /.env
+
+# release files
+/.release.ipa
