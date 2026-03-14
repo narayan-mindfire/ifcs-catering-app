@@ -5,6 +5,7 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "scheme": "ifcs-catering-app",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {

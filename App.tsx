@@ -3,6 +3,7 @@ import "./global.css";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { useFonts } from "expo-font";
+import * as Linking from "expo-linking";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback } from "react";
 import { View } from "react-native";
@@ -26,10 +27,21 @@ export default function App() {
   if (!fontsLoaded) {
     return null;
   }
+  const prefix = Linking.createURL("/");
+
+  const linking = {
+    prefixes: [prefix, "ifcs-catering-app://"],
+    config: {
+      screens: {
+        Dashboard: "dashboard",
+        SSOCallback: "oauthredirect", //fallback
+      },
+    },
+  };
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <NavigationContainer>
+      <NavigationContainer linking={linking}>
         <AppNavigator />
       </NavigationContainer>
     </View>

@@ -44,4 +44,4 @@ yarn-error.*
 /.env
 
 # release files
-/.release.ipa
+release.ipa
