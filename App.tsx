@@ -61,7 +61,7 @@ export default function App() {
 
       log.info(tokenData.data);
     }
-
+    Notifications.setBadgeCountAsync(0);
     registerForPushNotifications();
   }, []);
 
