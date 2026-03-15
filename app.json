@@ -26,7 +26,10 @@
         "NSCameraUsageDescription": "We need camera access to scan flight QR codes.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "appleTeamId": "95UM4848X5"
+      "appleTeamId": "95UM4848X5",
+      "entitlements": {
+        "aps-environment": "development"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -59,6 +62,7 @@
           "cameraPermission": "We need camera access to scan flight QR codes."
         }
       ],
+      "expo-notifications",
       [
         "expo-media-library",
         {
