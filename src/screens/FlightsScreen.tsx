@@ -291,7 +291,11 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 
       {showLoading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#00529b" />
+          <ActivityIndicator
+            testID="loading-indicator"
+            size="large"
+            color="#00529b"
+          />
         </View>
       ) : error ? (
         <View className="flex-1 justify-center items-center">
