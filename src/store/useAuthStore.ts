@@ -18,6 +18,7 @@ interface AuthState {
   logout: () => Promise<void>;
   registerPushToken: () => Promise<void>;
   restoreSession: () => Promise<void>;
+  fetchUser: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -40,9 +41,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (token) {
         log.info("Login successful, saving token and user data.");
         await SecureStore.setItemAsync("userToken", token);
+        if (user) {
+          await SecureStore.setItemAsync("userData", JSON.stringify(user));
+        }
 
         log.info(
-          "Token saved. Updating state and registering push token in background.",
+          "Token and user data saved. Updating state and registering push token in background.",
         );
         set({ token, user: user || null, isLoading: false });
 
@@ -59,10 +63,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   restoreSession: async () => {
     try {
       const token = await SecureStore.getItemAsync("userToken");
+      const userData = await SecureStore.getItemAsync("userData");
+
       if (token) {
         log.info("Token found, restoring session...");
-        set({ token });
-        set({ isLoading: false });
+        const user = userData ? JSON.parse(userData) : null;
+        set({ token, user, isLoading: false });
+
+        // Refresh user profile in background to ensure up-to-date info
+        get().fetchUser();
+
+        // Refresh push token in background
         get().registerPushToken();
       } else {
         set({ isLoading: false });
@@ -70,6 +81,26 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       log.error("Restore Session Error:", error);
       set({ isLoading: false });
+    }
+  },
+
+  fetchUser: async () => {
+    try {
+      log.info("Background fetching user profile...");
+      const response = await apiClient.get("/auth/me");
+      if (response.data.success) {
+        const user = response.data.data;
+        set({ user });
+        // Update persisted user data too
+        await SecureStore.setItemAsync("userData", JSON.stringify(user));
+        log.info("User profile synced successfully.");
+      }
+    } catch (error: any) {
+      log.error("Fetch User Error:", error);
+      if (error.response?.status === 401) {
+        // Token might be invalid/expired, logout to be safe
+        get().logout();
+      }
     }
   },
 
@@ -119,6 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       }
       await SecureStore.deleteItemAsync("userToken");
+      await SecureStore.deleteItemAsync("userData");
       set({ user: null, token: null, expoPushToken: null, isLoading: false });
     } catch (error) {
       set({ isLoading: false });
