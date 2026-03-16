@@ -36,7 +36,7 @@ interface Props {
 
 const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId } = route.params || {};
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
 
   const { selectedFlight, isLoading: isFlightLoading } = useFlightStore();
   const { spotCheckLogs, fetchSpotCheckLogs, isLogsLoading } =
@@ -58,17 +58,20 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [spotCheckLogs]);
 
   useEffect(() => {
-    fetchSpotCheckLogs(userId);
-  }, [userId, fetchSpotCheckLogs]);
+    if (user?.id) {
+      fetchSpotCheckLogs(user.id);
+    }
+  }, [user?.id, fetchSpotCheckLogs]);
 
   const handleRefresh = useCallback(async () => {
+    if (!user?.id) return;
     setIsRefreshing(true);
     try {
-      await fetchSpotCheckLogs(userId);
+      await fetchSpotCheckLogs(user.id);
     } finally {
       setIsRefreshing(false);
     }
-  }, [fetchSpotCheckLogs, userId]);
+  }, [fetchSpotCheckLogs, user?.id]);
 
   const handleItemPress = useCallback((item: any) => {
     setSelectedLog(item);

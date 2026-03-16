@@ -1,5 +1,5 @@
 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-<foreignObject x="-7.2" y="-7.2" width="62.4" height="62.4"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(3.6px);clip-path:url(#bgblur_0_3290_91363_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="7.2">
+<g data-figma-bg-blur-radius="7.2">
 <g opacity="0.8" clip-path="url(#clip1_3290_91363)">
 <mask id="mask0_3290_91363" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48">
 <path d="M48 0H0V48H48V0Z" fill="white"/>

@@ -73,7 +73,8 @@
       ],
       "expo-audio",
       "expo-video",
-      "expo-asset"
+      "expo-asset",
+      "expo-secure-store"
     ],
     "extra": {
       "eas": {

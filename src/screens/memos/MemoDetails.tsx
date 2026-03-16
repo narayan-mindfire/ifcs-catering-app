@@ -36,7 +36,6 @@ interface Props {
 
 const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { width } = useWindowDimensions();
-  // Breakpoint for iPad Portrait (usually < 840px depending on model)
   const isPortrait = width < 1000;
 
   const { memoId } = route.params;
@@ -46,13 +45,12 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const [isAckLoading, setIsAckLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
-  // Modal states for Portrait mode
   const [isVersionsModalOpen, setIsVersionsModalOpen] = useState(false);
   const [isRecipientsModalOpen, setIsRecipientsModalOpen] = useState(false);
 
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
   const currentUserRecipientRecord = activeMemo?.recipients?.find(
-    (r: { userId: string; isAcknowledge: boolean }) => r.userId === userId,
+    (r: { userId: string; isAcknowledge: boolean }) => r.userId === user?.id,
   );
 
   const isRead = currentUserRecipientRecord?.isRead ?? true;
@@ -66,11 +64,11 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const sortedRecipients = useMemo(() => {
     const list = [...recipients];
     return list.sort((a, b) => {
-      if (a.userId === userId) return -1;
-      if (b.userId === userId) return 1;
+      if (a.userId === user?.id) return -1;
+      if (b.userId === user?.id) return 1;
       return 0;
     });
-  }, [recipients, userId]);
+  }, [recipients, user?.id]);
 
   log.info("Active Memo Versions:", activeMemo?.versions);
   const hasVersions = activeMemo?.versions && activeMemo.versions.length > 0;
@@ -85,28 +83,30 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     const loadMemo = async () => {
-      await fetchMemoById(userId, memoId);
+      if (user?.id) {
+        await fetchMemoById(user.id, memoId);
+      }
     };
     loadMemo();
-  }, [memoId, fetchMemoById, userId]);
+  }, [memoId, fetchMemoById, user?.id]);
 
   useEffect(() => {
-    if (activeMemo && !isLoading && isRead === false) {
+    if (activeMemo && !isLoading && isRead === false && user?.id) {
       log.info("Marking memo as read:", activeMemo.id);
-      markAsRead(userId, activeMemo.id);
+      markAsRead(user.id, activeMemo.id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeMemo?.id, isRead, isLoading, markAsRead]);
+  }, [activeMemo?.id, isRead, isLoading, markAsRead, user?.id]);
 
   const handleAcknowledge = async () => {
-    if (isAcknowledged || !activeMemo) return;
+    if (isAcknowledged || !activeMemo || !user?.id) return;
     setIsAckLoading(true);
     try {
-      await acknowledgeMemo(userId, activeMemo.id);
+      await acknowledgeMemo(user.id, activeMemo.id);
       Alert.alert("Success", "Memo acknowledged successfully.", [
         {
           text: "OK",
-          onPress: () => fetchMemoById(userId, activeMemo.id),
+          onPress: () => user?.id && fetchMemoById(user.id, activeMemo.id),
         },
       ]);
     } catch (e) {
@@ -141,12 +141,10 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   };
 
   const handleVersionClick = (versionId: string) => {
-    if (versionId === activeMemo?.id) return;
-    fetchMemoById(userId, versionId);
+    if (versionId === activeMemo?.id || !user?.id) return;
+    fetchMemoById(user.id, versionId);
     if (isPortrait) setIsVersionsModalOpen(false);
   };
-
-  // --- Render Helpers to reuse code between Sidebar and Modal ---
 
   const renderVersionsList = () => (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -185,7 +183,7 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
       {sortedRecipients.map((item) => {
         const hasAck = item.isAcknowledge;
         const timestamp = item.acknowledgedAt;
-        const isCurrentUser = item.userId === userId;
+        const isCurrentUser = item.userId === user?.id;
 
         return (
           <View key={item.userId} className="mb-6">
@@ -372,7 +370,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
               </View>
 
-              {/* Attachments */}
               {activeMemo.attachments && activeMemo.attachments.length > 0 && (
                 <View>
                   <Text className="text-lg font-semibold text-gray-900 mb-4">
@@ -417,7 +414,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           </ScrollView>
         </View>
 
-        {/* RIGHT SIDEBAR - Only show if not portrait */}
         {!isPortrait && (
           <View className="w-96 bg-white border-l border-gray-200 p-6">
             <View className="flex-row items-center justify-between mb-6">
@@ -430,9 +426,6 @@ const MemoDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         )}
       </View>
 
-      {/* --- MODALS FOR PORTRAIT MODE --- */}
-
-      {/* Version History Modal */}
       <Modal
         visible={isVersionsModalOpen}
         animationType="slide"

@@ -45,16 +45,14 @@ export const PreparationsScreen: React.FC = () => {
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
     useDeliveryStore();
 
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [hasUserSignature, setHasUserSignature] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // ✅ FIX: Use Ref to hold data across async closures (Alerts/Timeouts)
   const pendingOldFlightDataRef = useRef<ParsedQRData | null>(null);
 
-  // Keep State for UI/Modals updates
   const [pendingOldFlightData, setPendingOldFlightData] =
     useState<ParsedQRData | null>(null);
 
@@ -84,12 +82,12 @@ export const PreparationsScreen: React.FC = () => {
 
   useEffect(() => {
     const checkSignature = async () => {
-      if (selectedFlight?.id && deliveries.length > 0) {
+      if (selectedFlight?.id && deliveries.length > 0 && user?.id) {
         const deliveryId = selectedDeliveryId || deliveries[0].id;
         const hasSignature = await checkUserSignature(
           selectedFlight.id,
           deliveryId,
-          userId,
+          user.id,
         );
         setHasUserSignature(hasSignature);
       }
@@ -100,7 +98,7 @@ export const PreparationsScreen: React.FC = () => {
     selectedFlight?.id,
     selectedDeliveryId,
     checkUserSignature,
-    userId,
+    user?.id,
   ]);
 
   const handleToggleFilter = useCallback((option: string) => {
@@ -114,7 +112,7 @@ export const PreparationsScreen: React.FC = () => {
   const handleSaveSignature = useCallback(
     async (signature: string) => {
       modals.closeSignature();
-      if (!selectedFlight?.id) return;
+      if (!selectedFlight?.id || !user?.id) return;
       let deliveryId = selectedDeliveryId || deliveries[0]?.id;
       if (!deliveryId) {
         try {
@@ -129,7 +127,7 @@ export const PreparationsScreen: React.FC = () => {
         await addUserSignature(
           selectedFlight.id,
           deliveryId!,
-          userId,
+          user.id,
           signature,
         )
       ) {
@@ -144,7 +142,7 @@ export const PreparationsScreen: React.FC = () => {
       modals,
       createDelivery,
       addUserSignature,
-      userId,
+      user?.id,
     ],
   );
 
@@ -217,7 +215,6 @@ export const PreparationsScreen: React.FC = () => {
   };
 
   const handleScanPress = (actionType: ScanActionType) => {
-    // Set the callback in the global store
     useScannerStore.getState().setOnScan((data) => {
       if (actionType) {
         const parsedData = parseQRData(data);
@@ -235,7 +232,7 @@ export const PreparationsScreen: React.FC = () => {
     });
   };
 
-  // Helper for title (modified to take arg)
+  // Helper for title based on action type
   const getScannerTitle = (action: ScanActionType) => {
     switch (action) {
       case "prep":
@@ -253,7 +250,7 @@ export const PreparationsScreen: React.FC = () => {
     }
   };
 
-  // Step 1: Initial Scan
+  //Initial Scan
   const handleScanAction = useCallback(
     async (
       actionType:
@@ -268,7 +265,7 @@ export const PreparationsScreen: React.FC = () => {
       log.info("Scan 1 Received:", actionType, scannedData);
       setRefreshKey((prev) => prev + 1);
 
-      // PREP ACTION: Check Flight Match
+      //Check Flight Match
       if (actionType === "prep") {
         // A. Current Flight -> Standard Prep
         if (scannedData.flightId === selectedFlight?.id) {
@@ -285,11 +282,11 @@ export const PreparationsScreen: React.FC = () => {
         else {
           log.info("Old Flight Detected. Starting Step 2 (Scan Current).");
 
-          // 1. Store Old Data Reference (Sync Ref & State)
+          //Store Old Data Reference (Sync Ref & State)
           setPendingOldFlightData(scannedData);
           pendingOldFlightDataRef.current = scannedData;
 
-          // 2. IMMEDIATELY Open Verification Scanner
+          //IMMEDIATELY Open Verification Scanner
           setTimeout(() => {
             Alert.alert(
               "Verify Current Flight",
@@ -354,7 +351,7 @@ export const PreparationsScreen: React.FC = () => {
     [findPreparationItem, actions, selectedFlight?.id, navigation],
   );
 
-  // Step 2: Verification Scan (Scan 2)
+  //Verification Scan
   const handleVerifyScan = useCallback(
     async (data: string) => {
       const lines = data.split("\n");
@@ -363,7 +360,6 @@ export const PreparationsScreen: React.FC = () => {
       const scannedCurrentPrepId = lines[0]?.trim();
       const scannedFlightId = lines[1]?.trim();
 
-      // VALIDATION: Must match CURRENT flight
       if (scannedFlightId !== selectedFlight?.id) {
         Alert.alert(
           "Mismatch",
@@ -381,7 +377,6 @@ export const PreparationsScreen: React.FC = () => {
       log.info("Current Flight Verified. Fetching Old Data...");
       setPendingCurrentItem(currentItem);
 
-      // ✅ FIX: Read from Ref instead of State to avoid stale closure
       const oldData = pendingOldFlightDataRef.current;
 
       if (oldData) {
@@ -410,11 +405,11 @@ export const PreparationsScreen: React.FC = () => {
     ],
   );
 
-  // Step 3: Finish & Link (Triggered by Modal Button)
+  //Finish & Link (Triggered by Modal Button)
   const handleFinishConsumption = useCallback(async () => {
     modals.closeDetailModal();
 
-    const oldData = pendingOldFlightDataRef.current; // Read from Ref
+    const oldData = pendingOldFlightDataRef.current;
 
     if (!selectedFlight?.id || !oldData || !pendingCurrentItem) {
       setPendingOldFlightData(null);
@@ -425,14 +420,12 @@ export const PreparationsScreen: React.FC = () => {
 
     log.info("Finalizing Consumption Flow...");
 
-    // 1. Mark Current as Prepared
     await actions.handlePreparedAction(pendingCurrentItem);
 
-    // 2. Link Old Prep to Current Prep
     const linkSuccess = await linkPriorPrep(
       selectedFlight.id,
-      pendingCurrentItem.id, // Current
-      oldData.flightPrepId, // Prior
+      pendingCurrentItem.id,
+      oldData.flightPrepId,
     );
 
     if (linkSuccess) {
@@ -470,7 +463,6 @@ export const PreparationsScreen: React.FC = () => {
           onSaveSignature={handleSaveSignature}
           onSaveSealNumber={handleSaveSealNumber}
           onSaveLockNumber={handleSaveLockNumber}
-          // We use State here for UI reactivity, which updates fine on re-renders
           isConsumptionMode={!!pendingOldFlightData && !!pendingCurrentItem}
           consumptionFlightId={pendingOldFlightData?.flightId}
           onFinishConsumption={handleFinishConsumption}

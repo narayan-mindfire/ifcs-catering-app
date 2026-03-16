@@ -2,17 +2,16 @@ import "react-native-gesture-handler";
 import "./global.css";
 
 import { NavigationContainer } from "@react-navigation/native";
-import Constants from "expo-constants";
-import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useCallback, useEffect } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { AppNavigator } from "./src/navigation/AppNavigator";
-import { log } from "./src/utils/logger";
+import { useAuthStore } from "./src/store/useAuthStore";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,53 +26,40 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
+  const { restoreSession, isLoading } = useAuthStore();
+
   const [fontsLoaded] = useFonts({
     Rubik: require("./assets/fonts/Rubik.ttf"),
     roboto: require("./assets/fonts/Roboto.ttf"),
   });
 
   useEffect(() => {
-    async function registerForPushNotifications() {
-      if (!Device.isDevice) {
-        log.info("Must use physical device for Push Notifications");
-        return;
-      }
-
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") {
-        log.info("Failed to get push token for push notification!");
-        return;
-      }
-
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: projectId,
-      });
-
-      log.info(tokenData.data);
-    }
     Notifications.setBadgeCountAsync(0);
-    registerForPushNotifications();
+    restoreSession();
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
+    if (fontsLoaded && !isLoading) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, isLoading]);
 
-  if (!fontsLoaded) {
-    return null;
+  if (!fontsLoaded || isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#0f172a",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        onLayout={onLayoutRootView}
+      >
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
   }
+
   const prefix = Linking.createURL("/");
 
   const linking = {
@@ -81,16 +67,16 @@ export default function App() {
     config: {
       screens: {
         Dashboard: "dashboard",
-        SSOCallback: "oauthredirect", //fallback
+        Login: "login",
       },
     },
   };
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+    <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
       <NavigationContainer linking={linking}>
         <AppNavigator />
       </NavigationContainer>
-    </View>
+    </GestureHandlerRootView>
   );
 }
