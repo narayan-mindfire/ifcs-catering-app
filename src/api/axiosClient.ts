@@ -20,13 +20,13 @@ apiClient.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // log.info("--- AXIOS REQUEST DEBUG ---");
-    // log.info("Method:", config.method);
-    // log.info("Base URL:", config.baseURL);
-    // log.info("URL:", config.url);
-    // log.info("Headers:", config.headers);
-    // log.info("Params:", config.params);
-    // log.info("Body:", config.data);
+    log.info("--- AXIOS REQUEST DEBUG ---");
+    log.info("Method:", config.method);
+    log.info("Base URL:", config.baseURL);
+    log.info("URL:", config.url);
+    log.info("Headers:", config.headers);
+    log.info("Params:", config.params);
+    log.info("Body:", config.data);
     return config;
   },
   (error) => Promise.reject(error),

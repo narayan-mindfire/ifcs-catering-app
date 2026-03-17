@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -38,11 +39,11 @@ const LoginScreen = () => {
         className="flex-1 justify-center px-8"
       >
         <View className="items-center mb-12">
-          <View className="w-24 h-24 bg-blue-600 rounded-3xl items-center justify-center mb-6 shadow-xl shadow-blue-600/40">
-            <Text className="text-white text-5xl font-extrabold tracking-tighter">
-              IF
-            </Text>
-          </View>
+          <Image
+            source={require("../../assets/images/galleyx.png")}
+            className="h-[35px] w-[180px] mb-8 md:h-10 md:w-[200px]"
+            resizeMode="contain"
+          />
           <Text className="text-4xl font-extrabold text-white tracking-tight mb-3">
             Welcome Back
           </Text>

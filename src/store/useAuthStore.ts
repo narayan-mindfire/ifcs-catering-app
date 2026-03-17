@@ -87,18 +87,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   fetchUser: async () => {
     try {
       log.info("Background fetching user profile...");
-      const response = await apiClient.get("/auth/me");
+      const response = await apiClient.get("/users/me");
       if (response.data.success) {
         const user = response.data.data;
         set({ user });
-        // Update persisted user data too
         await SecureStore.setItemAsync("userData", JSON.stringify(user));
         log.info("User profile synced successfully.");
       }
     } catch (error: any) {
       log.error("Fetch User Error:", error);
       if (error.response?.status === 401) {
-        // Token might be invalid/expired, logout to be safe
         get().logout();
       }
     }
