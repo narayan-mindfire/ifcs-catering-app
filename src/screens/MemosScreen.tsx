@@ -51,7 +51,7 @@ const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos, isLoading } = useMemoStore();
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,12 +76,16 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchMemos(userId, activeTab, debouncedSearch);
-  }, [activeTab, userId, debouncedSearch, fetchMemos]);
+    if (user?.id) {
+      fetchMemos(user.id, activeTab, debouncedSearch);
+    }
+  }, [activeTab, user?.id, debouncedSearch, fetchMemos]);
 
   const onRefresh = useCallback(() => {
-    fetchMemos(userId, activeTab, debouncedSearch);
-  }, [activeTab, userId, debouncedSearch, fetchMemos]);
+    if (user?.id) {
+      fetchMemos(user.id, activeTab, debouncedSearch);
+    }
+  }, [activeTab, user?.id, debouncedSearch, fetchMemos]);
 
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
@@ -205,7 +209,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 const formattedDate = formatDate(memo.createdAt);
                 const isPriority = memo.priority === 3;
 
-                // Fallback: If isRead is missing (common in Sent view), treat as Read (true)
+                // Fallback: If isRead is missing, treat as Read (true)
                 // to avoid showing 'Unread' for items the user sent themselves.
                 const displayIsRead = memo.isRead ?? true;
 

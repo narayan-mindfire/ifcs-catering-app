@@ -159,7 +159,7 @@ export const FlightPreparationDetailsModal: React.FC<
   const [selectedConsumptionRecord, setSelectedConsumptionRecord] =
     useState<ConsumptionTrackingRecord | null>(null);
 
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     if (visible && flightId && preparationId) {
@@ -176,12 +176,12 @@ export const FlightPreparationDetailsModal: React.FC<
 
   useEffect(() => {
     const checkSignature = async () => {
-      if (flightId && deliveries.length > 0) {
+      if (flightId && deliveries.length > 0 && user?.id) {
         const deliveryId = selectedDeliveryId || deliveries[0].id;
         const hasSignature = await checkUserSignature(
           flightId,
           deliveryId,
-          userId,
+          user.id,
         );
         setHasUserSignature(hasSignature);
       }
@@ -190,7 +190,7 @@ export const FlightPreparationDetailsModal: React.FC<
     if (deliveries.length > 0 && visible) {
       checkSignature();
     }
-  }, [deliveries, flightId, selectedDeliveryId, visible]);
+  }, [deliveries, flightId, selectedDeliveryId, visible, user?.id]);
 
   useEffect(() => {
     if (preparation) {
@@ -459,10 +459,11 @@ export const FlightPreparationDetailsModal: React.FC<
         return;
       }
     }
+    if (!user?.id) return;
     const success = await addUserSignature(
       flightId,
       deliveryId,
-      userId,
+      user.id,
       signature,
     );
     if (success) {

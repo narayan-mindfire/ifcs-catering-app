@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 import { log } from "../utils/logger";
 const apiClient = axios.create({
@@ -12,6 +13,25 @@ const apiClient = axios.create({
   },
 });
 
+apiClient.interceptors.request.use(
+  async (config) => {
+    const token = await SecureStore.getItemAsync("userToken");
+    log.info("Attaching token to request:", token ? "Yes" : "No");
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    log.info("--- AXIOS REQUEST DEBUG ---");
+    log.info("Method:", config.method);
+    log.info("Base URL:", config.baseURL);
+    log.info("URL:", config.url);
+    log.info("Headers:", config.headers);
+    log.info("Params:", config.params);
+    log.info("Body:", config.data);
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -19,14 +39,7 @@ apiClient.interceptors.response.use(
     if (error.response) {
       log.info("Status:", error.response.status);
       log.info("Data:", error.response.data);
-    } else if (error.request) {
-      log.info("Request made but NO RESPONSE received.");
-      log.info("Request details:", error.request);
-    } else {
-      log.info("Error Message:", error.message);
     }
-    log.info("Config:", error.config);
-
     return Promise.reject(error);
   },
 );

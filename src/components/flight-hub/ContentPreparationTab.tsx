@@ -33,19 +33,18 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [signingUserId, setSigningUserId] = useState<string | null>(null);
 
-  // const userId = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
   useEffect(() => {
     const fetchData = async () => {
-      if (flightId && deliveryId) {
+      if (flightId && deliveryId && user?.id) {
         setLoading(true);
-        await checkUserSignature(flightId, deliveryId, userId);
+        await checkUserSignature(flightId, deliveryId, user.id);
         setLoading(false);
       }
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flightId, deliveryId]);
+  }, [flightId, deliveryId, user?.id]);
 
   const handleSignClick = (userId: string) => {
     setSigningUserId(userId);

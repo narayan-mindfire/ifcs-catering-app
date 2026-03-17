@@ -11,9 +11,9 @@ interface MemoState {
   error: string | null;
 
   fetchMemos: (userId: string, tab: MemoTab, search?: string) => Promise<void>;
-  fetchMemoById: (id: string, userId: string) => Promise<void>;
-  acknowledgeMemo: (id: string, userId: string) => Promise<void>;
-  markAsRead: (id: string, userId: string) => Promise<void>;
+  fetchMemoById: (userId: string, id: string) => Promise<void>;
+  acknowledgeMemo: (userId: string, id: string) => Promise<void>;
+  markAsRead: (userId: string, id: string) => Promise<void>;
 }
 
 export const useMemoStore = create<MemoState>((set, get) => ({

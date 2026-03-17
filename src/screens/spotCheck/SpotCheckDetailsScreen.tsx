@@ -52,7 +52,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   // Stores
   const { preparationDetail, fetchPreparationById, isPrepLoading } =
     useFlightPreparationStore();
-  const { userId } = useAuthStore();
+  const { user } = useAuthStore();
   const {
     selectedFlight,
     fetchFlightById,
@@ -217,20 +217,17 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     }
   };
 
-  // ✅ ACTION: Handle FAIL
   const handleConfirmFail = useCallback(
     async (data: { reason: string; remarks: string; images: string[] }) => {
-      if (!selectedFlight || !preparationDetail) return;
+      if (!selectedFlight || !preparationDetail || !user?.id) return;
 
       const payload: SpotCheckFailPayload = {
         flightId: flightId,
         preparationId: checkId,
-        userId,
+        userId: user.id,
 
-        // Mapping Fields per Requirement
         route: `${selectedFlight.departureStation?.code}-${selectedFlight.arrivalStation?.code}`,
 
-        // ✅ FIX: Use loadingPlanId (string) OR default empty
         loadingPlanId:
           selectedFlight.loadingPlanId ||
           selectedFlight.loadingPlan?.id ||
@@ -240,9 +237,8 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         flightNumber: selectedFlight.flightNumber || "N/A",
         equipmentItemName:
           activeEquipmentName || preparationDetail.equipment || "N/A",
-        equipmentItemId: preparationDetail.packingStandard?.equipmentItem?.id, // Optional
+        equipmentItemId: preparationDetail.packingStandard?.equipmentItem?.id,
 
-        // User Inputs
         remarks: data.remarks,
         reason: data.reason,
         images: data.images,
@@ -261,9 +257,9 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     [
       selectedFlight,
       preparationDetail,
+      user?.id,
       flightId,
       checkId,
-      userId,
       activeEquipmentName,
       markAsFailed,
       navigation,
@@ -271,6 +267,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 
   const handlePass = useCallback(() => {
+    if (!user?.id) return;
     Alert.alert(
       "Confirm Pass",
       "Are you sure you want to pass this preparation?",
@@ -282,7 +279,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             const success = await markAsPassed({
               flightId,
               preparationId: checkId,
-              userId,
+              userId: user.id,
             });
 
             if (success) {
@@ -295,7 +292,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         },
       ],
     );
-  }, [markAsPassed, flightId, checkId, userId, navigation]);
+  }, [markAsPassed, flightId, checkId, user?.id, navigation]);
 
   const handleFailTrigger = useCallback(() => {
     setIsFailModalVisible(true);

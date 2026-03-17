@@ -39,7 +39,7 @@ describe("MemosScreen", () => {
 
   beforeEach(() => {
     (useAuthStore as unknown as jest.Mock).mockReturnValue({
-      userId: "user123",
+      user: { id: "user123" },
     });
     (useMemoStore as unknown as jest.Mock).mockReturnValue({
       memos: [],

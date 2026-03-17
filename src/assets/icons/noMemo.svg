@@ -1,21 +1,21 @@
 <svg width="87" height="97" viewBox="0 0 87 97" fill="none" xmlns="http://www.w3.org/2000/svg">
-<foreignObject x="-3.48438" y="2.23047" width="85.9961" height="97.8984"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(2px);clip-path:url(#bgblur_0_4983_76724_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="4">
+<g data-figma-bg-blur-radius="4">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M51.4714 6.23003L69.534 19.6239L57.6283 21.2971C55.4406 21.6046 53.418 20.0804 53.1105 17.8928L51.4714 6.23003Z" fill="url(#paint0_linear_4983_76724)"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M0.556692 17.4249C0.24924 15.2373 1.77343 13.2146 3.96107 12.9072L51.4714 6.23003L53.1105 17.8928C53.418 20.0804 55.4406 21.6046 57.6283 21.2971L69.534 19.6239L78.4721 83.2215C78.7795 85.4092 77.2553 87.4319 75.0677 87.7393L15.6516 96.0897C13.464 96.3971 11.4413 94.873 11.1338 92.6853L0.556692 17.4249Z" fill="url(#paint1_linear_4983_76724)" fill-opacity="0.64"/>
 </g>
 <path d="M17.3854 79.6883L48.5213 75.3124M10.1484 28.1943L41.2843 23.8185L10.1484 28.1943ZM11.8513 40.3106L63.3452 33.0736L11.8513 40.3106ZM13.696 53.4365L65.1899 46.1995L13.696 53.4365ZM15.5407 66.5624L67.0347 59.3254L15.5407 66.5624Z" stroke="#929CB3" stroke-linecap="round" stroke-linejoin="round"/>
-<foreignObject x="15" y="-4" width="76" height="92"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(2px);clip-path:url(#bgblur_1_4983_76724_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="4">
+<g data-figma-bg-blur-radius="4">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M70.9773 0L87 15.7773H74.9773C72.7681 15.7773 70.9773 13.9865 70.9773 11.7773V0Z" fill="url(#paint2_linear_4983_76724)"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M19 4C19 1.79086 20.7909 0 23 0H70.9773V11.7773C70.9773 13.9865 72.7681 15.7773 74.9773 15.7773H87V80C87 82.2091 85.2091 84 83 84H23C20.7909 84 19 82.2091 19 80V4Z" fill="url(#paint3_linear_4983_76724)" fill-opacity="0.64"/>
 </g>
 <path d="M27 68H58.4419M27 16H58.4419H27ZM27 28.2353H79H27ZM27 41.4902H79H27ZM27 54.7451H79H27Z" stroke="#929CB3" stroke-linecap="round" stroke-linejoin="round"/>
 <g clip-path="url(#clip2_4983_76724)">
-<foreignObject x="22.5" y="27" width="42" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(1px);clip-path:url(#bgblur_3_4983_76724_clip_path);height:100%;width:100%"></div></foreignObject><g data-figma-bg-blur-radius="2">
+<g data-figma-bg-blur-radius="2">
 <path d="M40.5 60C48.7843 60 55.5 53.2843 55.5 45C55.5 36.7157 48.7843 30 40.5 30C32.2157 30 25.5 36.7157 25.5 45C25.5 53.2843 32.2157 60 40.5 60Z" fill="url(#paint4_linear_4983_76724)" fill-opacity="0.08"/>
 <path d="M51.1069 55.6069L61.5 66.0001M55.5 45C55.5 53.2843 48.7843 60 40.5 60C32.2157 60 25.5 53.2843 25.5 45C25.5 36.7157 32.2157 30 40.5 30C48.7843 30 55.5 36.7157 55.5 45Z" stroke="#929CB3" stroke-width="2" stroke-linecap="round"/>
 <path d="M51.1069 55.6069L61.5 66.0001M55.5 45C55.5 53.2843 48.7843 60 40.5 60C32.2157 60 25.5 53.2843 25.5 45C25.5 36.7157 32.2157 30 40.5 30C48.7843 30 55.5 36.7157 55.5 45Z" stroke="#E44646" stroke-width="2" stroke-linecap="round"/>
 </g>
-<foreignObject x="22.5" y="27" width="42" height="42"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(0.5px);height:100%;width:100%"></div></foreignObject><path data-figma-bg-blur-radius="1" d="M36 41.0635L40.5 45.5635M40.5 45.5635L45 50.0635M40.5 45.5635L45 41.0635M40.5 45.5635L36 50.0635" stroke="#E44646" stroke-width="2" stroke-linecap="round"/>
+<path data-figma-bg-blur-radius="1" d="M36 41.0635L40.5 45.5635M40.5 45.5635L45 50.0635M40.5 45.5635L45 41.0635M40.5 45.5635L36 50.0635" stroke="#E44646" stroke-width="2" stroke-linecap="round"/>
 </g>
 <defs>
 <clipPath id="bgblur_0_4983_76724_clip_path" transform="translate(3.48438 -2.23047)"><path fill-rule="evenodd" clip-rule="evenodd" d="M51.4714 6.23003L69.534 19.6239L57.6283 21.2971C55.4406 21.6046 53.418 20.0804 53.1105 17.8928L51.4714 6.23003Z"/>
