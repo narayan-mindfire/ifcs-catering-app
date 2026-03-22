@@ -58,23 +58,7 @@ const isSameDay = (date1: Date, date2: Date) => {
   );
 };
 
-// Generate consistent random worked time for a given date (7-8 hours range)
-const getWorkedTimeForDate = (date: Date): number => {
-  const dateString = date.toDateString();
-  let hash = 0;
-  for (let i = 0; i < dateString.length; i++) {
-    hash = (hash << 5) - hash + dateString.charCodeAt(i);
-    hash = hash & hash;
-  }
-
-  // Generate hours between 7-8 (25200-28800 seconds)
-  const minSeconds = 7 * 3600; // 7 hours
-  const maxSeconds = 8 * 3600; // 8 hours
-  const range = maxSeconds - minSeconds;
-
-  const randomSeconds = minSeconds + (Math.abs(hash) % range);
-  return randomSeconds;
-};
+// Worked time helper moved to store or handled via props
 
 const EndShiftModal: React.FC<{
   visible: boolean;
@@ -159,13 +143,16 @@ const ShiftControlCard: React.FC<{
 }> = ({ selectedDate, onSelectedDateChange }) => {
   const {
     shiftState,
-    totalWorkingTimeToday,
+    totalWorkedMs,
     currentSessionDuration,
+    shiftType,
     startShift,
     pauseShift,
     resumeShift,
     endShift,
     syncTime,
+    fetchStatus,
+    fetchHistory,
   } = useTimerStore();
 
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
@@ -189,9 +176,7 @@ const ShiftControlCard: React.FC<{
   }, [shiftState, syncTime]);
 
   // Calculate display time based on selected date
-  const displayTime = isToday
-    ? totalWorkingTimeToday + currentSessionDuration
-    : getWorkedTimeForDate(selectedDate);
+  const displayTime = Math.floor(totalWorkedMs / 1000) + currentSessionDuration;
 
   const handleStartShift = () => {
     startShift();
@@ -296,7 +281,7 @@ const ShiftControlCard: React.FC<{
             <View className="flex-1 pr-3 py-2">
               <Text className="text-sm text-text-tertiary mb-2">Shift</Text>
               <Text className="text-xl font-semibold text-text-primary">
-                Morning
+                {shiftType || "Not Started"}
               </Text>
             </View>
 
@@ -307,7 +292,11 @@ const ShiftControlCard: React.FC<{
                 Shift Time
               </Text>
               <Text className="text-lg font-semibold text-text-primary">
-                10:00 AM - 6:00 PM
+                {shiftType === "MORNING"
+                  ? "10:00 AM - 6:00 PM"
+                  : shiftType === "EVENING"
+                    ? "6:00 PM - 2:00 AM"
+                    : "--:--"}
               </Text>
             </View>
 
@@ -492,12 +481,20 @@ export const MainContent: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const { user } = useAuthStore();
   const { fetchTasks } = useTaskStore();
+  const { fetchStatus, fetchHistory } = useTimerStore();
 
   useEffect(() => {
     if (user?.id) {
-      fetchTasks(user.id, formatDateForApi(selectedDate));
+      const dateStr = formatDateForApi(selectedDate);
+      fetchTasks(user.id, dateStr);
+
+      if (isSameDay(selectedDate, new Date())) {
+        fetchStatus();
+      } else {
+        fetchHistory(dateStr);
+      }
     }
-  }, [selectedDate, user?.id, fetchTasks]);
+  }, [selectedDate, user?.id, fetchTasks, fetchStatus, fetchHistory]);
 
   return (
     <View className="flex-1">
