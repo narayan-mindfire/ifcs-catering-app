@@ -36,7 +36,7 @@ const LoginScreen = () => {
     <SafeAreaView className="flex-1 bg-slate-900">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1 justify-center px-8"
+        className="flex-1 justify-center px-64"
       >
         <View className="items-center mb-12">
           <Image
@@ -76,16 +76,10 @@ const LoginScreen = () => {
           </View>
         </View>
 
-        <TouchableOpacity className="self-end mt-4 mb-8">
-          <Text className="text-blue-400 font-semibold text-sm">
-            Forgot Password?
-          </Text>
-        </TouchableOpacity>
-
         <TouchableOpacity
           onPress={handleLogin}
           disabled={isLoading}
-          className={`bg-blue-600 rounded-2xl py-4 items-center shadow-lg shadow-blue-600/30 ${isLoading ? "opacity-70" : ""}`}
+          className={`bg-blue-600 rounded-2xl py-4 mt-8 items-center shadow-lg shadow-blue-600/30 ${isLoading ? "opacity-70" : ""}`}
         >
           {isLoading ? (
             <ActivityIndicator color="white" />
@@ -95,15 +89,6 @@ const LoginScreen = () => {
             </Text>
           )}
         </TouchableOpacity>
-
-        <View className="flex-row justify-center mt-10">
-          <Text className="text-slate-400 font-medium">
-            Don&apos;t have an account?{" "}
-          </Text>
-          <TouchableOpacity>
-            <Text className="text-blue-400 font-bold">Sign Up</Text>
-          </TouchableOpacity>
-        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

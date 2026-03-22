@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -11,48 +12,10 @@ import {
   View,
 } from "react-native";
 
-import { RedirectDarkIcon } from "../../assets/icons";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
 import { AppButton } from "../common/AppButton";
-
-const mockTasks = [
-  {
-    id: "1",
-    task: "Prep & Seal",
-    flight: "WY251",
-    time: "07:20 am",
-  },
-  {
-    id: "2",
-    task: "Prep & Seal",
-    flight: "WY223",
-    time: "12:15 pm",
-  },
-  {
-    id: "3",
-    task: "Loading Bay",
-    flight: "WY267",
-    time: "03:30 pm",
-  },
-  {
-    id: "4",
-    task: "HACCP - Kitchen Audit",
-    flight: "WY251",
-    time: "05:00 pm",
-  },
-];
-
-// const formatTime = (totalSeconds: number) => {
-//   const hours = Math.floor(totalSeconds / 3600);
-//   const minutes = Math.floor((totalSeconds % 3600) / 60);
-//   const seconds = totalSeconds % 60;
-
-//   const formattedHours = String(hours).padStart(2, "0");
-//   const formattedMinutes = String(minutes).padStart(2, "0");
-//   const formattedSeconds = String(seconds).padStart(2, "0");
-
-//   return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
-// };
 
 const formatTimeHoursMinutes = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -173,7 +136,27 @@ const EndShiftModal: React.FC<{
   );
 };
 
-const ShiftControlCard: React.FC = () => {
+const formatTimeFromISO = (isoString: string) => {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch (e) {
+    return "--:--";
+  }
+};
+
+const formatDateForApi = (date: Date) => {
+  return date.toISOString().split("T")[0];
+};
+
+const ShiftControlCard: React.FC<{
+  selectedDate: Date;
+  onSelectedDateChange: (date: Date) => void;
+}> = ({ selectedDate, onSelectedDateChange }) => {
   const {
     shiftState,
     totalWorkingTimeToday,
@@ -186,7 +169,6 @@ const ShiftControlCard: React.FC = () => {
   } = useTimerStore();
 
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const today = new Date();
@@ -235,7 +217,7 @@ const ShiftControlCard: React.FC = () => {
   const handlePreviousDay = () => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() - 1);
-    setSelectedDate(newDate);
+    onSelectedDateChange(newDate);
   };
 
   const handleNextDay = () => {
@@ -244,9 +226,9 @@ const ShiftControlCard: React.FC = () => {
 
     // Don't allow future dates
     if (!isSameDay(newDate, today) && newDate <= today) {
-      setSelectedDate(newDate);
+      onSelectedDateChange(newDate);
     } else if (isSameDay(newDate, today)) {
-      setSelectedDate(today);
+      onSelectedDateChange(today);
     }
   };
 
@@ -259,12 +241,12 @@ const ShiftControlCard: React.FC = () => {
       setShowDatePicker(false);
       if (event.type === "set" && date) {
         if (date <= today) {
-          setSelectedDate(date);
+          onSelectedDateChange(date);
         }
       }
     } else {
       if (date && date <= today) {
-        setSelectedDate(date);
+        onSelectedDateChange(date);
       }
     }
   };
@@ -438,54 +420,91 @@ const ShiftControlCard: React.FC = () => {
 };
 
 const TasksCard: React.FC = () => {
+  const { tasks, isLoading, error } = useTaskStore();
+
   return (
     <View className="flex-1 mt-5 bg-bg-surface rounded-2xl p-5 shadow-sm">
       <Text className="text-xl font-bold mb-4 text-text-primary">My Tasks</Text>
 
       <View className="flex-row bg-bg-tertiary py-4 px-3.5 rounded-[10px] mb-1.5">
         <Text className="flex-[3] text-lg font-bold text-text-secondary">
-          Task Description
+          Title
         </Text>
         <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Flight #
+          Type
         </Text>
         <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Time / Dep
+          Priority
         </Text>
-        <Text className="flex-[1] text-lg font-bold text-text-secondary text-right">
-          Action
+        <Text className="flex-[2] text-lg font-bold text-text-secondary">
+          Status
+        </Text>
+        <Text className="flex-[2] text-lg font-bold text-text-secondary text-right">
+          Time
         </Text>
       </View>
 
       <ScrollView className="flex-1">
-        {mockTasks.map((task) => (
-          <View
-            key={task.id}
-            className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
-          >
-            <Text className="flex-[3] text-lg text-text-primary">
-              {task.task}
-            </Text>
-            <Text className="flex-[2] text-lg text-text-primary">
-              {task.flight}
-            </Text>
-            <Text className="flex-[2] text-lg text-text-primary">
-              {task.time}
-            </Text>
-            <TouchableOpacity className="flex-[1] items-end">
-              <RedirectDarkIcon />
-            </TouchableOpacity>
+        {isLoading ? (
+          <View className="py-10 items-center">
+            <Text className="text-text-secondary">Loading tasks...</Text>
           </View>
-        ))}
+        ) : error ? (
+          <View className="py-10 items-center">
+            <Text className="text-[#EF4444]">{error}</Text>
+          </View>
+        ) : tasks.length === 0 ? (
+          <View className="py-10 items-center">
+            <Text className="text-text-secondary">
+              No tasks assigned for this day.
+            </Text>
+          </View>
+        ) : (
+          tasks.map((task) => (
+            <View
+              key={task.id}
+              className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
+            >
+              <Text className="flex-[3] text-lg text-text-primary">
+                {task.title}
+              </Text>
+              <Text className="flex-[2] text-lg text-text-primary">
+                {task.sourceType}
+              </Text>
+              <Text className="flex-[2] text-lg text-text-primary">
+                {task.priority}
+              </Text>
+              <Text className="flex-[2] text-lg text-text-primary">
+                {task.status}
+              </Text>
+              <Text className="flex-[2] text-lg text-text-primary text-right">
+                {formatTimeFromISO(task.startTime)}
+              </Text>
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );
 };
 
 export const MainContent: React.FC = () => {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { user } = useAuthStore();
+  const { fetchTasks } = useTaskStore();
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchTasks(user.id, formatDateForApi(selectedDate));
+    }
+  }, [selectedDate, user?.id, fetchTasks]);
+
   return (
     <View className="flex-1">
-      <ShiftControlCard />
+      <ShiftControlCard
+        selectedDate={selectedDate}
+        onSelectedDateChange={setSelectedDate}
+      />
       <TasksCard />
     </View>
   );
