@@ -210,13 +210,7 @@ const ShiftControlCard: React.FC<{
   const handleNextDay = () => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + 1);
-
-    // Don't allow future dates
-    if (!isSameDay(newDate, today) && newDate <= today) {
-      onSelectedDateChange(newDate);
-    } else if (isSameDay(newDate, today)) {
-      onSelectedDateChange(today);
-    }
+    onSelectedDateChange(newDate);
   };
 
   const openDatePicker = () => {
@@ -227,12 +221,10 @@ const ShiftControlCard: React.FC<{
     if (Platform.OS === "android") {
       setShowDatePicker(false);
       if (event.type === "set" && date) {
-        if (date <= today) {
-          onSelectedDateChange(date);
-        }
+        onSelectedDateChange(date);
       }
     } else {
-      if (date && date <= today) {
+      if (date) {
         onSelectedDateChange(date);
       }
     }
@@ -242,7 +234,7 @@ const ShiftControlCard: React.FC<{
     setShowDatePicker(false);
   };
 
-  const canGoNext = !isSameDay(selectedDate, today);
+  const canGoNext = true;
 
   return (
     <>
@@ -371,7 +363,6 @@ const ShiftControlCard: React.FC<{
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={onDateChange}
-              maximumDate={today}
               accentColor="#602AF3"
               textColor="#602AF3"
               style={{ height: Platform.OS === "ios" ? 300 : "auto" }}
