@@ -44,7 +44,13 @@ const DeliveriesScreen: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabType>("preparers");
   const [isAutoSelecting, setIsAutoSelecting] = useState(false);
+  const [hasInitialFetched, setHasInitialFetched] = useState(false);
   const lastHandledParamRef = React.useRef<string | null>(null);
+
+  // Reset fetch state on flight change
+  useEffect(() => {
+    setHasInitialFetched(false);
+  }, [flightId]);
 
   // Handle auto-open driver declaration from navigation params
   useEffect(() => {
@@ -52,10 +58,14 @@ const DeliveriesScreen: React.FC = () => {
     const openParam = params?.openDriverDeclaration;
 
     // We use a unique key to track if we've already handled this redirection request
-    // Since the param value is just 'true', we can use the flightId + param presence
     const paramKey = openParam ? `${flightId}-open` : null;
 
-    if (openParam && flightId && lastHandledParamRef.current !== paramKey) {
+    if (
+      openParam &&
+      flightId &&
+      hasInitialFetched &&
+      lastHandledParamRef.current !== paramKey
+    ) {
       if (!isLoading) {
         if (deliveries.length === 0) {
           if (!isAutoSelecting) {
@@ -93,10 +103,13 @@ const DeliveriesScreen: React.FC = () => {
     selectedDeliveryId,
     navigation,
     isAutoSelecting,
+    hasInitialFetched,
   ]);
 
   useEffect(() => {
-    if (flightId) fetchDeliveries(flightId);
+    if (flightId) {
+      fetchDeliveries(flightId).finally(() => setHasInitialFetched(true));
+    }
   }, [flightId, fetchDeliveries]);
 
   useEffect(() => {
