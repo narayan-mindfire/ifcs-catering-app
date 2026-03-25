@@ -26,6 +26,7 @@ export interface TaskDetails {
   jobType?: string;
   timeToLoad?: string;
   galleysToLoad?: number;
+  route?: string;
   assignedStaff?: {
     driver?: { id: string; name: string };
     loader?: Array<{ id: string; name: string }>;

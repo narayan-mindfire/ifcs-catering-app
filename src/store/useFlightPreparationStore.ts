@@ -217,7 +217,6 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
 
         await flightPreparationService.addUserSignature(
           flightId,
-          userId,
           cleanSignature,
         );
 

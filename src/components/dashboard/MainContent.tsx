@@ -495,22 +495,18 @@ const TasksCard: React.FC = () => {
                     key={task.id}
                     className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
                   >
-                    {/* No */}
                     <Text className="w-10 text-base text-text-secondary">
                       {String(index + 1).padStart(2, "0")}
                     </Text>
 
-                    {/* Task title */}
                     <Text className="flex-[3] text-base text-text-primary">
-                      {task.title}
+                      {task.taskDetails?.jobType} {task.title}
                     </Text>
 
-                    {/* Time */}
                     <Text className="w-16 text-base text-text-primary text-center">
                       {formatTimeFromISO(task.startTime)}
                     </Text>
 
-                    {/* Status */}
                     <View className="w-20 items-center">
                       <Text
                         className={`text-base font-semibold ${
@@ -574,7 +570,7 @@ const TaskDetailPanel: React.FC<{
       <TouchableOpacity onPress={onBack} className="flex-row items-center mb-5">
         <Text className="text-2xl text-text-primary mr-2">←</Text>
         <Text className="text-xl font-bold text-text-primary">
-          Task ID: {task.id} | {task.title}
+          {task.taskDetails?.jobType} {task.title}
         </Text>
       </TouchableOpacity>
 

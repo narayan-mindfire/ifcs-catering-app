@@ -80,7 +80,7 @@ export const flightPreparationService = {
     const response = await apiClient.get<any>(
       `/flights/${flightId}/users/signatures${params}`,
       {
-        params: userId ? { userId } : undefined,
+        params,
       },
     );
 
@@ -95,11 +95,9 @@ export const flightPreparationService = {
 
   addUserSignature: async (
     flightId: string,
-    userId: string,
     cleanSignature: string,
   ): Promise<void> => {
     const payload = {
-      userId,
       signature: cleanSignature,
     };
 

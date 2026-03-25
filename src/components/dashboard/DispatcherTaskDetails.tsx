@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { UnifiedTask } from "../../types/task";
+import { log } from "../../utils/logger";
 
 interface TaskStep {
   id: string;
@@ -12,17 +13,6 @@ interface TaskStep {
   hasForm: boolean;
   formLabel?: string;
 }
-
-const DISPATCH_STEPS: TaskStep[] = [
-  {
-    id: "a-check",
-    label: "A-Check",
-    hasForm: true,
-    formLabel: "Open A-Check Form",
-  },
-  { id: "partial-load", label: "Partial Load", hasForm: false },
-  { id: "declaration", label: "Declaration", hasForm: false },
-];
 
 interface DispatcherTaskDetailsProps {
   task: UnifiedTask;
@@ -42,12 +32,32 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
   const details = task.taskDetails || {};
 
+  const steps: TaskStep[] = [
+    {
+      id: "a-check",
+      label: "A-Check",
+      hasForm: false,
+    },
+    {
+      id: "job-type",
+      label: details.jobType || "Job Type",
+      hasForm: false,
+    },
+    { id: "declaration", label: "Declaration", hasForm: false },
+  ];
+
   const handleStepPress = (step: TaskStep) => {
     if (step.id === "declaration") {
+      log.info("Declaration step triggered", {
+        details,
+        flightId: details.flightId,
+        flightNo: details.flightNo,
+      });
+
       navigation.navigate("FlightDetails", {
         flightId: details.flightId || "mock-flight-id",
         flightNumber: details.flightNo || "Unknown",
-        route: "KWI-DXB", // Mock or from metadata
+        route: details.route || "Unknown",
         date: new Date().toISOString(),
         // @ts-ignore
         screen: "Deliveries",
@@ -61,7 +71,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   };
 
   const assignedStaff = details.assignedStaff || {};
-  // const driverName = assignedStaff.driver?.name || "No Driver";
   const loaders = assignedStaff.loader || [];
 
   return (
@@ -154,9 +163,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             <View className="w-10 h-10 rounded-full bg-bg-accent items-center justify-center border border-bg-button">
               <Text className="text-xs text-text-surface">D</Text>
             </View>
-            {loaders.map((loader, i) => (
+            {loaders.map((loader: any, i: number) => (
               <View
-                key={loader.id || i}
+                key={loader?.id || `loader-${i}`}
                 className="w-10 h-10 rounded-full bg-bg-tertiary items-center justify-center border border-border-muted"
               >
                 <Text className="text-xs text-text-secondary">L</Text>
@@ -170,7 +179,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       <View className="w-48">
         <Text className="text-sm text-text-tertiary mb-3">Next Steps</Text>
         <View className="gap-3">
-          {DISPATCH_STEPS.map((step) => (
+          {steps.map((step) => (
             <View key={step.id}>
               <View className="flex-row items-center gap-2 mb-1">
                 <TouchableOpacity

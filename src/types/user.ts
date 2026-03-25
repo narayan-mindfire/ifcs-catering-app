@@ -1,5 +1,6 @@
 export interface User {
   id: string;
+  username?: string;
   fmId: string;
   firstName: string;
   lastName: string;
@@ -7,6 +8,7 @@ export interface User {
   badgeNumber: string;
   organization: string;
   role: string;
+  roles?: string[];
   station: string;
   type: string;
   raicNumber: string;

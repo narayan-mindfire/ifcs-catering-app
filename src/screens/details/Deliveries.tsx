@@ -43,27 +43,45 @@ const DeliveriesScreen: React.FC = () => {
   } = useDeliveryStore();
 
   const [activeTab, setActiveTab] = useState<TabType>("preparers");
+  const [isAutoSelecting, setIsAutoSelecting] = useState(false);
+  const lastHandledParamRef = React.useRef<string | null>(null);
 
   // Handle auto-open driver declaration from navigation params
   useEffect(() => {
     const params = route.params;
-    if (params?.openDriverDeclaration && !isLoading && flightId) {
-      setActiveTab("driver");
+    const openParam = params?.openDriverDeclaration;
 
-      if (deliveries.length === 0) {
-        // Create new delivery if none exists
-        const name = "Delivery 1";
-        createDelivery(flightId, name);
-      } else {
-        // Select latest delivery
-        const latestDelivery = deliveries[deliveries.length - 1];
-        if (selectedDeliveryId !== latestDelivery.id) {
-          selectDelivery(latestDelivery.id);
+    // We use a unique key to track if we've already handled this redirection request
+    // Since the param value is just 'true', we can use the flightId + param presence
+    const paramKey = openParam ? `${flightId}-open` : null;
+
+    if (openParam && flightId && lastHandledParamRef.current !== paramKey) {
+      if (!isLoading) {
+        if (deliveries.length === 0) {
+          if (!isAutoSelecting) {
+            setIsAutoSelecting(true);
+            const name = "Delivery 1";
+            createDelivery(flightId, name);
+          }
+        } else {
+          // Select latest delivery
+          const latestDelivery = deliveries[deliveries.length - 1];
+          // Always ensure the tab is set
+          setActiveTab("driver");
+
+          if (selectedDeliveryId !== latestDelivery.id) {
+            selectDelivery(latestDelivery.id);
+          }
+
+          // Mark as handled before clearing param to avoid loops
+          lastHandledParamRef.current = paramKey;
+          setIsAutoSelecting(false);
+          navigation.setParams({ openDriverDeclaration: undefined } as any);
         }
       }
-
-      // Clear the param so it doesn't trigger again on re-renders
-      navigation.setParams({ openDriverDeclaration: undefined } as any);
+    } else if (!openParam) {
+      // Reset ref when param is gone
+      lastHandledParamRef.current = null;
     }
   }, [
     route.params,
@@ -74,6 +92,7 @@ const DeliveriesScreen: React.FC = () => {
     selectDelivery,
     selectedDeliveryId,
     navigation,
+    isAutoSelecting,
   ]);
 
   useEffect(() => {
@@ -105,14 +124,6 @@ const DeliveriesScreen: React.FC = () => {
     () => (selectedDelivery ? getCrewCompliance(selectedDelivery) : undefined),
     [selectedDelivery],
   );
-
-  useEffect(() => {
-    if (flightId) fetchDeliveries(flightId);
-  }, [flightId, fetchDeliveries]);
-
-  useEffect(() => {
-    if (error) Alert.alert("Error", error);
-  }, [error]);
 
   const handleAddNewDelivery = useCallback(() => {
     if (flightId) {
