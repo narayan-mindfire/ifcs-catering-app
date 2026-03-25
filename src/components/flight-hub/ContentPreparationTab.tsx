@@ -38,7 +38,7 @@ const ContentPreparersTab: React.FC<ContentPreparersTabProps> = ({
     const fetchData = async () => {
       if (flightId && deliveryId && user?.id) {
         setLoading(true);
-        await checkUserSignature(flightId, deliveryId, user.id);
+        await checkUserSignature(flightId, deliveryId);
         setLoading(false);
       }
     };

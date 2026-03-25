@@ -35,10 +35,10 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    log.info("--- AXIOS ERROR DEBUG ---");
+    log.error("--- AXIOS ERROR DEBUG ---");
     if (error.response) {
-      log.info("Status:", error.response.status);
-      log.info("Data:", error.response.data);
+      log.error("Status:", error.response.status);
+      log.error("Data:", error.response.data);
     }
     return Promise.reject(error);
   },

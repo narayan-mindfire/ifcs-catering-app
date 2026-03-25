@@ -24,7 +24,7 @@ describe("consumptionService", () => {
 
     expect(apiClient.get).toHaveBeenCalledWith(
       `/flights/${flightId}/consumption-tracking`,
-      { params: {} }
+      { params: {} },
     );
     expect(result.data).toHaveLength(1);
     expect(result.total).toBe(1);
@@ -40,22 +40,27 @@ describe("consumptionService", () => {
     };
     (apiClient.post as jest.Mock).mockResolvedValue(mockResponse);
 
-    const result = await consumptionService.createRecord(flightId, input as any);
+    const result = await consumptionService.createRecord(
+      flightId,
+      input as any,
+    );
 
     expect(apiClient.post).toHaveBeenCalledWith(
       `/flights/${flightId}/consumption-tracking`,
-      input
+      input,
     );
     expect(result.id).toBe("recnew");
   });
 
   it("deleteRecord should call delete endpoint", async () => {
-    (apiClient.delete as jest.Mock).mockResolvedValue({ data: { success: true } });
+    (apiClient.delete as jest.Mock).mockResolvedValue({
+      data: { success: true },
+    });
 
     await consumptionService.deleteRecord(flightId, "rec1");
 
     expect(apiClient.delete).toHaveBeenCalledWith(
-      `/flights/${flightId}/consumption-tracking/rec1`
+      `/flights/${flightId}/consumption-tracking/rec1`,
     );
   });
 });

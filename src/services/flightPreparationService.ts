@@ -76,10 +76,11 @@ export const flightPreparationService = {
     flightId: string,
     userId?: string,
   ): Promise<any[]> => {
+    const params = userId ? { byUser: true } : {};
     const response = await apiClient.get<any>(
       `/flights/${flightId}/users/signatures`,
       {
-        params: userId ? { userId } : undefined,
+        params,
       },
     );
 
@@ -94,11 +95,9 @@ export const flightPreparationService = {
 
   addUserSignature: async (
     flightId: string,
-    userId: string,
     cleanSignature: string,
   ): Promise<void> => {
     const payload = {
-      userId,
       signature: cleanSignature,
     };
 

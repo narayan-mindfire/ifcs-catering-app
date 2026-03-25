@@ -74,15 +74,18 @@ const CustomTabBar = ({
 
 const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const { flightId, route: flightRoute, flightNumber, date } = route.params;
-  const selectFlightById = useFlightStore((state) => state.selectFlightById);
+  const { selectFlightById, fetchFlightById } = useFlightStore();
 
   const [currentTab, setCurrentTab] = useState("Preparations");
 
   useEffect(() => {
     if (flightId) {
+      // First try to select from local state
       selectFlightById(flightId);
+      // Also trigger a fetch to ensure we have the full details and handle cases where it's not in local state
+      fetchFlightById(flightId);
     }
-  }, [flightId, selectFlightById]);
+  }, [flightId, selectFlightById, fetchFlightById]);
 
   const breadcrumbItems = useMemo(
     () => [
