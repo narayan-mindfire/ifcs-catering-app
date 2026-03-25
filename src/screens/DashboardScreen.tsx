@@ -36,7 +36,7 @@ const DashboardContent: React.FC = () => {
         >
           <Sidebar
             userName={user?.firstName + " " + user?.lastName}
-            position={"OAC Operations"}
+            position={user?.organization}
           />
         </View>
 

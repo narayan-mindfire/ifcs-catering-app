@@ -29,7 +29,7 @@ type SidebarScreenName = "SpotCheck" | "Flights" | "Memos" | "Documents";
 
 interface SidebarProps {
   userName: string;
-  position: string;
+  position?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ userName, position }) => {
@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName, position }) => {
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeText}>Welcome</Text>
           <Text style={styles.welcomeName}>{userName}</Text>
-          <Text style={styles.position}>{position}</Text>
+          {position && <Text style={styles.position}>{position}</Text>}
         </View>
 
         <View
