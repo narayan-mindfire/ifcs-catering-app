@@ -76,8 +76,9 @@ export const flightPreparationService = {
     flightId: string,
     userId?: string,
   ): Promise<any[]> => {
+    const params = userId ? `?byUser=true` : "";
     const response = await apiClient.get<any>(
-      `/flights/${flightId}/users/signatures`,
+      `/flights/${flightId}/users/signatures${params}`,
       {
         params: userId ? { userId } : undefined,
       },

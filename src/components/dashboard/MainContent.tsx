@@ -15,6 +15,7 @@ import {
 import { useAuthStore } from "../../store/useAuthStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
+import { UnifiedTask } from "../../types/task";
 import { AppButton } from "../common/AppButton";
 import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
 
@@ -24,32 +25,6 @@ const formatTimeHoursMinutes = (totalSeconds: number) => {
   const seconds = totalSeconds % 60;
 
   return `${String(hours).padStart(2, "0")} Hrs ${String(minutes).padStart(2, "0")} Mins ${String(seconds).padStart(2, "0")} Secs`;
-};
-
-const HARDCODED_TASK_DETAIL = {
-  taskId: "87TJUD",
-  jobType: "Partial Load",
-  flightNumber: "WY142",
-  flightId: "019b9aec-e772-75b6-aac7-81c505823171", // Default UUID for testing
-  takeOffTime: "06:35",
-  aircraft: "787-9",
-  registration: "A40-SL",
-  truck: "Truck #12",
-  loadingBay: "Bay 27",
-  reachBayAt: "4:45",
-  timeToLoad: "45 Minutes",
-  galleysToLoad: "G2 | G3",
-  assignedStaff: ["Driver", "Staff 1", "Luggage", "Staff 2", "Staff 3"],
-  nextSteps: [
-    {
-      id: "a-check",
-      label: "A-Check",
-      hasForm: true,
-      formLabel: "Open A-Check Form",
-    },
-    { id: "partial-load", label: "Partial Load - WY251", hasForm: false },
-    { id: "declaration", label: "Declaration", hasForm: false },
-  ],
 };
 
 const formatDateDisplay = (date: Date) => {
@@ -439,17 +414,15 @@ const TasksCard: React.FC = () => {
   const { tasks, isLoading, error } = useTaskStore();
   const { user } = useAuthStore();
 
-  const [selectedTask, setSelectedTask] = useState<
-    typeof HARDCODED_TASK_DETAIL | null
-  >(null);
+  const [selectedTask, setSelectedTask] = useState<UnifiedTask | null>(null);
 
   // Only drivers can view task details
   // const isDriver = user?.role === "driver";
   const isDriver = true;
 
-  const handleViewDetails = () => {
+  const handleViewDetails = (task: UnifiedTask) => {
     if (isDriver) {
-      setSelectedTask(HARDCODED_TASK_DETAIL);
+      setSelectedTask(task);
     }
   };
 
@@ -551,7 +524,7 @@ const TasksCard: React.FC = () => {
                     {/* Action */}
                     <TouchableOpacity
                       className="w-24 items-end"
-                      onPress={handleViewDetails}
+                      onPress={() => handleViewDetails(task)}
                       disabled={!isDriver}
                     >
                       <Text
@@ -574,24 +547,24 @@ const TasksCard: React.FC = () => {
 };
 
 const TaskDetailPanel: React.FC<{
-  task: typeof HARDCODED_TASK_DETAIL | null;
+  task: UnifiedTask | null;
   onBack: () => void;
 }> = ({ task, onBack }) => {
-  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
   if (!task) return null;
-
-  const toggleStep = (id: string) => {
-    setCheckedSteps((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const renderTaskDetails = () => {
     // Render Dispatcher task details for now, can be extended for other job types
+    // Using task.sourceType or task.task_type
+    const type = (task as any).task_type || task.sourceType;
+    if (type === "DISPATCH") {
+      return <DispatcherTaskDetails task={task} />;
+    }
     return (
-      <DispatcherTaskDetails
-        task={task}
-        checkedSteps={checkedSteps}
-        onToggleStep={toggleStep}
-      />
+      <View className="py-10 items-center">
+        <Text className="text-text-secondary">
+          Details for {type} tasks are not implemented yet.
+        </Text>
+      </View>
     );
   };
 
@@ -601,7 +574,7 @@ const TaskDetailPanel: React.FC<{
       <TouchableOpacity onPress={onBack} className="flex-row items-center mb-5">
         <Text className="text-2xl text-text-primary mr-2">←</Text>
         <Text className="text-xl font-bold text-text-primary">
-          Task ID: {task.taskId} {task.jobType}
+          Task ID: {task.id} | {task.title}
         </Text>
       </TouchableOpacity>
 

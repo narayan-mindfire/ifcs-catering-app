@@ -1,9 +1,10 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React from "react";
+import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { UnifiedTask } from "../../types/task";
 
 interface TaskStep {
   id: string;
@@ -12,55 +13,56 @@ interface TaskStep {
   formLabel?: string;
 }
 
-interface TaskDetail {
-  taskId: string;
-  jobType: string;
-  flightNumber: string;
-  takeOffTime: string;
-  aircraft: string;
-  registration: string;
-  truck: string;
-  loadingBay: string;
-  reachBayAt: string;
-  timeToLoad: string;
-  galleysToLoad: string;
-  assignedStaff: string[];
-  nextSteps: TaskStep[];
-  flightId?: string; // Added for navigation
-}
+const DISPATCH_STEPS: TaskStep[] = [
+  {
+    id: "a-check",
+    label: "A-Check",
+    hasForm: true,
+    formLabel: "Open A-Check Form",
+  },
+  { id: "partial-load", label: "Partial Load", hasForm: false },
+  { id: "declaration", label: "Declaration", hasForm: false },
+];
 
 interface DispatcherTaskDetailsProps {
-  task: TaskDetail;
-  checkedSteps: Record<string, boolean>;
-  onToggleStep: (id: string) => void;
+  task: UnifiedTask;
 }
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Dashboard">;
 
 export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   task,
-  checkedSteps,
-  onToggleStep,
 }) => {
   const navigation = useNavigation<NavigationProp>();
+  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
+
+  const toggleStep = (id: string) => {
+    setCheckedSteps((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const details = task.taskDetails || {};
 
   const handleStepPress = (step: TaskStep) => {
     if (step.id === "declaration") {
       navigation.navigate("FlightDetails", {
-        flightId: task.flightId || "mock-flight-id",
-        flightNumber: task.flightNumber,
-        route: "KWI-DXB", // Mock route
+        flightId: details.flightId || "mock-flight-id",
+        flightNumber: details.flightNo || "Unknown",
+        route: "KWI-DXB", // Mock or from metadata
         date: new Date().toISOString(),
-        // @ts-ignore - passing extra params for tab navigation handling
+        // @ts-ignore
         screen: "Deliveries",
         params: {
           openDriverDeclaration: true,
         },
       });
     } else {
-      onToggleStep(step.id);
+      toggleStep(step.id);
     }
   };
+
+  const assignedStaff = details.assignedStaff || {};
+  // const driverName = assignedStaff.driver?.name || "No Driver";
+  const loaders = assignedStaff.loader || [];
 
   return (
     <View className="flex-row gap-4">
@@ -70,7 +72,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           <View className="w-1/3">
             <Text className="text-sm text-text-tertiary mb-1">Flight #</Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.flightNumber}
+              {details.flightNo || "-"}
             </Text>
           </View>
           <View className="w-1/3">
@@ -78,7 +80,12 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               Take Off Time
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.takeOffTime}
+              {details.takeOffTime
+                ? new Date(details.takeOffTime).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"}
             </Text>
           </View>
           <View className="w-1/3">
@@ -86,19 +93,19 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               Aircraft | Reg
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.aircraft} | {task.registration}
+              {details.aircraftReg || "-"}
             </Text>
           </View>
           <View className="w-1/3">
             <Text className="text-sm text-text-tertiary mb-1">Truck</Text>
             <Text className="text-lg font-bold text-text-primary underline">
-              {task.truck}
+              {details.truckNo || "-"}
             </Text>
           </View>
           <View className="w-1/3">
             <Text className="text-sm text-text-tertiary mb-1">Loading Bay</Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.loadingBay}
+              {details.loadingBay || "-"}
             </Text>
           </View>
           <View className="w-1/3">
@@ -106,13 +113,18 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               Reach Bay at
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.reachBayAt}
+              {details.reachBayAt
+                ? new Date(details.reachBayAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"}
             </Text>
           </View>
           <View className="w-1/3">
             <Text className="text-sm text-text-tertiary mb-1">Job Type</Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.jobType}
+              {details.jobType || "-"}
             </Text>
           </View>
           <View className="w-1/3">
@@ -120,7 +132,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               Time to Load
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.timeToLoad}
+              {details.timeToLoad || "-"}
             </Text>
           </View>
           <View className="w-1/3">
@@ -128,7 +140,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               Galleys to Load
             </Text>
             <Text className="text-lg font-bold text-text-primary">
-              {task.galleysToLoad}
+              {details.galleysToLoad || "-"}
             </Text>
           </View>
         </View>
@@ -139,12 +151,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             Assigned Staff
           </Text>
           <View className="flex-row gap-2">
-            {task.assignedStaff.map((s, i) => (
+            <View className="w-10 h-10 rounded-full bg-bg-accent items-center justify-center border border-bg-button">
+              <Text className="text-xs text-text-surface">D</Text>
+            </View>
+            {loaders.map((loader, i) => (
               <View
-                key={i}
+                key={loader.id || i}
                 className="w-10 h-10 rounded-full bg-bg-tertiary items-center justify-center border border-border-muted"
               >
-                <Text className="text-xs text-text-secondary">{s[0]}</Text>
+                <Text className="text-xs text-text-secondary">L</Text>
               </View>
             ))}
           </View>
@@ -155,7 +170,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       <View className="w-48">
         <Text className="text-sm text-text-tertiary mb-3">Next Steps</Text>
         <View className="gap-3">
-          {task.nextSteps.map((step) => (
+          {DISPATCH_STEPS.map((step) => (
             <View key={step.id}>
               <View className="flex-row items-center gap-2 mb-1">
                 <TouchableOpacity
