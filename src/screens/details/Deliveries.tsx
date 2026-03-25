@@ -1,3 +1,4 @@
+import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
 
@@ -24,6 +25,8 @@ import {
 import { log } from "../../utils/logger";
 
 const DeliveriesScreen: React.FC = () => {
+  const route = useRoute<any>();
+  const navigation = useNavigation();
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
 
   const {
@@ -40,6 +43,46 @@ const DeliveriesScreen: React.FC = () => {
   } = useDeliveryStore();
 
   const [activeTab, setActiveTab] = useState<TabType>("preparers");
+
+  // Handle auto-open driver declaration from navigation params
+  useEffect(() => {
+    const params = route.params;
+    if (params?.openDriverDeclaration && !isLoading && flightId) {
+      setActiveTab("driver");
+
+      if (deliveries.length === 0) {
+        // Create new delivery if none exists
+        const name = "Delivery 1";
+        createDelivery(flightId, name);
+      } else {
+        // Select latest delivery
+        const latestDelivery = deliveries[deliveries.length - 1];
+        if (selectedDeliveryId !== latestDelivery.id) {
+          selectDelivery(latestDelivery.id);
+        }
+      }
+
+      // Clear the param so it doesn't trigger again on re-renders
+      navigation.setParams({ openDriverDeclaration: undefined } as any);
+    }
+  }, [
+    route.params,
+    deliveries,
+    isLoading,
+    flightId,
+    createDelivery,
+    selectDelivery,
+    selectedDeliveryId,
+    navigation,
+  ]);
+
+  useEffect(() => {
+    if (flightId) fetchDeliveries(flightId);
+  }, [flightId, fetchDeliveries]);
+
+  useEffect(() => {
+    if (error) Alert.alert("Error", error);
+  }, [error]);
 
   const selectedDelivery = useMemo(
     () => deliveries.find((d) => d.id === selectedDeliveryId),

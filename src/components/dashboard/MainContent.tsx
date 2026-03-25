@@ -16,6 +16,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
 import { AppButton } from "../common/AppButton";
+import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
 
 const formatTimeHoursMinutes = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -23,6 +24,32 @@ const formatTimeHoursMinutes = (totalSeconds: number) => {
   const seconds = totalSeconds % 60;
 
   return `${String(hours).padStart(2, "0")} Hrs ${String(minutes).padStart(2, "0")} Mins ${String(seconds).padStart(2, "0")} Secs`;
+};
+
+const HARDCODED_TASK_DETAIL = {
+  taskId: "87TJUD",
+  jobType: "Partial Load",
+  flightNumber: "WY142",
+  flightId: "019b9aec-e772-75b6-aac7-81c505823171", // Default UUID for testing
+  takeOffTime: "06:35",
+  aircraft: "787-9",
+  registration: "A40-SL",
+  truck: "Truck #12",
+  loadingBay: "Bay 27",
+  reachBayAt: "4:45",
+  timeToLoad: "45 Minutes",
+  galleysToLoad: "G2 | G3",
+  assignedStaff: ["Driver", "Staff 1", "Luggage", "Staff 2", "Staff 3"],
+  nextSteps: [
+    {
+      id: "a-check",
+      label: "A-Check",
+      hasForm: true,
+      formLabel: "Open A-Check Form",
+    },
+    { id: "partial-load", label: "Partial Load - WY251", hasForm: false },
+    { id: "declaration", label: "Declaration", hasForm: false },
+  ],
 };
 
 const formatDateDisplay = (date: Date) => {
@@ -410,69 +437,176 @@ const ShiftControlCard: React.FC<{
 
 const TasksCard: React.FC = () => {
   const { tasks, isLoading, error } = useTaskStore();
+  const { user } = useAuthStore();
+
+  const [selectedTask, setSelectedTask] = useState<
+    typeof HARDCODED_TASK_DETAIL | null
+  >(null);
+
+  // Only drivers can view task details
+  // const isDriver = user?.role === "driver";
+  const isDriver = true;
+
+  const handleViewDetails = () => {
+    if (isDriver) {
+      setSelectedTask(HARDCODED_TASK_DETAIL);
+    }
+  };
+
+  const pendingCount = tasks.filter((t) => t.status === "PENDING").length;
 
   return (
     <View className="flex-1 mt-5 bg-bg-surface rounded-2xl p-5 shadow-sm">
-      <Text className="text-xl font-bold mb-4 text-text-primary">My Tasks</Text>
-
-      <View className="flex-row bg-bg-tertiary py-4 px-3.5 rounded-[10px] mb-1.5">
-        <Text className="flex-[3] text-lg font-bold text-text-secondary">
-          Title
-        </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Type
-        </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Priority
-        </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary">
-          Status
-        </Text>
-        <Text className="flex-[2] text-lg font-bold text-text-secondary text-right">
-          Time
-        </Text>
-      </View>
-
-      <ScrollView className="flex-1">
-        {isLoading ? (
-          <View className="py-10 items-center">
-            <Text className="text-text-secondary">Loading tasks...</Text>
-          </View>
-        ) : error ? (
-          <View className="py-10 items-center">
-            <Text className="text-[#EF4444]">{error}</Text>
-          </View>
-        ) : tasks.length === 0 ? (
-          <View className="py-10 items-center">
-            <Text className="text-text-secondary">
-              No tasks assigned for this day.
+      {selectedTask ? (
+        <TaskDetailPanel
+          task={selectedTask}
+          onBack={() => setSelectedTask(null)}
+        />
+      ) : (
+        <>
+          {/* Header */}
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold text-text-primary">
+              My Tasks
             </Text>
-          </View>
-        ) : (
-          tasks.map((task) => (
-            <View
-              key={task.id}
-              className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
-            >
-              <Text className="flex-[3] text-lg text-text-primary">
-                {task.title}
+            <View className="flex-row items-center gap-2">
+              <Text className="text-base text-[#F59E0B] font-semibold">
+                Pending:
               </Text>
-              <Text className="flex-[2] text-lg text-text-primary">
-                {task.sourceType}
-              </Text>
-              <Text className="flex-[2] text-lg text-text-primary">
-                {task.priority}
-              </Text>
-              <Text className="flex-[2] text-lg text-text-primary">
-                {task.status}
-              </Text>
-              <Text className="flex-[2] text-lg text-text-primary text-right">
-                {formatTimeFromISO(task.startTime)}
+              <Text className="text-base text-[#F59E0B] font-bold">
+                {String(pendingCount).padStart(2, "0")}
               </Text>
             </View>
-          ))
-        )}
-      </ScrollView>
+          </View>
+
+          {/* Table Header */}
+          <View className="flex-row bg-bg-tertiary py-3 px-3.5 rounded-[10px] mb-1.5">
+            <Text className="w-10 text-sm font-bold text-text-secondary">
+              No
+            </Text>
+            <Text className="flex-[3] text-sm font-bold text-text-secondary">
+              Task
+            </Text>
+            <Text className="w-16 text-sm font-bold text-text-secondary text-center">
+              Time
+            </Text>
+            <Text className="w-20 text-sm font-bold text-text-secondary text-center">
+              Status
+            </Text>
+            <Text className="w-24 text-sm font-bold text-text-secondary text-right">
+              Action
+            </Text>
+          </View>
+
+          {/* Table Body */}
+          <ScrollView className="flex-1">
+            {isLoading ? (
+              <View className="py-10 items-center">
+                <Text className="text-text-secondary">Loading tasks...</Text>
+              </View>
+            ) : error ? (
+              <View className="py-10 items-center">
+                <Text className="text-[#EF4444]">{error}</Text>
+              </View>
+            ) : tasks.length === 0 ? (
+              <View className="py-10 items-center">
+                <Text className="text-text-secondary">
+                  No tasks assigned for this day.
+                </Text>
+              </View>
+            ) : (
+              tasks.map((task, index) => {
+                const isPending = task.status === "PENDING";
+                return (
+                  <View
+                    key={task.id}
+                    className="flex-row py-4 border-b border-bg-tertiary items-center px-3.5"
+                  >
+                    {/* No */}
+                    <Text className="w-10 text-base text-text-secondary">
+                      {String(index + 1).padStart(2, "0")}
+                    </Text>
+
+                    {/* Task title */}
+                    <Text className="flex-[3] text-base text-text-primary">
+                      {task.title}
+                    </Text>
+
+                    {/* Time */}
+                    <Text className="w-16 text-base text-text-primary text-center">
+                      {formatTimeFromISO(task.startTime)}
+                    </Text>
+
+                    {/* Status */}
+                    <View className="w-20 items-center">
+                      <Text
+                        className={`text-base font-semibold ${
+                          isPending ? "text-[#F59E0B]" : "text-[#22C55E]"
+                        }`}
+                      >
+                        {isPending ? "Pending" : task.status}
+                      </Text>
+                    </View>
+
+                    {/* Action */}
+                    <TouchableOpacity
+                      className="w-24 items-end"
+                      onPress={handleViewDetails}
+                      disabled={!isDriver}
+                    >
+                      <Text
+                        className={`text-base font-semibold underline ${
+                          isDriver ? "text-text-primary" : "text-text-muted"
+                        }`}
+                      >
+                        View Details
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })
+            )}
+          </ScrollView>
+        </>
+      )}
+    </View>
+  );
+};
+
+const TaskDetailPanel: React.FC<{
+  task: typeof HARDCODED_TASK_DETAIL | null;
+  onBack: () => void;
+}> = ({ task, onBack }) => {
+  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
+  if (!task) return null;
+
+  const toggleStep = (id: string) => {
+    setCheckedSteps((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderTaskDetails = () => {
+    // Render Dispatcher task details for now, can be extended for other job types
+    return (
+      <DispatcherTaskDetails
+        task={task}
+        checkedSteps={checkedSteps}
+        onToggleStep={toggleStep}
+      />
+    );
+  };
+
+  return (
+    <View className="flex-1">
+      {/* Header */}
+      <TouchableOpacity onPress={onBack} className="flex-row items-center mb-5">
+        <Text className="text-2xl text-text-primary mr-2">←</Text>
+        <Text className="text-xl font-bold text-text-primary">
+          Task ID: {task.taskId} {task.jobType}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Detail Content */}
+      {renderTaskDetails()}
     </View>
   );
 };

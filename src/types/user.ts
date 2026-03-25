@@ -6,6 +6,7 @@ export interface User {
   email: string;
   badgeNumber: string;
   organization: string;
+  role: string;
   station: string;
   type: string;
   raicNumber: string;
