@@ -30,7 +30,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   loading,
 }) => {
   const baseButton =
-    "flex-row items-center justify-center rounded-xl py-3 px-4 border";
+    "flex-row items-center justify-center rounded-xl p-0.5 px-4 border";
 
   const backgroundClass = disabled
     ? "bg-border-muted border-border-muted"

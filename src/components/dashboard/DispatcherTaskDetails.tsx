@@ -3,11 +3,18 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-import { BoxIcon, DeliveryIconTrue } from "../../assets/icons";
+import {
+  BoxIcon,
+  CheckIconSuccess,
+  DeliveryIconTrue,
+  DocsIcon,
+  StringIconTrue,
+} from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useTaskStore } from "../../store/useTaskStore";
 import { UnifiedTask } from "../../types/task";
 import { log } from "../../utils/logger";
+import { AppButton } from "../common/AppButton";
 
 interface TaskStep {
   id: string;
@@ -260,23 +267,20 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
             </View>
 
-            <TouchableOpacity
+            <AppButton
+              title="Mark Task as Complete"
               onPress={handleMarkComplete}
               disabled={!allStepsChecked}
-              className={`py-2.5 px-6 rounded-xl border ${
-                allStepsChecked
-                  ? "bg-bg-button border-bg-button"
-                  : "bg-bg-surface border-border-muted opacity-50"
-              }`}
-            >
-              <Text
-                className={`text-sm font-bold ${
-                  allStepsChecked ? "text-white" : "text-text-muted"
-                }`}
-              >
-                Mark Task as Complete
-              </Text>
-            </TouchableOpacity>
+              IconComponent={
+                <CheckIconSuccess
+                  width={16}
+                  height={16}
+                  fill={allStepsChecked ? "#fff" : "#999"}
+                />
+              }
+              style={{ paddingVertical: 4, paddingHorizontal: 12, height: 42 }}
+              textStyle={{ fontSize: 12 }}
+            />
           </View>
         </View>
       </View>
@@ -307,11 +311,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               </View>
 
               {step.id === "a-check" && checkedSteps["a-check"] && (
-                <TouchableOpacity className="border border-bg-button rounded-xl py-2 px-3 mt-1">
-                  <Text className="text-bg-button text-sm font-semibold text-center">
-                    Fill A-Check
-                  </Text>
-                </TouchableOpacity>
+                <AppButton
+                  title="Fill A-Check"
+                  onPress={() => log.info("Fill A-Check pressed")}
+                  IconComponent={
+                    <DocsIcon width={14} height={14} fill="#fff" />
+                  }
+                  style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
+                  textStyle={{ fontSize: 10 }}
+                />
               )}
 
               {step.id === "job-type" && checkedSteps["job-type"] && (
@@ -320,35 +328,38 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     {formatSeconds(timeLeft)}
                   </Text>
                   <View className="flex-row gap-2">
-                    <TouchableOpacity
+                    <AppButton
+                      title={isTimerRunning ? "Pause" : "Start"}
                       onPress={() => setIsTimerRunning(!isTimerRunning)}
-                      className="bg-bg-button rounded-lg py-1.5 px-3"
-                    >
-                      <Text className="text-white text-xs font-semibold">
-                        {isTimerRunning ? "Pause Timer" : "Start Timer"}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                      style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
+                      textStyle={{ fontSize: 10 }}
+                    />
+                    <AppButton
+                      title="Stop"
                       onPress={() => setIsTimerRunning(false)}
-                      className="border border-bg-button rounded-lg py-1.5 px-3"
-                    >
-                      <Text className="text-bg-button text-xs font-semibold">
-                        Stop
-                      </Text>
-                    </TouchableOpacity>
+                      style={{
+                        marginTop: 4,
+                        paddingVertical: 2,
+                        height: 34,
+                        borderColor: "#602AF3",
+                        backgroundColor: "#fff",
+                      }}
+                      textStyle={{ fontSize: 10, color: "#602AF3" }}
+                    />
                   </View>
                 </View>
               )}
 
               {step.id === "declaration" && checkedSteps["declaration"] && (
-                <TouchableOpacity
+                <AppButton
+                  title="Sign Declaration"
                   onPress={handleSignDeclaration}
-                  className="bg-bg-button rounded-xl py-2 px-3 mt-1"
-                >
-                  <Text className="text-white text-sm font-semibold text-center">
-                    Sign Declaration
-                  </Text>
-                </TouchableOpacity>
+                  IconComponent={
+                    <StringIconTrue width={14} height={14} fill="#fff" />
+                  }
+                  style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
+                  textStyle={{ fontSize: 10 }}
+                />
               )}
             </View>
           ))}
