@@ -112,6 +112,8 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       screen: "Deliveries",
       params: {
         openDriverDeclaration: true,
+        fromDashboard: true,
+        taskId: task.id,
       },
     });
   };

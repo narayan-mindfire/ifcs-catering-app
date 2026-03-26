@@ -2,9 +2,11 @@ import apiClient from "../api/axiosClient";
 import { AttendanceResponse } from "../types/attendance";
 
 export const attendanceService = {
-  startShift: async (): Promise<AttendanceResponse> => {
-    const response =
-      await apiClient.post<AttendanceResponse>("/attendance/start");
+  startShift: async (startTime?: string): Promise<AttendanceResponse> => {
+    const response = await apiClient.post<AttendanceResponse>(
+      "/attendance/start",
+      { startTime },
+    );
     return response.data;
   },
 

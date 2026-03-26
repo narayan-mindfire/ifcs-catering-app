@@ -2,7 +2,7 @@
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   Platform,
@@ -155,6 +155,8 @@ const ShiftControlCard: React.FC<{
     syncTime,
     fetchStatus,
     fetchHistory,
+    totalBreakMs,
+    currentBreakSessionDuration,
   } = useTimerStore();
 
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
@@ -163,10 +165,10 @@ const ShiftControlCard: React.FC<{
   const today = new Date();
   const isToday = isSameDay(selectedDate, today);
 
-  // Sync timer every second if shift is ON
+  // Sync timer every second if shift is ON or BREAK
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
-    if (shiftState === "ON") {
+    if (shiftState === "ON" || shiftState === "BREAK") {
       syncTime();
       intervalId = setInterval(() => {
         syncTime();
@@ -177,8 +179,10 @@ const ShiftControlCard: React.FC<{
     };
   }, [shiftState, syncTime]);
 
-  // Calculate display time based on selected date
+  // Calculate display times based on selected date
   const displayTime = Math.floor(totalWorkedMs / 1000) + currentSessionDuration;
+  const displayBreakTime =
+    Math.floor(totalBreakMs / 1000) + currentBreakSessionDuration;
 
   const handleStartShift = () => {
     startShift();
@@ -272,36 +276,47 @@ const ShiftControlCard: React.FC<{
 
         <View className="px-5 py-0 border-b border-border-muted">
           <View className="flex-row">
-            <View className="flex-1 pr-3 py-2">
+            <View className="flex-[0.7] pr-3 py-2">
               <Text className="text-sm text-text-tertiary mb-2">Shift</Text>
-              <Text className="text-xl font-semibold text-text-primary">
+              <Text className="text-lg font-semibold text-text-primary">
                 {shiftType || "Not Started"}
               </Text>
             </View>
 
             <View className="w-px bg-border-secondary" />
 
-            <View className="flex-1 px-3 py-2">
+            <View className="flex-[0.8] px-3 py-2">
               <Text className="text-sm text-text-tertiary mb-2">
                 Shift Time
               </Text>
-              <Text className="text-lg font-semibold text-text-primary">
+              <Text className="text-base font-semibold text-text-primary">
                 {shiftType === "MORNING"
-                  ? "10:00 AM - 6:00 PM"
+                  ? "10 AM - 6 PM"
                   : shiftType === "EVENING"
-                    ? "6:00 PM - 2:00 AM"
+                    ? "6 PM - 2 AM"
                     : "--:--"}
               </Text>
             </View>
 
             <View className="w-px bg-border-secondary" />
 
-            <View className="flex-1 pl-3 py-2">
+            <View className="flex-[1.3] px-3 py-2">
               <Text className="text-sm text-text-tertiary mb-2">
                 Worked Time
               </Text>
               <Text className="text-lg font-bold text-text-primary">
                 {formatTimeHoursMinutes(displayTime)}
+              </Text>
+            </View>
+
+            <View className="w-px bg-border-secondary" />
+
+            <View className="flex-[1.3] pl-3 py-2">
+              <Text className="text-sm text-text-tertiary mb-2">
+                Break Time
+              </Text>
+              <Text className="text-lg font-bold text-text-primary">
+                {formatTimeHoursMinutes(displayBreakTime)}
               </Text>
             </View>
           </View>
@@ -402,18 +417,20 @@ const ShiftControlCard: React.FC<{
 };
 
 const TasksCard: React.FC = () => {
-  const { tasks, isLoading, error } = useTaskStore();
+  const { tasks, isLoading, error, selectedTaskId, setSelectedTaskId } =
+    useTaskStore();
   const { user } = useAuthStore();
 
-  const [selectedTask, setSelectedTask] = useState<UnifiedTask | null>(null);
+  const selectedTask = useMemo(() => {
+    return tasks.find((t) => t.id === selectedTaskId) || null;
+  }, [tasks, selectedTaskId]);
 
   // Only drivers can view task details
-  // const isDriver = user?.role === "driver";
   const isDriver = true;
 
   const handleViewDetails = (task: UnifiedTask) => {
     if (isDriver) {
-      setSelectedTask(task);
+      setSelectedTaskId(task.id);
     }
   };
 
@@ -424,7 +441,7 @@ const TasksCard: React.FC = () => {
       {selectedTask ? (
         <TaskDetailPanel
           task={selectedTask}
-          onBack={() => setSelectedTask(null)}
+          onBack={() => setSelectedTaskId(null)}
         />
       ) : (
         <>
