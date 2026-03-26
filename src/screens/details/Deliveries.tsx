@@ -11,6 +11,7 @@ import {
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
+import { useTaskStore } from "../../store/useTaskStore";
 import {
   CrewCompliance,
   Delivery,
@@ -26,7 +27,7 @@ import { log } from "../../utils/logger";
 
 const DeliveriesScreen: React.FC = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
 
   const {
@@ -41,6 +42,8 @@ const DeliveriesScreen: React.FC = () => {
     addSignature,
     deleteDelivery,
   } = useDeliveryStore();
+
+  const { setSelectedTaskId } = useTaskStore();
 
   const [activeTab, setActiveTab] = useState<TabType>("preparers");
   const [isAutoSelecting, setIsAutoSelecting] = useState(false);
@@ -57,7 +60,7 @@ const DeliveriesScreen: React.FC = () => {
     const params = route.params;
     const openParam = params?.openDriverDeclaration;
 
-    // We use a unique key to track if we've already handled this redirection request
+    // unique key to track if we've already handled this redirection request
     const paramKey = openParam ? `${flightId}-open` : null;
 
     if (
@@ -74,9 +77,7 @@ const DeliveriesScreen: React.FC = () => {
             createDelivery(flightId, name);
           }
         } else {
-          // Select latest delivery
           const latestDelivery = deliveries[deliveries.length - 1];
-          // Always ensure the tab is set
           setActiveTab("driver");
 
           if (selectedDeliveryId !== latestDelivery.id) {
@@ -291,11 +292,18 @@ const DeliveriesScreen: React.FC = () => {
 
       try {
         await Promise.all(promises);
+        // Redirect back to dashboard if we came from there
+        const params = route.params;
+        if (params?.fromDashboard && params?.taskId) {
+          setSelectedTaskId(params.taskId);
+          navigation.navigate("Dashboard" as any);
+        }
       } catch (err) {
         log.error("Error saving driver declaration:", err);
         Alert.alert("Error", "Failed to save some changes.");
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       flightId,
       selectedDeliveryId,

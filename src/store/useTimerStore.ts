@@ -10,9 +10,11 @@ type ShiftState = "OFF" | "ON" | "BREAK";
 interface TimerStoreState {
   shiftState: ShiftState;
   totalWorkedMs: number;
+  totalBreakMs: number;
   lastStatusChangeAt: string | null;
   shiftType: string | null;
   currentSessionDuration: number;
+  currentBreakSessionDuration: number;
   isLoading: boolean;
   error: string | null;
 
@@ -42,9 +44,11 @@ export const useTimerStore = create<TimerStoreState>()(
     (set, get) => ({
       shiftState: "OFF",
       totalWorkedMs: 0,
+      totalBreakMs: 0,
       lastStatusChangeAt: null,
       shiftType: null,
       currentSessionDuration: 0,
+      currentBreakSessionDuration: 0,
       isLoading: false,
       error: null,
 
@@ -57,12 +61,18 @@ export const useTimerStore = create<TimerStoreState>()(
             set({
               shiftState: mapBackendStatus(data.currentStatus),
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
               lastStatusChangeAt: data.lastStatusChangeAt,
               shiftType: data.shiftType,
               isLoading: false,
             });
           } else {
-            set({ shiftState: "OFF", totalWorkedMs: 0, isLoading: false });
+            set({
+              shiftState: "OFF",
+              totalWorkedMs: 0,
+              totalBreakMs: 0,
+              isLoading: false,
+            });
           }
         } catch (err) {
           log.error("Fetch status error:", err);
@@ -78,6 +88,7 @@ export const useTimerStore = create<TimerStoreState>()(
             const data = response.data;
             set({
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
               shiftType: data.shiftType,
               isLoading: false,
               // history usually means finished, so we don't start the real-time counter
@@ -85,7 +96,12 @@ export const useTimerStore = create<TimerStoreState>()(
               lastStatusChangeAt: null,
             });
           } else {
-            set({ totalWorkedMs: 0, shiftType: null, isLoading: false });
+            set({
+              totalWorkedMs: 0,
+              totalBreakMs: 0,
+              shiftType: null,
+              isLoading: false,
+            });
           }
         } catch (err) {
           log.error("Fetch history error:", err);
@@ -96,13 +112,15 @@ export const useTimerStore = create<TimerStoreState>()(
       startShift: async () => {
         set({ isLoading: true });
         try {
-          const response = await attendanceService.startShift();
+          const startTime = new Date().toISOString();
+          const response = await attendanceService.startShift(startTime);
           if (response.success) {
             const data = response.data;
             set({
               shiftState: "ON",
               lastStatusChangeAt: data.lastStatusChangeAt,
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
               shiftType: data.shiftType,
               isLoading: false,
             });
@@ -123,6 +141,7 @@ export const useTimerStore = create<TimerStoreState>()(
               shiftState: "BREAK",
               lastStatusChangeAt: data.lastStatusChangeAt,
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
               currentSessionDuration: 0,
               isLoading: false,
             });
@@ -143,6 +162,8 @@ export const useTimerStore = create<TimerStoreState>()(
               shiftState: "ON",
               lastStatusChangeAt: data.lastStatusChangeAt,
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
+              currentBreakSessionDuration: 0,
               isLoading: false,
             });
           }
@@ -162,7 +183,9 @@ export const useTimerStore = create<TimerStoreState>()(
               shiftState: "OFF",
               lastStatusChangeAt: null,
               totalWorkedMs: data.totalWorkedMs,
+              totalBreakMs: data.totalBreakMs || 0,
               currentSessionDuration: 0,
+              currentBreakSessionDuration: 0,
               isLoading: false,
             });
           }
@@ -174,13 +197,27 @@ export const useTimerStore = create<TimerStoreState>()(
 
       syncTime: () => {
         const { shiftState, lastStatusChangeAt } = get();
-        if (shiftState === "ON" && lastStatusChangeAt) {
-          const startTimeMs = new Date(lastStatusChangeAt).getTime();
-          const elapsedSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
-          // Only update if positive to avoid flicker on clock sync issues
-          set({ currentSessionDuration: Math.max(0, elapsedSeconds) });
+        if (!lastStatusChangeAt) {
+          set({ currentSessionDuration: 0, currentBreakSessionDuration: 0 });
+          return;
+        }
+
+        const startTimeMs = new Date(lastStatusChangeAt).getTime();
+        const elapsedSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
+        const duration = Math.max(0, elapsedSeconds);
+
+        if (shiftState === "ON") {
+          set({
+            currentSessionDuration: duration,
+            currentBreakSessionDuration: 0,
+          });
+        } else if (shiftState === "BREAK") {
+          set({
+            currentSessionDuration: 0,
+            currentBreakSessionDuration: duration,
+          });
         } else {
-          set({ currentSessionDuration: 0 });
+          set({ currentSessionDuration: 0, currentBreakSessionDuration: 0 });
         }
       },
 
@@ -188,9 +225,11 @@ export const useTimerStore = create<TimerStoreState>()(
         set({
           shiftState: "OFF",
           totalWorkedMs: 0,
+          totalBreakMs: 0,
           lastStatusChangeAt: null,
           shiftType: null,
           currentSessionDuration: 0,
+          currentBreakSessionDuration: 0,
           error: null,
         });
       },
@@ -201,6 +240,7 @@ export const useTimerStore = create<TimerStoreState>()(
       partialize: (state) => ({
         shiftState: state.shiftState,
         totalWorkedMs: state.totalWorkedMs,
+        totalBreakMs: state.totalBreakMs,
         lastStatusChangeAt: state.lastStatusChangeAt,
         shiftType: state.shiftType,
       }),
