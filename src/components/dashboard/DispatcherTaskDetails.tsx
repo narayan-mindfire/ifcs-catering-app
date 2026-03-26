@@ -5,6 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { BoxIcon, DeliveryIconTrue } from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { useTaskStore } from "../../store/useTaskStore";
 import { UnifiedTask } from "../../types/task";
 import { log } from "../../utils/logger";
 
@@ -23,8 +24,10 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   task,
 }) => {
   const navigation = useNavigation<NavigationProp>();
+  const { taskStepsStatus, setStepStatus } = useTaskStore();
+  const checkedSteps = taskStepsStatus[task.id] || {};
+
   const details = task.taskDetails || {};
-  const [checkedSteps, setCheckedSteps] = useState<Record<string, boolean>>({});
   const [timeLeft, setTimeLeft] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
@@ -53,7 +56,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
   const toggleStep = (id: string) => {
     const isChecking = !checkedSteps[id];
-    setCheckedSteps((prev) => ({ ...prev, [id]: isChecking }));
+    setStepStatus(task.id, id, isChecking);
 
     if (id === "job-type") {
       if (isChecking) {
@@ -223,7 +226,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           </Text>
           <View className="flex-row items-center justify-between">
             <View className="flex-row gap-3">
-              {/* Driver Capsule */}
               {driver && (
                 <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
                   <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
@@ -237,7 +239,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 </View>
               )}
 
-              {/* Loaders Capsule */}
               {loaders.length > 0 && (
                 <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
                   <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
@@ -259,13 +260,12 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
             </View>
 
-            {/* Mark Task as Complete Button */}
             <TouchableOpacity
               onPress={handleMarkComplete}
               disabled={!allStepsChecked}
               className={`py-2.5 px-6 rounded-xl border ${
                 allStepsChecked
-                  ? "bg-[#602AF3] border-[#602AF3]"
+                  ? "bg-bg-button border-bg-button"
                   : "bg-bg-surface border-border-muted opacity-50"
               }`}
             >
@@ -291,7 +291,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   onPress={() => handleStepPress(step)}
                   className={`w-5 h-5 rounded border-2 items-center justify-center ${
                     checkedSteps[step.id]
-                      ? "bg-[#602AF3] border-[#602AF3]"
+                      ? "bg-bg-button border-bg-button"
                       : "border-border-muted bg-transparent"
                   }`}
                 >
@@ -307,8 +307,8 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               </View>
 
               {step.id === "a-check" && checkedSteps["a-check"] && (
-                <TouchableOpacity className="border border-[#602AF3] rounded-xl py-2 px-3 mt-1">
-                  <Text className="text-[#602AF3] text-sm font-semibold text-center">
+                <TouchableOpacity className="border border-bg-button rounded-xl py-2 px-3 mt-1">
+                  <Text className="text-bg-button text-sm font-semibold text-center">
                     Fill A-Check
                   </Text>
                 </TouchableOpacity>
@@ -316,13 +316,13 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
               {step.id === "job-type" && checkedSteps["job-type"] && (
                 <View className="mt-1 ml-7">
-                  <Text className="text-[#602AF3] font-bold text-lg mb-2">
+                  <Text className="text-bg-button font-bold text-lg mb-2">
                     {formatSeconds(timeLeft)}
                   </Text>
                   <View className="flex-row gap-2">
                     <TouchableOpacity
                       onPress={() => setIsTimerRunning(!isTimerRunning)}
-                      className="bg-[#602AF3] rounded-lg py-1.5 px-3"
+                      className="bg-bg-button rounded-lg py-1.5 px-3"
                     >
                       <Text className="text-white text-xs font-semibold">
                         {isTimerRunning ? "Pause Timer" : "Start Timer"}
@@ -330,9 +330,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => setIsTimerRunning(false)}
-                      className="border border-[#602AF3] rounded-lg py-1.5 px-3"
+                      className="border border-bg-button rounded-lg py-1.5 px-3"
                     >
-                      <Text className="text-[#602AF3] text-xs font-semibold">
+                      <Text className="text-bg-button text-xs font-semibold">
                         Stop
                       </Text>
                     </TouchableOpacity>
@@ -343,7 +343,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               {step.id === "declaration" && checkedSteps["declaration"] && (
                 <TouchableOpacity
                   onPress={handleSignDeclaration}
-                  className="bg-[#602AF3] rounded-xl py-2 px-3 mt-1"
+                  className="bg-bg-button rounded-xl py-2 px-3 mt-1"
                 >
                   <Text className="text-white text-sm font-semibold text-center">
                     Sign Declaration

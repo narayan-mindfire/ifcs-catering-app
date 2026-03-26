@@ -29,7 +29,7 @@ export interface TaskDetails {
   route?: string;
   assignedStaff?: {
     driver?: { id: string; name: string };
-    loader?: Array<{ id: string; name: string }>;
+    loader?: { id: string; name: string }[];
   };
 }
 

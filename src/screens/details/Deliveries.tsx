@@ -305,6 +305,7 @@ const DeliveriesScreen: React.FC = () => {
         Alert.alert("Error", "Failed to save some changes.");
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       flightId,
       selectedDeliveryId,
