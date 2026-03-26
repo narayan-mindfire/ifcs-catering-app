@@ -60,7 +60,7 @@ const DeliveriesScreen: React.FC = () => {
     const params = route.params;
     const openParam = params?.openDriverDeclaration;
 
-    // We use a unique key to track if we've already handled this redirection request
+    // unique key to track if we've already handled this redirection request
     const paramKey = openParam ? `${flightId}-open` : null;
 
     if (
@@ -77,9 +77,7 @@ const DeliveriesScreen: React.FC = () => {
             createDelivery(flightId, name);
           }
         } else {
-          // Select latest delivery
           const latestDelivery = deliveries[deliveries.length - 1];
-          // Always ensure the tab is set
           setActiveTab("driver");
 
           if (selectedDeliveryId !== latestDelivery.id) {

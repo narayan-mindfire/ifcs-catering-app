@@ -232,7 +232,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     <DeliveryIconTrue width={16} height={16} fill="#666" />
                   </View>
                   <View className="w-8 h-8 rounded-full bg-bg-accent items-center justify-center border border-bg-button">
-                    <Text className="text-[10px] text-text-surface font-bold">
+                    <Text className="text-[10px] text-text-primary font-bold">
                       {getInitials(driver.name)}
                     </Text>
                   </View>
@@ -248,9 +248,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     {loaders.map((loader: any, i: number) => (
                       <View
                         key={loader?.id || `loader-${i}`}
-                        className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center border border-border-muted"
+                        className="w-8 h-8 rounded-full bg-bg-accent border-bg-button items-center justify-center border"
                       >
-                        <Text className="text-[10px] text-text-secondary font-bold">
+                        <Text className="text-[10px] text-text-primary font-bold">
                           {getInitials(loader.name)}
                         </Text>
                       </View>
