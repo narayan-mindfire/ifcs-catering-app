@@ -61,7 +61,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           details.timeToLoad || "00:10:00",
         );
         setTimeLeft(initialSeconds);
-        setIsTimerRunning(true);
+        setIsTimerRunning(false);
       } else {
         setIsTimerRunning(false);
       }
@@ -114,6 +114,21 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         openDriverDeclaration: true,
       },
     });
+  };
+
+  const allStepsChecked = steps.every((step) => checkedSteps[step.id]);
+
+  const handleMarkComplete = () => {
+    const initialSeconds = parseTimeToSeconds(details.timeToLoad || "00:10:00");
+    const timeTakenSeconds = Math.max(0, initialSeconds - timeLeft);
+    const payload = {
+      taskId: task.id,
+      timeTaken: formatSeconds(timeTakenSeconds),
+      timeTakenSeconds,
+      jobType: details.jobType,
+      flightNo: details.flightNo,
+    };
+    log.info("Mark Task as Complete Payload", payload);
   };
 
   const assignedStaff = details.assignedStaff || {};
@@ -204,46 +219,67 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           <Text className="text-sm text-text-tertiary mb-2">
             Assigned Staff
           </Text>
-          <View className="flex-row gap-3">
-            {/* Driver Capsule */}
-            {driver && (
-              <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
-                <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
-                  <DeliveryIconTrue width={16} height={16} fill="#666" />
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row gap-3">
+              {/* Driver Capsule */}
+              {driver && (
+                <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
+                  <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
+                    <DeliveryIconTrue width={16} height={16} fill="#666" />
+                  </View>
+                  <View className="w-8 h-8 rounded-full bg-bg-accent items-center justify-center border border-bg-button">
+                    <Text className="text-[10px] text-text-surface font-bold">
+                      {getInitials(driver.name)}
+                    </Text>
+                  </View>
                 </View>
-                <View className="w-8 h-8 rounded-full bg-bg-accent items-center justify-center border border-bg-button">
-                  <Text className="text-[10px] text-text-surface font-bold">
-                    {getInitials(driver.name)}
-                  </Text>
-                </View>
-              </View>
-            )}
+              )}
 
-            {/* Loaders Capsule */}
-            {loaders.length > 0 && (
-              <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
-                <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
-                  <BoxIcon width={16} height={16} />
+              {/* Loaders Capsule */}
+              {loaders.length > 0 && (
+                <View className="flex-row items-center bg-white border border-border-muted rounded-full p-1 pr-2">
+                  <View className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center mr-2">
+                    <BoxIcon width={16} height={16} />
+                  </View>
+                  <View className="flex-row gap-1">
+                    {loaders.map((loader: any, i: number) => (
+                      <View
+                        key={loader?.id || `loader-${i}`}
+                        className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center border border-border-muted"
+                      >
+                        <Text className="text-[10px] text-text-secondary font-bold">
+                          {getInitials(loader.name)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-                <View className="flex-row gap-1">
-                  {loaders.map((loader: any, i: number) => (
-                    <View
-                      key={loader?.id || `loader-${i}`}
-                      className="w-8 h-8 rounded-full bg-bg-tertiary items-center justify-center border border-border-muted"
-                    >
-                      <Text className="text-[10px] text-text-secondary font-bold">
-                        {getInitials(loader.name)}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
+              )}
+            </View>
+
+            {/* Mark Task as Complete Button */}
+            <TouchableOpacity
+              onPress={handleMarkComplete}
+              disabled={!allStepsChecked}
+              className={`py-2.5 px-6 rounded-xl border ${
+                allStepsChecked
+                  ? "bg-[#602AF3] border-[#602AF3]"
+                  : "bg-bg-surface border-border-muted opacity-50"
+              }`}
+            >
+              <Text
+                className={`text-sm font-bold ${
+                  allStepsChecked ? "text-white" : "text-text-muted"
+                }`}
+              >
+                Mark Task as Complete
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      <View className="w-48 border-l-[1px] pl-8 border-border-secondary">
+      <View className="w-64 border-l-[1px] pl-8 border-border-secondary">
         <Text className="text-sm text-text-tertiary mb-3">Next Steps</Text>
         <View className="gap-3">
           {steps.map((step) => (
@@ -278,9 +314,27 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
               {step.id === "job-type" && checkedSteps["job-type"] && (
                 <View className="mt-1 ml-7">
-                  <Text className="text-[#602AF3] font-bold text-lg">
+                  <Text className="text-[#602AF3] font-bold text-lg mb-2">
                     {formatSeconds(timeLeft)}
                   </Text>
+                  <View className="flex-row gap-2">
+                    <TouchableOpacity
+                      onPress={() => setIsTimerRunning(!isTimerRunning)}
+                      className="bg-[#602AF3] rounded-lg py-1.5 px-3"
+                    >
+                      <Text className="text-white text-xs font-semibold">
+                        {isTimerRunning ? "Pause Timer" : "Start Timer"}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => setIsTimerRunning(false)}
+                      className="border border-[#602AF3] rounded-lg py-1.5 px-3"
+                    >
+                      <Text className="text-[#602AF3] text-xs font-semibold">
+                        Stop
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
 

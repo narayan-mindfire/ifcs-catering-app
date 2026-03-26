@@ -433,14 +433,6 @@ const TasksCard: React.FC = () => {
             <Text className="text-xl font-bold text-text-primary">
               My Tasks
             </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-base text-[#F59E0B] font-semibold">
-                Pending:
-              </Text>
-              <Text className="text-base text-[#F59E0B] font-bold">
-                {String(pendingCount).padStart(2, "0")}
-              </Text>
-            </View>
           </View>
 
           {/* Table Header */}
@@ -448,16 +440,16 @@ const TasksCard: React.FC = () => {
             <Text className="w-10 text-sm font-bold text-text-secondary">
               No
             </Text>
-            <Text className="flex-[3] text-sm font-bold text-text-secondary">
+            <Text className="flex-1 text-sm font-bold text-text-secondary">
               Task
             </Text>
-            <Text className="w-16 text-sm font-bold text-text-secondary text-center">
+            <Text className="w-20 text-sm font-bold text-text-secondary text-center">
               Time
             </Text>
-            <Text className="w-20 text-sm font-bold text-text-secondary text-center">
+            <Text className="w-28 text-sm font-bold text-text-secondary text-center">
               Status
             </Text>
-            <Text className="w-24 text-sm font-bold text-text-secondary text-right">
+            <Text className="w-32 text-sm font-bold text-text-secondary text-right">
               Action
             </Text>
           </View>
@@ -490,15 +482,15 @@ const TasksCard: React.FC = () => {
                       {String(index + 1).padStart(2, "0")}
                     </Text>
 
-                    <Text className="flex-[3] text-base text-text-primary">
+                    <Text className="flex-1 text-base text-text-primary">
                       {task.taskDetails?.jobType} {task.title}
                     </Text>
 
-                    <Text className="w-16 text-base text-text-primary text-center">
+                    <Text className="w-20 text-base text-text-primary text-center">
                       {formatTimeFromISO(task.startTime)}
                     </Text>
 
-                    <View className="w-20 items-center">
+                    <View className="w-28 items-center">
                       <Text
                         className={`text-base font-semibold ${
                           isPending ? "text-[#F59E0B]" : "text-[#22C55E]"
@@ -510,7 +502,7 @@ const TasksCard: React.FC = () => {
 
                     {/* Action */}
                     <TouchableOpacity
-                      className="w-24 items-end"
+                      className="w-32 items-end"
                       onPress={() => handleViewDetails(task)}
                       disabled={!isDriver}
                     >
