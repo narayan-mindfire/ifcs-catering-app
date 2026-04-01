@@ -64,6 +64,32 @@ export const formatTimeWithOffset = (
   }
 };
 
+export const formatTo24Hour = (
+  dateInput: string | Date | null | undefined,
+): string => {
+  if (!dateInput) return "--:--";
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return "--:--";
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+};
+
+export const getShiftTimeRange = (shiftType: string | null): string => {
+  if (!shiftType) return "--:--";
+
+  switch (shiftType.toUpperCase()) {
+    case "MORNING":
+      return "10:00 - 18:00";
+    case "EVENING":
+      return "18:00 - 02:00";
+    default:
+      return "--:--";
+  }
+};
+
 export const formatDateToLocalISO = (date: Date): string => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

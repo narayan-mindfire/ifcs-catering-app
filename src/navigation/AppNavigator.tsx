@@ -19,7 +19,7 @@ import { useAuthStore } from "../store/useAuthStore";
 
 export type RootStackParamList = {
   Login: undefined;
-  Dashboard: { selectedTaskId?: string } | undefined;
+  Dashboard: { selectedTaskId?: string; selectedDate?: string } | undefined;
   SpotCheck:
     | { flightId: string; initialTab?: "required" | "completed" }
     | undefined;
@@ -36,6 +36,7 @@ export type RootStackParamList = {
     date: string;
     fromDashboard?: boolean;
     taskId?: string;
+    taskDate?: string;
   };
   SpotCheckSelection: undefined;
   QRCodeScanner: {

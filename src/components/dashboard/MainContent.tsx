@@ -2,6 +2,7 @@
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
+import { useRoute } from "@react-navigation/native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
@@ -16,6 +17,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
 import { UnifiedTask } from "../../types/task";
+import { formatTo24Hour, getShiftTimeRange } from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
 import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
 
@@ -123,16 +125,7 @@ const EndShiftModal: React.FC<{
 };
 
 const formatTimeFromISO = (isoString: string) => {
-  try {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } catch (e) {
-    return "--:--";
-  }
+  return formatTo24Hour(isoString);
 };
 
 const formatDateForApi = (date: Date) => {
@@ -217,6 +210,10 @@ const ShiftControlCard: React.FC<{
     onSelectedDateChange(newDate);
   };
 
+  const handleGoToToday = () => {
+    onSelectedDateChange(new Date());
+  };
+
   const openDatePicker = () => {
     setShowDatePicker(true);
   };
@@ -242,7 +239,11 @@ const ShiftControlCard: React.FC<{
 
   return (
     <>
-      <View className="bg-bg-surface border-border-muted border-2 rounded-2xl">
+      <View
+        className={`bg-bg-surface border-2 rounded-2xl ${
+          isToday ? "border-border-primary shadow-lg" : "border-border-muted"
+        }`}
+      >
         <View className="flex-row items-center justify-between px-5 py-4 border-b border-border-muted">
           <TouchableOpacity
             onPress={handlePreviousDay}
@@ -251,11 +252,22 @@ const ShiftControlCard: React.FC<{
             <Text className="text-2xl text-text-primary font-bold">‹</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={openDatePicker}>
-            <Text className="text-[22px] font-semibold text-text-primary">
-              {formatDateDisplay(selectedDate)}
-            </Text>
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-4">
+            <TouchableOpacity onPress={openDatePicker}>
+              <Text className="text-[22px] font-semibold text-text-primary">
+                {formatDateDisplay(selectedDate)}
+              </Text>
+            </TouchableOpacity>
+
+            {!isToday && (
+              <TouchableOpacity
+                onPress={handleGoToToday}
+                className="bg-bg-accent px-3 py-1.5 rounded-full border border-bg-button"
+              >
+                <Text className="text-sm font-bold text-bg-button">Today</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           <TouchableOpacity
             onPress={handleNextDay}
@@ -290,11 +302,7 @@ const ShiftControlCard: React.FC<{
                 Shift Time
               </Text>
               <Text className="text-base font-semibold text-text-primary">
-                {shiftType === "MORNING"
-                  ? "10 AM - 6 PM"
-                  : shiftType === "EVENING"
-                    ? "6 PM - 2 AM"
-                    : "--:--"}
+                {getShiftTimeRange(shiftType)}
               </Text>
             </View>
 
@@ -581,7 +589,22 @@ const TaskDetailPanel: React.FC<{
 };
 
 export const MainContent: React.FC = () => {
+  const route = useRoute<any>();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+
+  // Handle selectedDate from navigation params
+  useEffect(() => {
+    const paramDate = route.params?.selectedDate;
+    if (paramDate) {
+      const parsedDate = new Date(paramDate);
+      if (
+        !isNaN(parsedDate.getTime()) &&
+        !isSameDay(selectedDate, parsedDate)
+      ) {
+        setSelectedDate(parsedDate);
+      }
+    }
+  }, [route.params?.selectedDate, selectedDate]);
   const { user } = useAuthStore();
   const { fetchTasks } = useTaskStore();
   const { fetchStatus, fetchHistory } = useTimerStore();

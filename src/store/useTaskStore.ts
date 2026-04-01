@@ -10,12 +10,18 @@ interface TaskState {
   tasks: UnifiedTask[];
   selectedTaskId: string | null;
   taskStepsStatus: Record<string, Record<string, boolean>>;
+  taskTimerState: Record<string, { timeLeft: number; isTimerRunning: boolean }>;
   isLoading: boolean;
   error: string | null;
 
   fetchTasks: (userId: string, date?: string) => Promise<void>;
   setSelectedTaskId: (id: string | null) => void;
   setStepStatus: (taskId: string, stepId: string, status: boolean) => void;
+  setTaskTimer: (
+    taskId: string,
+    timeLeft: number,
+    isTimerRunning: boolean,
+  ) => void;
   clearTasks: () => void;
 }
 
@@ -25,6 +31,7 @@ export const useTaskStore = create<TaskState>()(
       tasks: [],
       selectedTaskId: null,
       taskStepsStatus: {},
+      taskTimerState: {},
       isLoading: false,
       error: null,
 
@@ -59,11 +66,21 @@ export const useTaskStore = create<TaskState>()(
         }));
       },
 
+      setTaskTimer: (taskId, timeLeft, isTimerRunning) => {
+        set((state) => ({
+          taskTimerState: {
+            ...state.taskTimerState,
+            [taskId]: { timeLeft, isTimerRunning },
+          },
+        }));
+      },
+
       clearTasks: () => {
         set({
           tasks: [],
           selectedTaskId: null,
           taskStepsStatus: {},
+          taskTimerState: {},
           error: null,
           isLoading: false,
         });
@@ -74,6 +91,7 @@ export const useTaskStore = create<TaskState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         taskStepsStatus: state.taskStepsStatus,
+        taskTimerState: state.taskTimerState,
         selectedTaskId: state.selectedTaskId,
       }),
     },

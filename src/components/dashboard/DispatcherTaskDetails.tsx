@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import {
@@ -11,6 +11,8 @@ import {
   StringIconTrue,
 } from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { UnifiedTask } from "../../types/task";
 import { log } from "../../utils/logger";
@@ -31,12 +33,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   task,
 }) => {
   const navigation = useNavigation<NavigationProp>();
-  const { taskStepsStatus, setStepStatus } = useTaskStore();
+  const { user } = useAuthStore();
+  const { deliveries, fetchDeliveries } = useDeliveryStore();
+  const { taskStepsStatus, setStepStatus, taskTimerState, setTaskTimer } =
+    useTaskStore();
   const checkedSteps = taskStepsStatus[task.id] || {};
+  const { timeLeft = 0, isTimerRunning = false } =
+    taskTimerState[task.id] || {};
 
   const details = task.taskDetails || {};
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   const getInitials = (name: string) => {
     if (!name) return "";
@@ -61,7 +66,36 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     return [h, m, s].map((v) => v.toString().padStart(2, "0")).join(":");
   };
 
+  // Logic to check if declaration is signed on backend
+  const isDeclarationSigned = useMemo(() => {
+    if (!deliveries.length) return false;
+    return deliveries.some(
+      (d) =>
+        d.driverSignature &&
+        (d.driverStaffId === user?.badgeNumber ||
+          d.driverStaffId === user?.raicNumber),
+    );
+  }, [deliveries, user]);
+  log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
+
+  // Automatically sync declaration step status
+  useEffect(() => {
+    if (isDeclarationSigned && !checkedSteps["declaration"]) {
+      setStepStatus(task.id, "declaration", true);
+    }
+  }, [isDeclarationSigned, checkedSteps, setStepStatus, task.id]);
+
+  // Fetch deliveries for the flight associated with the task
+  useEffect(() => {
+    if (details.flightId) {
+      fetchDeliveries(details.flightId);
+    }
+  }, [details.flightId, fetchDeliveries]);
+
   const toggleStep = (id: string) => {
+    // Prevent manual toggle for declaration if it's already signed on the backend
+    if (id === "declaration" && isDeclarationSigned) return;
+
     const isChecking = !checkedSteps[id];
     setStepStatus(task.id, id, isChecking);
 
@@ -70,25 +104,41 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         const initialSeconds = parseTimeToSeconds(
           details.timeToLoad || "00:10:00",
         );
-        setTimeLeft(initialSeconds);
-        setIsTimerRunning(false);
+        setTaskTimer(task.id, initialSeconds, false);
       } else {
-        setIsTimerRunning(false);
+        setTaskTimer(task.id, 0, false);
       }
     }
   };
+
+  // Initialize timer if step is already checked but timer state is missing
+  useEffect(() => {
+    if (checkedSteps["job-type"] && !taskTimerState[task.id]) {
+      const initialSeconds = parseTimeToSeconds(
+        details.timeToLoad || "00:10:00",
+      );
+      setTaskTimer(task.id, initialSeconds, false);
+    }
+  }, [
+    checkedSteps,
+    task.id,
+    details.timeToLoad,
+    taskTimerState,
+    setTaskTimer,
+    parseTimeToSeconds,
+  ]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning && timeLeft > 0) {
       interval = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTaskTimer(task.id, timeLeft - 1, true);
       }, 1000);
-    } else if (timeLeft === 0) {
-      setIsTimerRunning(false);
+    } else if (isTimerRunning && timeLeft === 0) {
+      setTaskTimer(task.id, 0, false);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timeLeft]);
+  }, [isTimerRunning, timeLeft, task.id, setTaskTimer]);
 
   const steps: TaskStep[] = [
     {
@@ -124,6 +174,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         openDriverDeclaration: true,
         fromDashboard: true,
         taskId: task.id,
+        taskDate: task.startTime?.split("T")[0],
       },
     });
   };
@@ -293,18 +344,32 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               <View className="flex-row items-center gap-2 mb-1">
                 <TouchableOpacity
                   onPress={() => handleStepPress(step)}
+                  disabled={step.id === "declaration" && isDeclarationSigned}
                   className={`w-5 h-5 rounded border-2 items-center justify-center ${
                     checkedSteps[step.id]
                       ? "bg-bg-button border-bg-button"
                       : "border-border-muted bg-transparent"
+                  } ${
+                    step.id === "declaration" && isDeclarationSigned
+                      ? "opacity-60"
+                      : "opacity-100"
                   }`}
                 >
                   {checkedSteps[step.id] && (
                     <Text className="text-white text-xs font-bold">✓</Text>
                   )}
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleStepPress(step)}>
-                  <Text className="text-base text-text-primary">
+                <TouchableOpacity
+                  onPress={() => handleStepPress(step)}
+                  disabled={step.id === "declaration" && isDeclarationSigned}
+                >
+                  <Text
+                    className={`text-base text-text-primary ${
+                      step.id === "declaration" && isDeclarationSigned
+                        ? "text-text-tertiary"
+                        : "text-text-primary"
+                    }`}
+                  >
                     {step.label}
                   </Text>
                 </TouchableOpacity>
@@ -330,13 +395,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   <View className="flex-row gap-2">
                     <AppButton
                       title={isTimerRunning ? "Pause" : "Start"}
-                      onPress={() => setIsTimerRunning(!isTimerRunning)}
+                      onPress={() =>
+                        setTaskTimer(task.id, timeLeft, !isTimerRunning)
+                      }
                       style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
                       textStyle={{ fontSize: 10 }}
                     />
                     <AppButton
                       title="Stop"
-                      onPress={() => setIsTimerRunning(false)}
+                      onPress={() => setTaskTimer(task.id, timeLeft, false)}
                       style={{
                         marginTop: 4,
                         paddingVertical: 2,
