@@ -295,6 +295,44 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               {details.galleysToLoad || "-"}
             </Text>
           </View>
+          {task.status === "COMPLETED" && (
+            <>
+              <View className="w-1/3">
+                <Text className="text-sm text-text-tertiary mb-1">
+                  Expected Completion
+                </Text>
+                <Text className="text-lg font-bold text-text-primary">
+                  {task.expectedCompletionTime
+                    ? new Date(task.expectedCompletionTime).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        },
+                      )
+                    : "-"}
+                </Text>
+              </View>
+              <View className="w-1/3">
+                <Text className="text-sm text-text-tertiary mb-1">
+                  Actual Completion
+                </Text>
+                <Text className="text-lg font-bold text-text-primary">
+                  {task.actualCompletionTime
+                    ? new Date(task.actualCompletionTime).toLocaleTimeString(
+                        [],
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        },
+                      )
+                    : "-"}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         <View className="mt-4">
