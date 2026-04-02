@@ -272,7 +272,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             <>
               <View className="w-1/3">
                 <Text className="text-sm text-text-tertiary mb-1">
-                  Expected Completion
+                  Expected Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
                   {task.expectedCompletionTime
@@ -289,7 +289,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               </View>
               <View className="w-1/3">
                 <Text className="text-sm text-text-tertiary mb-1">
-                  Actual Completion
+                  Actual Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
                   {task.actualCompletionTime
@@ -489,7 +489,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
             </View>
           ))}
-          {/* {allStepsChecked && task.status !== "COMPLETED" && (
+          {/* {allStepsChecked && task.status !== "COMPLETE" && (
             <View className="mt-4 border-t border-border-muted pt-4">
               <AppButton
                 title={isLoading ? "Syncing..." : "Mark as Complete"}

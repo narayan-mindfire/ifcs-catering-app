@@ -26,7 +26,7 @@ export const SpotCheckHeader: React.FC<SpotCheckHeaderProps> = React.memo(
         <View className="flex-row justify-between items-start mb-6">
           <View className="flex-1 flex-row flex-wrap gap-x-6 gap-y-2 px-1">
             <Text className="font-rubik text-3xl font-[500]">
-              COMPLETED CHECKS
+              COMPLETE CHECKS
             </Text>
           </View>
 

@@ -1,6 +1,6 @@
 import { CompletedCheckItem } from "../components/SpotCheck/CompletedCheckListItem";
 
-export const MOCK_COMPLETED_CHECKS: CompletedCheckItem[] = [
+export const MOCK_COMPLETE_CHECKS: CompletedCheckItem[] = [
   {
     id: "1",
     flight: "WY225",
@@ -11,6 +11,9 @@ export const MOCK_COMPLETED_CHECKS: CompletedCheckItem[] = [
     category: "Atlas Half Size Meal Cart",
     carrier: "B737 Holloware ISC-MEA",
     status: "Pass",
+    name: "John Doe",
+    info: "Clean and ready",
+    time: "10:30 AM",
   },
   {
     id: "2",
@@ -22,6 +25,9 @@ export const MOCK_COMPLETED_CHECKS: CompletedCheckItem[] = [
     category: "Atlas Small Unit Aluminum",
     carrier: "JC Dry store NB",
     status: "Pass",
+    name: "Jane Smith",
+    info: "All items present",
+    time: "11:15 AM",
   },
   {
     id: "3",
@@ -33,5 +39,8 @@ export const MOCK_COMPLETED_CHECKS: CompletedCheckItem[] = [
     category: "Atlas Full Size Trolley",
     carrier: "Standard Unit",
     status: "Fail",
+    name: "Bob Wilson",
+    info: "Missing 2 full size trolleys",
+    time: "12:00 PM",
   },
 ];
