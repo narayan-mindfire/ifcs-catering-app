@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 
+import { RedirectDarkIcon } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
@@ -241,7 +242,7 @@ const ShiftControlCard: React.FC<{
     <>
       <View
         className={`bg-bg-surface border-2 rounded-2xl ${
-          isToday ? "border-border-primary shadow-lg" : "border-border-muted"
+          isToday ? "border-bg-button shadow-lg" : "border-border-muted"
         }`}
       >
         <View className="flex-row items-center justify-between px-5 py-4 border-b border-border-muted">
@@ -252,7 +253,7 @@ const ShiftControlCard: React.FC<{
             <Text className="text-2xl text-text-primary font-bold">‹</Text>
           </TouchableOpacity>
 
-          <View className="flex-row items-center gap-4">
+          <View className="items-center gap-4">
             <TouchableOpacity onPress={openDatePicker}>
               <Text className="text-[22px] font-semibold text-text-primary">
                 {formatDateDisplay(selectedDate)}
@@ -262,9 +263,12 @@ const ShiftControlCard: React.FC<{
             {!isToday && (
               <TouchableOpacity
                 onPress={handleGoToToday}
-                className="bg-bg-accent px-3 py-1.5 rounded-full border border-bg-button"
+                className="bg-bg-accent flex-row px-3 py-0.5 rounded-full border border-bg-button"
               >
-                <Text className="text-sm font-bold text-bg-button">Today</Text>
+                <RedirectDarkIcon />
+                <Text className="text-sm font-semibold text-bg-button">
+                  Today
+                </Text>
               </TouchableOpacity>
             )}
           </View>

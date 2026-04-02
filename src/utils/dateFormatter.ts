@@ -112,3 +112,27 @@ export const formatTodayDate = () => {
 
   return `${dayName}, ${dayNumber} ${monthName}`;
 };
+export const getISOStringWithOffset = (date: Date): string => {
+  const tzo = -date.getTimezoneOffset();
+  const diff = tzo >= 0 ? "+" : "-";
+  const pad = (num: number) => String(num).padStart(2, "0");
+
+  const localISO =
+    date.getFullYear() +
+    "-" +
+    pad(date.getMonth() + 1) +
+    "-" +
+    pad(date.getDate()) +
+    "T" +
+    pad(date.getHours()) +
+    ":" +
+    pad(date.getMinutes()) +
+    ":" +
+    pad(date.getSeconds()) +
+    diff +
+    pad(Math.floor(Math.abs(tzo) / 60)) +
+    ":" +
+    pad(Math.abs(tzo) % 60);
+
+  return localISO;
+};

@@ -35,8 +35,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
   const { deliveries, fetchDeliveries } = useDeliveryStore();
-  const { taskStepsStatus, setStepStatus, taskTimerState, setTaskTimer } =
-    useTaskStore();
+  const {
+    taskStepsStatus,
+    setStepStatus,
+    taskTimerState,
+    setTaskTimer,
+    syncTaskCompletion,
+    isLoading,
+  } = useTaskStore();
   const checkedSteps = taskStepsStatus[task.id] || {};
   const { timeLeft = 0, isTimerRunning = false } =
     taskTimerState[task.id] || {};
@@ -72,7 +78,8 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     return deliveries.some(
       (d) =>
         d.driverSignature &&
-        (d.driverStaffId === user?.badgeNumber ||
+        (d.driverId === user?.id ||
+          d.driverStaffId === user?.badgeNumber ||
           d.driverStaffId === user?.raicNumber),
     );
   }, [deliveries, user]);
@@ -184,14 +191,26 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const handleMarkComplete = () => {
     const initialSeconds = parseTimeToSeconds(details.timeToLoad || "00:10:00");
     const timeTakenSeconds = Math.max(0, initialSeconds - timeLeft);
+
+    // Calculate expected completion time based on task start time and loading duration
+    const startDate = new Date(task.startTime);
+    const expectedDate = new Date(startDate.getTime() + initialSeconds * 1000);
+    const expectedCompletionTime = expectedDate.toISOString();
+    const actualCompletionTime = new Date().toISOString();
+
     const payload = {
       taskId: task.id,
       timeTaken: formatSeconds(timeTakenSeconds),
       timeTakenSeconds,
       jobType: details.jobType,
       flightNo: details.flightNo,
+      expectedCompletionTime,
+      actualCompletionTime,
     };
     log.info("Mark Task as Complete Payload", payload);
+
+    // Sync with backend
+    syncTaskCompletion(task.id, expectedCompletionTime, actualCompletionTime);
   };
 
   const assignedStaff = details.assignedStaff || {};
@@ -430,6 +449,17 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
             </View>
           ))}
+          {allStepsChecked && task.status !== "COMPLETED" && (
+            <View className="mt-4 border-t border-border-muted pt-4">
+              <AppButton
+                title={isLoading ? "Syncing..." : "Mark as Complete"}
+                onPress={handleMarkComplete}
+                loading={isLoading}
+                disabled={isLoading}
+                style={{ width: "100%", marginTop: 8 }}
+              />
+            </View>
+          )}
         </View>
       </View>
     </View>

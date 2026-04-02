@@ -22,6 +22,11 @@ interface TaskState {
     timeLeft: number,
     isTimerRunning: boolean,
   ) => void;
+  syncTaskCompletion: (
+    taskId: string,
+    expected: string,
+    actual: string,
+  ) => Promise<void>;
   clearTasks: () => void;
 }
 
@@ -73,6 +78,30 @@ export const useTaskStore = create<TaskState>()(
             [taskId]: { timeLeft, isTimerRunning },
           },
         }));
+      },
+
+      syncTaskCompletion: async (taskId, expected, actual) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await taskService.patchTaskCompletion(
+            taskId,
+            expected,
+            actual,
+          );
+          if (response.success && response.data) {
+            set((state) => ({
+              tasks: state.tasks.map((t) =>
+                t.id === taskId ? { ...t, ...response.data } : t,
+              ),
+              isLoading: false,
+            }));
+          } else {
+            set({ isLoading: false, error: "Failed to sync task completion" });
+          }
+        } catch (err: any) {
+          log.error("Sync Task Completion Error:", err);
+          set({ isLoading: false, error: "Failed to sync task completion" });
+        }
       },
 
       clearTasks: () => {

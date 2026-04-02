@@ -43,6 +43,8 @@ export interface UnifiedTask {
   priority: TaskPriority;
   startTime: string; // ISO Date string
   endTime: string; // ISO Date string
+  expectedCompletionTime?: string;
+  actualCompletionTime?: string;
   metadata?: {
     memoId?: string;
     flightId?: string;

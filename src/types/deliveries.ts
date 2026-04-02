@@ -29,6 +29,7 @@ export interface Delivery {
   driverCompany?: string | null;
   truckSeal?: string | null;
   driverSignature?: string | null;
+  driverId?: string | null;
   driverRacNumber?: string | null;
   driverSignatureTimestampDisplay?: string | null;
 

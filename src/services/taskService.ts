@@ -24,4 +24,22 @@ export const taskService = {
 
     return [];
   },
+
+  patchTaskCompletion: async (
+    taskId: string,
+    expectedCompletionTime: string,
+    actualCompletionTime: string,
+  ): Promise<{ success: boolean; data?: UnifiedTask }> => {
+    log.info(`Patching task completion for task ${taskId}`);
+
+    const response = await apiClient.patch<{
+      success: boolean;
+      data: UnifiedTask;
+    }>(`/tasks/${taskId}/completion`, {
+      expectedCompletionTime,
+      actualCompletionTime,
+    });
+
+    return response.data;
+  },
 };
