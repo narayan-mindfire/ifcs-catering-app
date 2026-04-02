@@ -10,7 +10,7 @@ export type TaskSourceType =
 export type TaskStatus =
   | "PENDING"
   | "IN_PROGRESS"
-  | "COMPLETED"
+  | "COMPLETE"
   | "CANCELLED"
   | "SCHEDULED";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";

@@ -137,21 +137,23 @@ const ShiftControlCard: React.FC<{
   selectedDate: Date;
   onSelectedDateChange: (date: Date) => void;
 }> = ({ selectedDate, onSelectedDateChange }) => {
-  const {
-    shiftState,
-    totalWorkedMs,
-    currentSessionDuration,
-    shiftType,
-    startShift,
-    pauseShift,
-    resumeShift,
-    endShift,
-    syncTime,
-    fetchStatus,
-    fetchHistory,
-    totalBreakMs,
-    currentBreakSessionDuration,
-  } = useTimerStore();
+  const shiftState = useTimerStore((state) => state.shiftState);
+  const totalWorkedMs = useTimerStore((state) => state.totalWorkedMs);
+  const currentSessionDuration = useTimerStore(
+    (state) => state.currentSessionDuration,
+  );
+  const shiftType = useTimerStore((state) => state.shiftType);
+  const startShift = useTimerStore((state) => state.startShift);
+  const pauseShift = useTimerStore((state) => state.pauseShift);
+  const resumeShift = useTimerStore((state) => state.resumeShift);
+  const endShift = useTimerStore((state) => state.endShift);
+  const syncTime = useTimerStore((state) => state.syncTime);
+  const fetchStatus = useTimerStore((state) => state.fetchStatus);
+  const fetchHistory = useTimerStore((state) => state.fetchHistory);
+  const totalBreakMs = useTimerStore((state) => state.totalBreakMs);
+  const currentBreakSessionDuration = useTimerStore(
+    (state) => state.currentBreakSessionDuration,
+  );
 
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -429,8 +431,11 @@ const ShiftControlCard: React.FC<{
 };
 
 const TasksCard: React.FC = () => {
-  const { tasks, isLoading, error, selectedTaskId, setSelectedTaskId } =
-    useTaskStore();
+  const tasks = useTaskStore((state) => state.tasks);
+  const isLoading = useTaskStore((state) => state.isLoading);
+  const error = useTaskStore((state) => state.error);
+  const selectedTaskId = useTaskStore((state) => state.selectedTaskId);
+  const setSelectedTaskId = useTaskStore((state) => state.setSelectedTaskId);
   const { user } = useAuthStore();
 
   const selectedTask = useMemo(() => {
@@ -610,8 +615,9 @@ export const MainContent: React.FC = () => {
     }
   }, [route.params?.selectedDate, selectedDate]);
   const { user } = useAuthStore();
-  const { fetchTasks } = useTaskStore();
-  const { fetchStatus, fetchHistory } = useTimerStore();
+  const fetchTasks = useTaskStore((state) => state.fetchTasks);
+  const fetchStatus = useTimerStore((state) => state.fetchStatus);
+  const fetchHistory = useTimerStore((state) => state.fetchHistory);
 
   useEffect(() => {
     if (user?.id) {

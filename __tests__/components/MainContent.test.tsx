@@ -39,27 +39,44 @@ describe("MainContent", () => {
     (useRoute as jest.Mock).mockReturnValue({
       params: {},
     });
-    (useAuthStore as unknown as jest.Mock).mockReturnValue({
-      user: { id: "user-123" },
-    });
-    (useTaskStore as unknown as jest.Mock).mockReturnValue({
-      tasks: [],
-      fetchTasks: mockFetchTasks,
-    });
-    (useTimerStore as unknown as jest.Mock).mockReturnValue({
-      shiftState: "OFF",
-      totalWorkedMs: 0,
-      totalBreakMs: 0,
-      currentSessionDuration: 0,
-      currentBreakSessionDuration: 0,
-      startShift: mockStartShift,
-      endShift: mockEndShift,
-      pauseShift: mockPauseShift,
-      resumeShift: mockResumeShift,
-      syncTime: mockSyncTime,
-      fetchStatus: mockFetchStatus,
-      fetchHistory: mockFetchHistory,
-    });
+    (useAuthStore as unknown as jest.Mock).mockImplementation(
+      (selector: any) => {
+        const state = { user: { id: "user-123" } };
+        return selector ? selector(state) : state;
+      },
+    );
+    (useTaskStore as unknown as jest.Mock).mockImplementation(
+      (selector: any) => {
+        const state = {
+          tasks: [],
+          isLoading: false,
+          error: null,
+          selectedTaskId: null,
+          setSelectedTaskId: jest.fn(),
+          fetchTasks: mockFetchTasks,
+        };
+        return selector ? selector(state) : state;
+      },
+    );
+    (useTimerStore as unknown as jest.Mock).mockImplementation(
+      (selector: any) => {
+        const state = {
+          shiftState: "OFF",
+          totalWorkedMs: 0,
+          totalBreakMs: 0,
+          currentSessionDuration: 0,
+          currentBreakSessionDuration: 0,
+          startShift: mockStartShift,
+          endShift: mockEndShift,
+          pauseShift: mockPauseShift,
+          resumeShift: mockResumeShift,
+          syncTime: mockSyncTime,
+          fetchStatus: mockFetchStatus,
+          fetchHistory: mockFetchHistory,
+        };
+        return selector ? selector(state) : state;
+      },
+    );
     jest.clearAllMocks();
   });
 
@@ -70,20 +87,25 @@ describe("MainContent", () => {
   });
 
   it("renders correctly in ON state", () => {
-    (useTimerStore as unknown as jest.Mock).mockReturnValue({
-      shiftState: "ON",
-      totalWorkedMs: 3600000,
-      totalBreakMs: 0,
-      currentSessionDuration: 60,
-      currentBreakSessionDuration: 0,
-      startShift: mockStartShift,
-      endShift: mockEndShift,
-      pauseShift: mockPauseShift,
-      resumeShift: mockResumeShift,
-      syncTime: mockSyncTime,
-      fetchStatus: mockFetchStatus,
-      fetchHistory: mockFetchHistory,
-    });
+    (useTimerStore as unknown as jest.Mock).mockImplementation(
+      (selector: any) => {
+        const state = {
+          shiftState: "ON",
+          totalWorkedMs: 3600000,
+          totalBreakMs: 0,
+          currentSessionDuration: 60,
+          currentBreakSessionDuration: 0,
+          startShift: mockStartShift,
+          endShift: mockEndShift,
+          pauseShift: mockPauseShift,
+          resumeShift: mockResumeShift,
+          syncTime: mockSyncTime,
+          fetchStatus: mockFetchStatus,
+          fetchHistory: mockFetchHistory,
+        };
+        return selector ? selector(state) : state;
+      },
+    );
 
     const { getByText } = render(<MainContent />);
     expect(getByText("Start a Break")).toBeTruthy();
@@ -91,20 +113,25 @@ describe("MainContent", () => {
   });
 
   it("shows End Shift modal when End Shift is clicked", () => {
-    (useTimerStore as unknown as jest.Mock).mockReturnValue({
-      shiftState: "ON",
-      totalWorkedMs: 3600000,
-      totalBreakMs: 0,
-      currentSessionDuration: 60,
-      currentBreakSessionDuration: 0,
-      startShift: mockStartShift,
-      endShift: mockEndShift,
-      pauseShift: mockPauseShift,
-      resumeShift: mockResumeShift,
-      syncTime: mockSyncTime,
-      fetchStatus: mockFetchStatus,
-      fetchHistory: mockFetchHistory,
-    });
+    (useTimerStore as unknown as jest.Mock).mockImplementation(
+      (selector: any) => {
+        const state = {
+          shiftState: "ON",
+          totalWorkedMs: 3600000,
+          totalBreakMs: 0,
+          currentSessionDuration: 60,
+          currentBreakSessionDuration: 0,
+          startShift: mockStartShift,
+          endShift: mockEndShift,
+          pauseShift: mockPauseShift,
+          resumeShift: mockResumeShift,
+          syncTime: mockSyncTime,
+          fetchStatus: mockFetchStatus,
+          fetchHistory: mockFetchHistory,
+        };
+        return selector ? selector(state) : state;
+      },
+    );
 
     const { getByText, queryByText } = render(<MainContent />);
     fireEvent.press(getByText("End Shift"));

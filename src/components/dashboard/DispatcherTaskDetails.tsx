@@ -28,6 +28,19 @@ interface DispatcherTaskDetailsProps {
 }
 
 type NavigationProp = StackNavigationProp<RootStackParamList, "Dashboard">;
+const getInitials = (name: string) => {
+  if (!name) return "";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+const formatSeconds = (seconds: number) => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  return [h, m, s].map((v) => v.toString().padStart(2, "0")).join(":");
+};
 
 export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   task,
@@ -41,36 +54,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     taskTimerState,
     setTaskTimer,
     syncTaskCompletion,
-    isLoading,
   } = useTaskStore();
-  const checkedSteps = taskStepsStatus[task.id] || {};
+  const checkedSteps = useMemo(
+    () => taskStepsStatus[task.id] || {},
+    [taskStepsStatus, task.id],
+  );
   const { timeLeft = 0, isTimerRunning = false } =
     taskTimerState[task.id] || {};
 
   const details = task.taskDetails || {};
-
-  const getInitials = (name: string) => {
-    if (!name) return "";
-    const parts = name.trim().split(" ");
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
-
-  const parseTimeToSeconds = (timeStr: string) => {
-    if (!timeStr || !timeStr.includes(":")) return 0;
-    const parts = timeStr.split(":").map(Number);
-    if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    }
-    return 0;
-  };
-
-  const formatSeconds = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return [h, m, s].map((v) => v.toString().padStart(2, "0")).join(":");
-  };
 
   // Logic to check if declaration is signed on backend
   const isDeclarationSigned = useMemo(() => {
@@ -100,6 +92,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   }, [details.flightId, fetchDeliveries]);
 
   const toggleStep = (id: string) => {
+    // Prevent any changes if the task is already completed
+    if (task.status === "COMPLETE") return;
+
     // Prevent manual toggle for declaration if it's already signed on the backend
     if (id === "declaration" && isDeclarationSigned) return;
 
@@ -108,41 +103,27 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
     if (id === "job-type") {
       if (isChecking) {
-        const initialSeconds = parseTimeToSeconds(
-          details.timeToLoad || "00:10:00",
-        );
-        setTaskTimer(task.id, initialSeconds, false);
+        // Start counting up from 0
+        setTaskTimer(task.id, 0, false);
       } else {
         setTaskTimer(task.id, 0, false);
       }
     }
   };
 
-  // Initialize timer if step is already checked but timer state is missing
+  // Initialize timer to 0 if step is already checked but timer state is missing
   useEffect(() => {
     if (checkedSteps["job-type"] && !taskTimerState[task.id]) {
-      const initialSeconds = parseTimeToSeconds(
-        details.timeToLoad || "00:10:00",
-      );
-      setTaskTimer(task.id, initialSeconds, false);
+      setTaskTimer(task.id, 0, false);
     }
-  }, [
-    checkedSteps,
-    task.id,
-    details.timeToLoad,
-    taskTimerState,
-    setTaskTimer,
-    parseTimeToSeconds,
-  ]);
+  }, [checkedSteps, task.id, taskTimerState, setTaskTimer]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerRunning && timeLeft > 0) {
+    if (isTimerRunning) {
       interval = setInterval(() => {
-        setTaskTimer(task.id, timeLeft - 1, true);
+        setTaskTimer(task.id, timeLeft + 1, true);
       }, 1000);
-    } else if (isTimerRunning && timeLeft === 0) {
-      setTaskTimer(task.id, 0, false);
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, timeLeft, task.id, setTaskTimer]);
@@ -189,27 +170,19 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const allStepsChecked = steps.every((step) => checkedSteps[step.id]);
 
   const handleMarkComplete = () => {
-    const initialSeconds = parseTimeToSeconds(details.timeToLoad || "00:10:00");
-    const timeTakenSeconds = Math.max(0, initialSeconds - timeLeft);
-
-    // Calculate expected completion time based on task start time and loading duration
-    const startDate = new Date(task.startTime);
-    const expectedDate = new Date(startDate.getTime() + initialSeconds * 1000);
-    const expectedCompletionTime = expectedDate.toISOString();
-    const actualCompletionTime = new Date().toISOString();
+    const expectedCompletionTime = details.timeToLoad || "00:00:00";
+    const actualCompletionTime = formatSeconds(timeLeft);
 
     const payload = {
       taskId: task.id,
-      timeTaken: formatSeconds(timeTakenSeconds),
-      timeTakenSeconds,
-      jobType: details.jobType,
-      flightNo: details.flightNo,
       expectedCompletionTime,
       actualCompletionTime,
+      jobType: details.jobType,
+      flightNo: details.flightNo,
     };
     log.info("Mark Task as Complete Payload", payload);
 
-    // Sync with backend
+    // Sync with backend using duration strings (HH:mm:ss)
     syncTaskCompletion(task.id, expectedCompletionTime, actualCompletionTime);
   };
 
@@ -295,7 +268,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               {details.galleysToLoad || "-"}
             </Text>
           </View>
-          {task.status === "COMPLETED" && (
+          {task.status === "COMPLETE" && (
             <>
               <View className="w-1/3">
                 <Text className="text-sm text-text-tertiary mb-1">
@@ -376,18 +349,35 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             </View>
 
             <AppButton
-              title="Mark Task as Complete"
+              title={
+                task.status === "COMPLETE"
+                  ? "Task Completed"
+                  : "Mark Task as Complete"
+              }
               onPress={handleMarkComplete}
-              disabled={!allStepsChecked}
+              disabled={!allStepsChecked || task.status === "COMPLETE"}
               IconComponent={
                 <CheckIconSuccess
                   width={16}
                   height={16}
-                  fill={allStepsChecked ? "#fff" : "#999"}
+                  fill={
+                    allStepsChecked && task.status !== "COMPLETE"
+                      ? "#fff"
+                      : "#999"
+                  }
                 />
               }
-              style={{ paddingVertical: 4, paddingHorizontal: 12, height: 42 }}
-              textStyle={{ fontSize: 12 }}
+              style={{
+                paddingVertical: 4,
+                paddingHorizontal: 12,
+                height: 42,
+                backgroundColor:
+                  task.status === "COMPLETE" ? "#E5E5E5" : undefined,
+              }}
+              textStyle={{
+                fontSize: 12,
+                color: task.status === "COMPLETE" ? "#666" : undefined,
+              }}
             />
           </View>
         </View>
@@ -401,13 +391,17 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               <View className="flex-row items-center gap-2 mb-1">
                 <TouchableOpacity
                   onPress={() => handleStepPress(step)}
-                  disabled={step.id === "declaration" && isDeclarationSigned}
+                  disabled={
+                    (step.id === "declaration" && isDeclarationSigned) ||
+                    task.status === "COMPLETE"
+                  }
                   className={`w-5 h-5 rounded border-2 items-center justify-center ${
                     checkedSteps[step.id]
                       ? "bg-bg-button border-bg-button"
                       : "border-border-muted bg-transparent"
                   } ${
-                    step.id === "declaration" && isDeclarationSigned
+                    (step.id === "declaration" && isDeclarationSigned) ||
+                    task.status === "COMPLETE"
                       ? "opacity-60"
                       : "opacity-100"
                   }`}
@@ -418,11 +412,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleStepPress(step)}
-                  disabled={step.id === "declaration" && isDeclarationSigned}
+                  disabled={
+                    (step.id === "declaration" && isDeclarationSigned) ||
+                    task.status === "COMPLETE"
+                  }
                 >
                   <Text
                     className={`text-base text-text-primary ${
-                      step.id === "declaration" && isDeclarationSigned
+                      (step.id === "declaration" && isDeclarationSigned) ||
+                      task.status === "COMPLETE"
                         ? "text-text-tertiary"
                         : "text-text-primary"
                     }`}
@@ -436,6 +434,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <AppButton
                   title="Fill A-Check"
                   onPress={() => log.info("Fill A-Check pressed")}
+                  disabled={task.status === "COMPLETE"}
                   IconComponent={
                     <DocsIcon width={14} height={14} fill="#fff" />
                   }
@@ -455,12 +454,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                       onPress={() =>
                         setTaskTimer(task.id, timeLeft, !isTimerRunning)
                       }
+                      disabled={task.status === "COMPLETE"}
                       style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
                       textStyle={{ fontSize: 10 }}
                     />
                     <AppButton
                       title="Stop"
                       onPress={() => setTaskTimer(task.id, timeLeft, false)}
+                      disabled={task.status === "COMPLETE"}
                       style={{
                         marginTop: 4,
                         paddingVertical: 2,
@@ -478,6 +479,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <AppButton
                   title="Sign Declaration"
                   onPress={handleSignDeclaration}
+                  disabled={task.status === "COMPLETE"}
                   IconComponent={
                     <StringIconTrue width={14} height={14} fill="#fff" />
                   }
@@ -487,7 +489,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
             </View>
           ))}
-          {allStepsChecked && task.status !== "COMPLETED" && (
+          {/* {allStepsChecked && task.status !== "COMPLETED" && (
             <View className="mt-4 border-t border-border-muted pt-4">
               <AppButton
                 title={isLoading ? "Syncing..." : "Mark as Complete"}
@@ -497,7 +499,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 style={{ width: "100%", marginTop: 8 }}
               />
             </View>
-          )}
+          )} */}
         </View>
       </View>
     </View>
