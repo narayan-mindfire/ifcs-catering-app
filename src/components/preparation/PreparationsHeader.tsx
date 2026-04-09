@@ -37,6 +37,9 @@ export interface ParsedQRData {
   position: string;
   scheduledDepartUtc: string;
   rotationCode: string;
+  prepNameRepeated: string;
+  loadingPlanValue: string;
+  consumptionFlag: string;
 }
 
 export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({

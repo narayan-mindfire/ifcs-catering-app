@@ -22,6 +22,16 @@ export interface ConsumptionTrackingRecord {
   flightPreparationDynamicItemId?: string;
   foodOrderItemId?: string;
   mealId?: string;
+  // Position
+  labelPosition?: string | null;
+  galleyPosition?: string | null;
+  stowage?: string | null;
+  containerNumber?: string | null;
+  drawerName?: string | null;
+  itemPosition?: string | null;
+  loadingPlanValue?: string | null;
+  isFront?: boolean | null;
+  isRear?: boolean | null;
 }
 
 export interface CreateConsumptionTrackingInput {
@@ -36,6 +46,16 @@ export interface CreateConsumptionTrackingInput {
   consumedQty: number;
   qty: number;
   returnedQty: number;
+  // Position
+  labelPosition?: string | null;
+  galleyPosition?: string | null;
+  stowage?: string | null;
+  containerNumber?: string | null;
+  drawerName?: string | null;
+  itemPosition?: string | null;
+  loadingPlanValue?: string | null;
+  isFront?: boolean | null;
+  isRear?: boolean | null;
 }
 
 export interface UpdateConsumptionTrackingInput {
@@ -50,6 +70,16 @@ export interface UpdateConsumptionTrackingInput {
   consumedQty?: number;
   qty?: number;
   returnedQty?: number;
+  // Position
+  labelPosition?: string | null;
+  galleyPosition?: string | null;
+  stowage?: string | null;
+  containerNumber?: string | null;
+  drawerName?: string | null;
+  itemPosition?: string | null;
+  loadingPlanValue?: string | null;
+  isFront?: boolean | null;
+  isRear?: boolean | null;
 }
 
 export interface ConsumptionTrackingListResponse {

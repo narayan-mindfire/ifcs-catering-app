@@ -207,6 +207,9 @@ export const PreparationsScreen: React.FC = () => {
         position: lines[9].trim(),
         scheduledDepartUtc: lines[10].trim(),
         rotationCode: lines[11].trim(),
+        prepNameRepeated: lines[12]?.trim() || "",
+        loadingPlanValue: lines[13]?.trim() || "",
+        consumptionFlag: lines[14]?.trim() || "",
       };
     } catch (error) {
       log.error("Error parsing QR data:", error);
@@ -466,6 +469,7 @@ export const PreparationsScreen: React.FC = () => {
           isConsumptionMode={!!pendingOldFlightData && !!pendingCurrentItem}
           consumptionFlightId={pendingOldFlightData?.flightId}
           onFinishConsumption={handleFinishConsumption}
+          labelData={pendingOldFlightData}
         />
       </Suspense>
 

@@ -27,11 +27,16 @@ interface ConsumptionModalProps {
   packingStandardId?: string;
   packingStandardItemId?: string;
   locationInfo: {
-    galley: string;
-    stowage: string;
-    carrier: string;
+    galley: string | null;
+    stowage: string | null;
+    carrier: string | null;
+    position?: string | null;
+    containerNumber?: string | null;
   };
   presentationStyle?: "modal" | "overlay";
+  labelData?: any;
+  activeDrawerIndex?: number | null;
+  drawerName?: string;
 }
 
 export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
@@ -45,6 +50,8 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   packingStandardItemId,
   locationInfo,
   presentationStyle = "modal",
+  labelData,
+  drawerName,
 }) => {
   const [remainingInput, setRemainingInput] = useState<string>("");
 
@@ -94,6 +101,28 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         consumedQty: consumedQty,
         addQty: 0,
         returnedQty: remainingQty,
+
+        // Position & Label Upgrades
+        labelPosition: labelData?.position || null,
+        loadingPlanValue: labelData?.loadingPlanValue || null,
+        galleyPosition:
+          !locationInfo.galley || locationInfo.galley === "N/A"
+            ? null
+            : locationInfo.galley,
+        stowage:
+          !locationInfo.stowage || locationInfo.stowage === "N/A"
+            ? null
+            : locationInfo.stowage,
+        containerNumber:
+          !locationInfo.containerNumber ||
+          locationInfo.containerNumber === "N/A"
+            ? null
+            : locationInfo.containerNumber,
+        drawerName: !drawerName || drawerName === "N/A" ? null : drawerName,
+        itemPosition:
+          !item.position || item.position === "N/A" ? null : item.position,
+        isFront: item.isFront ?? null,
+        isRear: item.isRear ?? null,
       };
 
       if (existingRecord) {
@@ -191,13 +220,13 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
             </View>
             <View className="flex-row">
               <Text className="flex-1 text-base font-medium text-text-primary">
-                {locationInfo.galley}
+                {locationInfo.galley || "N/A"}
               </Text>
               <Text className="flex-1 text-base font-medium text-text-primary">
-                {locationInfo.stowage}
+                {locationInfo.stowage || "N/A"}
               </Text>
               <Text className="flex-1 text-base font-medium text-text-primary">
-                {locationInfo.carrier}
+                {locationInfo.carrier || "N/A"}
               </Text>
             </View>
           </View>

@@ -43,6 +43,7 @@ interface FlightPreparationModalProps {
   sealRequired: boolean;
   isConsumptionMode?: boolean;
   onFinishConsumption?: () => void;
+  labelData?: any;
 }
 
 const ValidationModal = ({
@@ -91,6 +92,7 @@ export const FlightPreparationDetailsModal: React.FC<
   sealRequired,
   isConsumptionMode = false,
   onFinishConsumption,
+  labelData,
 }) => {
   const {
     preparations,
@@ -837,12 +839,21 @@ export const FlightPreparationDetailsModal: React.FC<
             }}
             item={consumptionItem}
             existingRecord={selectedConsumptionRecord}
+            labelData={labelData}
+            activeDrawerIndex={activeDrawerIndex}
+            drawerName={activeEquipmentName}
             locationInfo={{
               galley:
                 preparationDetail?.aircraftConfigGalleyPosition
-                  ?.galleyPosition || "N/A",
-              stowage: preparationDetail?.position || "N/A",
-              carrier: preparationDetail?.name || "N/A",
+                  ?.galleyPosition || null,
+              stowage: preparationDetail?.position || null,
+              carrier: preparationDetail?.name || null,
+              position:
+                preparationDetail?.aircraftConfigGalleyPosition?.position ||
+                null,
+              containerNumber:
+                preparationDetail?.aircraftConfigGalleyPosition
+                  ?.containerNumber || null,
             }}
             flightId={flightId}
             preparationId={preparationId}
