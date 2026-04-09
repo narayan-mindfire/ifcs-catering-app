@@ -2,6 +2,7 @@ import apiClient from "../api/axiosClient";
 import {
   AddUserSignatureResponse,
   PreparationDetailData,
+  PreparationDetailResponse,
   PreparationFlagUpdatePayload,
   PreparationItem,
   PrintData,
@@ -15,16 +16,19 @@ interface ApiResponse<T> {
 }
 
 export const flightPreparationService = {
-  getPreparations: async (flightId: string): Promise<PreparationItem[]> => {
-    const response = await apiClient.get<ApiResponse<PreparationItem[]>>(
+  getPreparations: async (
+    flightId: string,
+  ): Promise<PreparationDetailData[]> => {
+    const response = await apiClient.get<PreparationDetailResponse>(
       `/flights/${flightId}/preparations`,
       {
         params: { includeContent: true },
       },
     );
 
-    if (response.data.success) {
-      return response.data.data || [];
+    if (response.data.success && response.data.data) {
+      const { preparation } = response.data.data;
+      return (Array.isArray(preparation) ? preparation : [preparation]) || [];
     }
     throw new Error(response.data.message || "Failed to fetch preparations");
   },
@@ -33,15 +37,23 @@ export const flightPreparationService = {
     flightId: string,
     preparationId: string,
   ): Promise<PreparationDetailData> => {
-    const response = await apiClient.get<ApiResponse<PreparationDetailData>>(
+    const response = await apiClient.get<PreparationDetailResponse>(
       `/flights/${flightId}/preparations/${preparationId}`,
     );
-    if (response.data.success) {
-      return response.data.data;
+    if (response.data?.success && response.data?.data) {
+      const { preparation, trucks } = response.data.data;
+      const prep = Array.isArray(preparation)
+        ? preparation.find((p) => p.id === preparationId) || preparation[0]
+        : preparation;
+
+      return {
+        ...prep,
+        trucks,
+      };
     }
-    log.info("PREPARATION BY ID WE GOT: ", response.data.data);
+    log.info("PREPARATION BY ID WE GOT: ", response.data?.data);
     throw new Error(
-      response.data.message || "Failed to fetch preparation details",
+      response.data?.message || "Failed to fetch preparation details",
     );
   },
 
@@ -117,17 +129,24 @@ export const flightPreparationService = {
     oldPrepId: string,
   ): Promise<void> => {
     try {
-      const currentDetailsResponse = await apiClient.get<
-        ApiResponse<PreparationDetailData>
-      >(`/flights/${flightId}/preparations/${currentPrepId}`);
+      const currentDetailsResponse =
+        await apiClient.get<PreparationDetailResponse>(
+          `/flights/${flightId}/preparations/${currentPrepId}`,
+        );
 
-      if (!currentDetailsResponse.data.success) {
+      if (
+        !currentDetailsResponse.data?.success ||
+        !currentDetailsResponse.data?.data
+      ) {
         throw new Error(
           "Failed to fetch current preparation details before linking",
         );
       }
 
-      const currentData = currentDetailsResponse.data.data;
+      const preparation = currentDetailsResponse.data.data.preparation;
+      const currentData = Array.isArray(preparation)
+        ? preparation.find((p) => p.id === currentPrepId) || preparation[0]
+        : preparation;
 
       // 2. Prepare Payload: Merge existing data with new link
       const payload = {

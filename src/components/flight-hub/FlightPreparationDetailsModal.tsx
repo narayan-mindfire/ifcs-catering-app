@@ -215,7 +215,7 @@ export const FlightPreparationDetailsModal: React.FC<
     const containers = packingStd?.containers || [];
     const name = (
       packingStd?.equipmentItem?.name ||
-      preparationDetail.equipment ||
+      preparationDetail?.equipment ||
       ""
     ).toLowerCase();
 
@@ -232,7 +232,7 @@ export const FlightPreparationDetailsModal: React.FC<
   useEffect(() => {
     if (!preparationDetail) return;
 
-    const packingStd = preparationDetail.packingStandard;
+    const packingStd = preparationDetail?.packingStandard;
     const parentContents = packingStd?.items || [];
     const drawers = packingStd?.containers || [];
     const equipmentName = packingStd?.equipmentItem?.name || "";
@@ -337,7 +337,7 @@ export const FlightPreparationDetailsModal: React.FC<
         actionType: "disable",
         onConfirm: async () => {
           setConfirmModalVisible(false);
-          await updatePreparationFlag(flightId, preparationDetail.id, {
+          await updatePreparationFlag(flightId, preparationDetail?.id || "", {
             action: "prepared",
             isContentPrepared: false,
           });
@@ -345,7 +345,7 @@ export const FlightPreparationDetailsModal: React.FC<
       });
       setConfirmModalVisible(true);
     } else {
-      await updatePreparationFlag(flightId, preparationDetail.id, {
+      await updatePreparationFlag(flightId, preparationDetail?.id || "", {
         action: "prepared",
         isContentPrepared: true,
       });
@@ -371,7 +371,7 @@ export const FlightPreparationDetailsModal: React.FC<
           setConfirmModalVisible(false);
           const success = await updatePreparationFlag(
             flightId,
-            preparationDetail.id,
+            preparationDetail?.id || "",
             { action: "seal", sealTagNumber: null },
           );
           if (success) {
@@ -409,7 +409,7 @@ export const FlightPreparationDetailsModal: React.FC<
           setConfirmModalVisible(false);
           const success = await updatePreparationFlag(
             flightId,
-            preparationDetail.id,
+            preparationDetail?.id || "",
             { action: "lock", lockTagNumber: null },
           );
           if (success) {
@@ -432,7 +432,7 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSaveLockNumber = async (lockNumber: number) => {
     setLockModalVisible(false);
     if (!flightId || !preparationDetail) return;
-    await updatePreparationFlag(flightId, preparationDetail.id, {
+    await updatePreparationFlag(flightId, preparationDetail?.id || "", {
       action: "lock",
       lockTagNumber: lockNumber,
     });
@@ -479,7 +479,7 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleSaveSealNumber = async (sealNumber: number) => {
     setSealModalVisible(false);
     if (!flightId || !preparationDetail) return;
-    await updatePreparationFlag(flightId, preparationDetail.id, {
+    await updatePreparationFlag(flightId, preparationDetail?.id || "", {
       action: "seal",
       sealTagNumber: sealNumber,
     });
@@ -489,7 +489,7 @@ export const FlightPreparationDetailsModal: React.FC<
     if (!preparationDetail || !onFinishConsumption) return;
 
     // Collect all items (top-level and inside containers)
-    const packingStd = preparationDetail.packingStandard;
+    const packingStd = preparationDetail?.packingStandard;
     const allItems: PackingStandardItem[] = [];
 
     // Top level items
@@ -509,7 +509,7 @@ export const FlightPreparationDetailsModal: React.FC<
     // Find untracked items
     const untrackedItems = allItems.filter((item) => {
       const isTrackable =
-        preparationDetail.isTrackConsumption || item.isTrackConsumption;
+        preparationDetail?.isTrackConsumption || item.isTrackConsumption;
 
       if (!isTrackable) return false;
 
@@ -609,7 +609,7 @@ export const FlightPreparationDetailsModal: React.FC<
                     <View>
                       <Text className="text-text-secondary text-xs">Door</Text>
                       <Text className="text-text-primary font-bold">
-                        {preparationDetail.door || "N/A"}
+                        {preparationDetail?.door || "N/A"}
                       </Text>
                     </View>
                     <View>
@@ -617,7 +617,7 @@ export const FlightPreparationDetailsModal: React.FC<
                         Position
                       </Text>
                       <Text className="text-text-primary font-bold">
-                        {preparationDetail.position || "N/A"}
+                        {preparationDetail?.position || "N/A"}
                       </Text>
                     </View>
                   </View>
@@ -627,7 +627,7 @@ export const FlightPreparationDetailsModal: React.FC<
                         Equipment
                       </Text>
                       <Text className="text-text-primary font-bold">
-                        {preparationDetail.equipment || "N/A"}
+                        {preparationDetail?.equipment || "N/A"}
                       </Text>
                     </View>
                   </View>
@@ -640,6 +640,77 @@ export const FlightPreparationDetailsModal: React.FC<
                     </View>
                   </View>
                 </View>
+
+                {preparationDetail?.trucks &&
+                  preparationDetail.trucks.length > 0 && (
+                    <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted">
+                      <Text className="text-text-secondary text-sm font-bold mb-3 uppercase tracking-wider">
+                        Dispatch Assignments
+                      </Text>
+                      <View className="flex-row flex-wrap gap-4">
+                        {preparationDetail.trucks.map((truck) => (
+                          <View
+                            key={truck.id}
+                            className="flex-1 min-w-[250px] bg-bg-quaternary p-4 rounded-xl border border-border-muted"
+                          >
+                            <View className="flex-row justify-between items-start mb-3">
+                              <View>
+                                <Text className="text-text-primary font-bold text-base">
+                                  {truck.assetName}
+                                </Text>
+                                <View className="flex-row items-center gap-2 mt-1">
+                                  <View className="bg-bg-tertiary px-2 py-0.5 rounded-full border border-border-muted">
+                                    <Text className="text-text-secondary text-[10px] font-bold">
+                                      {truck.vehicleNumber}
+                                    </Text>
+                                  </View>
+                                  <Text className="text-text-tertiary text-[10px]">
+                                    {truck.assetCategory}
+                                  </Text>
+                                </View>
+                              </View>
+                            </View>
+                            {truck.dispatchAssignments?.map((assignment) => (
+                              <View
+                                key={assignment.id}
+                                className="mt-2 pt-3 border-t border-border-muted"
+                              >
+                                <View className="flex-row justify-between items-center mb-2">
+                                  <Text className="text-text-secondary text-[10px] font-bold uppercase">
+                                    Assigned Staff
+                                  </Text>
+                                  <View className="bg-green-100 px-1.5 py-0.5 rounded">
+                                    <Text className="text-green-700 text-[10px] font-bold">
+                                      {assignment.status}
+                                    </Text>
+                                  </View>
+                                </View>
+                                <View className="gap-y-2">
+                                  {assignment.assignedStaff?.map((staff) => (
+                                    <View
+                                      key={staff.userId}
+                                      className="flex-row justify-between items-center bg-bg-surface p-2 rounded-lg border border-border-muted"
+                                    >
+                                      <View>
+                                        <Text className="text-text-primary text-xs font-medium">
+                                          {staff.firstName} {staff.lastName}
+                                        </Text>
+                                      </View>
+                                      <View className="bg-bg-tertiary px-2 py-0.5 rounded border border-border-muted">
+                                        <Text className="text-text-tertiary text-[10px] font-bold">
+                                          {staff.role}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  ))}
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
 
                 <View className="flex-row gap-4 mt-6 h-[500px]">
                   <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">

@@ -150,13 +150,13 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const getDerivedEquipmentType = () => {
     if (!preparationDetail) return "";
-    const packingStd = preparationDetail.packingStandard;
+    const packingStd = preparationDetail?.packingStandard;
     const rawType = packingStd?.equipmentItem?.type;
     if (rawType) return rawType;
     const containers = packingStd?.containers || [];
     const name = (
       packingStd?.equipmentItem?.name ||
-      preparationDetail.equipment ||
+      preparationDetail?.equipment ||
       ""
     ).toLowerCase();
     if (containers.length > 0) {
@@ -171,7 +171,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
   useEffect(() => {
     if (!preparationDetail) return;
-    const packingStd = preparationDetail.packingStandard;
+    const packingStd = preparationDetail?.packingStandard;
     const parentContents = packingStd?.items || [];
     const drawers = packingStd?.containers || [];
     const parentName = packingStd?.name || "Equipment Contents";
@@ -236,8 +236,8 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         aircraftRegistration: selectedFlight.aircraft?.registration || "N/A",
         flightNumber: selectedFlight.flightNumber || "N/A",
         equipmentItemName:
-          activeEquipmentName || preparationDetail.equipment || "N/A",
-        equipmentItemId: preparationDetail.packingStandard?.equipmentItem?.id,
+          activeEquipmentName || preparationDetail?.equipment || "N/A",
+        equipmentItemId: preparationDetail?.packingStandard?.equipmentItem?.id,
 
         remarks: data.remarks,
         reason: data.reason,

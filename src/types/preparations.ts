@@ -248,6 +248,31 @@ export interface PackingStandard {
   containers: PackingStandardContainer[];
 }
 
+export interface AssignedStaff {
+  userId: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface DispatchAssignment {
+  id: string;
+  flightId: string;
+  truckId: string;
+  status: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  assignedStaff: AssignedStaff[];
+}
+
+export interface Truck {
+  id: string;
+  assetName: string;
+  vehicleNumber: string;
+  assetCategory: string;
+  dispatchAssignments: DispatchAssignment[];
+}
+
 export interface PreparationDetailData {
   id: string;
   flightId: string;
@@ -275,12 +300,16 @@ export interface PreparationDetailData {
   packingStandard: PackingStandard;
   isTrackConsumption: boolean;
   isContentPrepared: boolean;
+  trucks?: Truck[];
 }
 
 export interface PreparationDetailResponse {
   success: boolean;
   message: string;
-  data: PreparationDetailData | null;
+  data: {
+    preparation: PreparationDetailData | PreparationDetailData[];
+    trucks: Truck[];
+  } | null;
 }
 
 //****************************PREPARATION STORE STATE****************************************/
