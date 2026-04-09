@@ -92,7 +92,6 @@ export const FlightPreparationDetailsModal: React.FC<
   sealRequired,
   isConsumptionMode = false,
   onFinishConsumption,
-  labelData,
 }) => {
   const {
     preparations,
@@ -839,8 +838,6 @@ export const FlightPreparationDetailsModal: React.FC<
             }}
             item={consumptionItem}
             existingRecord={selectedConsumptionRecord}
-            labelData={labelData}
-            activeDrawerIndex={activeDrawerIndex}
             drawerName={activeEquipmentName}
             locationInfo={{
               galley:
@@ -848,12 +845,6 @@ export const FlightPreparationDetailsModal: React.FC<
                   ?.galleyPosition || null,
               stowage: preparationDetail?.position || null,
               carrier: preparationDetail?.name || null,
-              position:
-                preparationDetail?.aircraftConfigGalleyPosition?.position ||
-                null,
-              containerNumber:
-                preparationDetail?.aircraftConfigGalleyPosition
-                  ?.containerNumber || null,
             }}
             flightId={flightId}
             preparationId={preparationId}
