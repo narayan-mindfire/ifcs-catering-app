@@ -857,6 +857,10 @@ export const FlightPreparationDetailsModal: React.FC<
             }}
             flightId={flightId}
             preparationId={preparationId}
+            packingStandardId={preparationDetail?.packingStandard?.id}
+            flightPrepProvisionItemId={
+              consumptionItem?.provisionId || undefined
+            }
           />
           <SealNumberModal
             isOpen={sealModalVisible}

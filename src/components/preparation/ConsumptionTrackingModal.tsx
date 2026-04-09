@@ -26,6 +26,7 @@ interface ConsumptionModalProps {
   preparationId: string;
   packingStandardId?: string;
   packingStandardItemId?: string;
+  flightPrepProvisionItemId?: string;
   locationInfo: {
     galley: string | null;
     stowage: string | null;
@@ -48,6 +49,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   preparationId,
   packingStandardId,
   packingStandardItemId,
+  flightPrepProvisionItemId,
   locationInfo,
   presentationStyle = "modal",
   labelData,
@@ -146,10 +148,13 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
 
           createPayload.flightPrepPackingStandardId = undefined;
           createPayload.flightPrepPackingStandardItemId = undefined;
+          createPayload.flightPrepProvisionItemId = undefined;
         } else {
           createPayload.flightPrepPackingStandardId = packingStandardId;
           createPayload.flightPrepPackingStandardItemId =
             packingStandardItemId || item.id;
+          createPayload.flightPrepProvisionItemId =
+            flightPrepProvisionItemId || (item as any).provisionId;
         }
         const result = await createConsumptionRecord(flightId, createPayload);
         resultSuccess = result.success;
