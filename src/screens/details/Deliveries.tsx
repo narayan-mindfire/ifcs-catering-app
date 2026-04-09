@@ -296,7 +296,10 @@ const DeliveriesScreen: React.FC = () => {
         const params = route.params;
         if (params?.fromDashboard && params?.taskId) {
           setSelectedTaskId(params.taskId);
-          navigation.navigate("Dashboard" as any);
+          navigation.navigate("Dashboard" as any, {
+            selectedTaskId: params.taskId,
+            selectedDate: params.taskDate,
+          });
         }
       } catch (err) {
         log.error("Error saving driver declaration:", err);

@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { attendanceService } from "../services/attendanceService";
+import { getISOStringWithOffset } from "../utils/dateFormatter";
 import { log } from "../utils/logger";
 
 type ShiftState = "OFF" | "ON" | "BREAK";
@@ -112,7 +113,7 @@ export const useTimerStore = create<TimerStoreState>()(
       startShift: async () => {
         set({ isLoading: true });
         try {
-          const startTime = new Date().toISOString();
+          const startTime = getISOStringWithOffset(new Date());
           const response = await attendanceService.startShift(startTime);
           if (response.success) {
             const data = response.data;

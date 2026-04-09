@@ -16,7 +16,7 @@ jest.mock("../../../src/components/common/AppButton", () => {
     AppButton: (props: any) => (
       <TouchableOpacity
         testID={`button-${props.title}`}
-        onPress={props.onPress}
+        onPress={props.disabled ? undefined : props.onPress}
         disabled={props.disabled}
       >
         <Text>{props.title}</Text>
@@ -94,36 +94,36 @@ describe("ConsumptionModal", () => {
     ).toBe(true);
   });
 
-  // it("calls createConsumptionRecord on save", async () => {
-  //   mockCreateRecord.mockResolvedValue({ success: true });
+  it("calls createConsumptionRecord on save", async () => {
+    mockCreateRecord.mockResolvedValue({ success: true });
 
-  //   const { getByPlaceholderText, getByText, getByTestId } = render(
-  //     <ConsumptionModal
-  //       visible={true}
-  //       onClose={jest.fn()}
-  //       item={mockItem as any}
-  //       flightId="f1"
-  //       preparationId="p1"
-  //       locationInfo={mockLocation}
-  //     />,
-  //   );
+    const { getByPlaceholderText, getByTestId } = render(
+      <ConsumptionModal
+        visible={true}
+        onClose={jest.fn()}
+        item={mockItem as any}
+        flightId="f1"
+        preparationId="p1"
+        locationInfo={mockLocation}
+      />,
+    );
 
-  //   const input = getByPlaceholderText("#");
-  //   fireEvent.changeText(input, "5");
+    const input = getByPlaceholderText("#");
+    fireEvent.changeText(input, "5");
 
-  //   const saveButton = getByTestId("button-Confirm");
-  //   fireEvent.press(saveButton);
+    const saveButton = getByTestId("button-Confirm");
+    fireEvent.press(saveButton);
 
-  //   await waitFor(() => {
-  //     expect(mockCreateRecord).toHaveBeenCalledWith(
-  //       "f1",
-  //       expect.objectContaining({
-  //         returnedQty: 5,
-  //         consumedQty: 5,
-  //       }),
-  //     );
-  //   });
-  // });
+    await waitFor(() => {
+      expect(mockCreateRecord).toHaveBeenCalledWith(
+        "f1",
+        expect.objectContaining({
+          returnedQty: 5,
+          consumedQty: 5,
+        }),
+      );
+    });
+  });
 
   it("calls updateConsumptionRecord on save when existingRecord is provided", async () => {
     mockUpdateRecord.mockResolvedValue(true);

@@ -44,6 +44,7 @@ interface PreparationsModalsProps {
   isConsumptionMode?: boolean;
   consumptionFlightId?: string;
   onFinishConsumption?: () => void;
+  labelData?: any;
 }
 
 export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
@@ -55,6 +56,7 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
   isConsumptionMode = false,
   consumptionFlightId,
   onFinishConsumption,
+  labelData,
 }) => {
   const activeFlightId =
     isConsumptionMode && consumptionFlightId
@@ -145,6 +147,7 @@ export const PreparationsModals: React.FC<PreparationsModalsProps> = ({
           sealRequired={modals.selectedItem.isSealRequired}
           isConsumptionMode={isConsumptionMode}
           onFinishConsumption={onFinishConsumption}
+          labelData={labelData}
         />
       )}
     </>

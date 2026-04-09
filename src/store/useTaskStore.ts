@@ -10,12 +10,23 @@ interface TaskState {
   tasks: UnifiedTask[];
   selectedTaskId: string | null;
   taskStepsStatus: Record<string, Record<string, boolean>>;
+  taskTimerState: Record<string, { timeLeft: number; isTimerRunning: boolean }>;
   isLoading: boolean;
   error: string | null;
 
   fetchTasks: (userId: string, date?: string) => Promise<void>;
   setSelectedTaskId: (id: string | null) => void;
   setStepStatus: (taskId: string, stepId: string, status: boolean) => void;
+  setTaskTimer: (
+    taskId: string,
+    timeLeft: number,
+    isTimerRunning: boolean,
+  ) => void;
+  syncTaskCompletion: (
+    taskId: string,
+    expected: string,
+    actual: string,
+  ) => Promise<void>;
   clearTasks: () => void;
 }
 
@@ -25,6 +36,7 @@ export const useTaskStore = create<TaskState>()(
       tasks: [],
       selectedTaskId: null,
       taskStepsStatus: {},
+      taskTimerState: {},
       isLoading: false,
       error: null,
 
@@ -59,11 +71,45 @@ export const useTaskStore = create<TaskState>()(
         }));
       },
 
+      setTaskTimer: (taskId, timeLeft, isTimerRunning) => {
+        set((state) => ({
+          taskTimerState: {
+            ...state.taskTimerState,
+            [taskId]: { timeLeft, isTimerRunning },
+          },
+        }));
+      },
+
+      syncTaskCompletion: async (taskId, expected, actual) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await taskService.patchTaskCompletion(
+            taskId,
+            expected,
+            actual,
+          );
+          if (response.success && response.data) {
+            set((state) => ({
+              tasks: state.tasks.map((t) =>
+                t.id === taskId ? { ...t, ...response.data } : t,
+              ),
+              isLoading: false,
+            }));
+          } else {
+            set({ isLoading: false, error: "Failed to sync task completion" });
+          }
+        } catch (err: any) {
+          log.error("Sync Task Completion Error:", err);
+          set({ isLoading: false, error: "Failed to sync task completion" });
+        }
+      },
+
       clearTasks: () => {
         set({
           tasks: [],
           selectedTaskId: null,
           taskStepsStatus: {},
+          taskTimerState: {},
           error: null,
           isLoading: false,
         });
@@ -74,6 +120,7 @@ export const useTaskStore = create<TaskState>()(
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
         taskStepsStatus: state.taskStepsStatus,
+        taskTimerState: state.taskTimerState,
         selectedTaskId: state.selectedTaskId,
       }),
     },

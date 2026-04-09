@@ -33,7 +33,12 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    log.error("--- AXIOS RESPONSE DEBUG ---");
+    log.error("Status:", response.status);
+    log.error("Data:", response.data);
+    return response;
+  },
   (error) => {
     log.error("--- AXIOS ERROR DEBUG ---");
     if (error.response) {

@@ -10,7 +10,7 @@ export type TaskSourceType =
 export type TaskStatus =
   | "PENDING"
   | "IN_PROGRESS"
-  | "COMPLETED"
+  | "COMPLETE"
   | "CANCELLED"
   | "SCHEDULED";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
@@ -43,6 +43,8 @@ export interface UnifiedTask {
   priority: TaskPriority;
   startTime: string; // ISO Date string
   endTime: string; // ISO Date string
+  expectedCompletionTime?: string;
+  actualCompletionTime?: string;
   metadata?: {
     memoId?: string;
     flightId?: string;
