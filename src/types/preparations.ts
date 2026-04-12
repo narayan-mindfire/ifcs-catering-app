@@ -24,6 +24,8 @@ export interface PreparationItem {
   quantity: number;
   sealTagNumber: string;
   lockTagNumber: string;
+  truckId?: string | null;
+  dispatchAssignmentId?: string | null;
 
   qrCodeUrl: string;
   dynamicLoadingQrCodeUrl: string;
@@ -48,6 +50,9 @@ export interface PreparationItem {
   stowage: string;
   carrier: string;
   doorNumber: string;
+  trucks?: Truck[];
+  aircraftConfigGalleyPosition?: AircraftConfigGalleyPosition;
+  packingStandard?: PackingStandard;
 }
 
 export interface PreparationFlagUpdatePayload {
@@ -57,6 +62,8 @@ export interface PreparationFlagUpdatePayload {
   lockTagNumber?: number | string | null;
   loadedTruckFlag?: boolean;
   isContentPrepared?: boolean;
+  truckId?: string;
+  dispatchAssignmentId?: string;
 }
 
 export interface PromptModalState {
@@ -301,6 +308,16 @@ export interface PreparationDetailData {
   isTrackConsumption: boolean;
   isContentPrepared: boolean;
   trucks?: Truck[];
+  storageId?: string | null;
+  date?: string | null;
+  isDynamicLoadingIncomplete?: boolean;
+  isLockRequired?: boolean | null;
+  isSealRequired?: boolean | null;
+  positionRap?: string | null;
+  assemblyProcessFlag?: string | null;
+  loadedTruckFlag?: boolean | string | null;
+  quantity?: number | null;
+  weight?: string | number | null;
 }
 
 export interface PreparationDetailResponse {

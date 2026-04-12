@@ -41,7 +41,9 @@ export type RootStackParamList = {
   SpotCheckSelection: undefined;
   QRCodeScanner: {
     title?: string;
+    subtitle?: string;
     continuous: boolean;
+    onClose?: () => void;
   };
 };
 

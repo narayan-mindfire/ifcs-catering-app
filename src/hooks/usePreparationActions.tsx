@@ -9,6 +9,8 @@ interface UsePreparationActionsParams {
   updatePreparationFlag: any;
   hasUserSignature: boolean;
   modals: any;
+  trucks: any[];
+  currentUser?: any;
 }
 
 export const usePreparationActions = ({
@@ -16,6 +18,8 @@ export const usePreparationActions = ({
   updatePreparationFlag,
   hasUserSignature,
   modals,
+  trucks,
+  currentUser,
 }: UsePreparationActionsParams) => {
   const handleOpenPdf = useCallback(
     (item: PreparationItem) => {
@@ -282,7 +286,10 @@ export const usePreparationActions = ({
   );
 
   const handleLoadAction = useCallback(
-    async (item: PreparationItem) => {
+    async (
+      item: PreparationItem,
+      selectedTruckConfig?: { truckId: string; dispatchAssignmentId: string },
+    ) => {
       if (!selectedFlight?.id) return;
 
       const isAssembled = item.assemblyProcessFlag === "true";
@@ -298,6 +305,8 @@ export const usePreparationActions = ({
             await updatePreparationFlag(selectedFlight.id, item.id, {
               action: "load",
               loadedTruckFlag: false,
+              truckId: item.truckId || undefined,
+              dispatchAssignmentId: item.dispatchAssignmentId || undefined,
             });
           },
         });
@@ -308,13 +317,64 @@ export const usePreparationActions = ({
           );
           return;
         }
+
+        // Use provided truck config if available
+        if (selectedTruckConfig) {
+          await updatePreparationFlag(selectedFlight.id, item.id, {
+            action: "load",
+            loadedTruckFlag: true,
+            truckId: selectedTruckConfig.truckId,
+            dispatchAssignmentId: selectedTruckConfig.dispatchAssignmentId,
+          });
+          return;
+        }
+
+        // Handle truck selection (auto-selection logic)
+        if (!trucks || trucks.length === 0) {
+          Alert.alert(
+            "No Trucks assigned",
+            "There are no trucks assigned to this flight. Please assign a truck first.",
+          );
+          return;
+        }
+
+        // Try to find if user is assigned to a specific truck
+        let selectedTruck = trucks.find((t) =>
+          t.dispatchAssignments?.some((da: any) =>
+            da.assignedStaff?.some((s: any) => s.userId === currentUser?.id),
+          ),
+        );
+
+        // Fallback to first truck if none found and only one truck exists
+        if (!selectedTruck && trucks.length === 1) {
+          selectedTruck = trucks[0];
+        }
+
+        if (!selectedTruck) {
+          // If multiple trucks and none assigned to user, we pick the first one for now
+          // but we could ideally show a selection modal here.
+          selectedTruck = trucks[0];
+        }
+
+        const selectedAssignment = selectedTruck.dispatchAssignments?.[0];
+
+        if (!selectedAssignment) {
+          Alert.alert(
+            "No Assignment",
+            "Selected truck has no active dispatch assignments.",
+          );
+          return;
+        }
+
         await updatePreparationFlag(selectedFlight.id, item.id, {
           action: "load",
           loadedTruckFlag: true,
+          truckId: selectedTruck.id,
+          dispatchAssignmentId: selectedAssignment.id,
         });
       }
     },
-    [selectedFlight?.id, updatePreparationFlag, modals],
+    [selectedFlight.id, modals, updatePreparationFlag, trucks, currentUser?.id],
   );
 
   return {

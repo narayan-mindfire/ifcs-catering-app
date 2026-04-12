@@ -6,6 +6,7 @@ import {
   PreparationFlagUpdatePayload,
   PreparationItem,
   PrintData,
+  Truck,
 } from "../types/preparations";
 import { log } from "../utils/logger";
 
@@ -18,7 +19,7 @@ interface ApiResponse<T> {
 export const flightPreparationService = {
   getPreparations: async (
     flightId: string,
-  ): Promise<PreparationDetailData[]> => {
+  ): Promise<{ preparations: PreparationDetailData[]; trucks: Truck[] }> => {
     const response = await apiClient.get<PreparationDetailResponse>(
       `/flights/${flightId}/preparations`,
       {
@@ -27,8 +28,10 @@ export const flightPreparationService = {
     );
 
     if (response.data.success && response.data.data) {
-      const { preparation } = response.data.data;
-      return (Array.isArray(preparation) ? preparation : [preparation]) || [];
+      const { preparation, trucks } = response.data.data;
+      const preparations =
+        (Array.isArray(preparation) ? preparation : [preparation]) || [];
+      return { preparations, trucks: trucks || [] };
     }
     throw new Error(response.data.message || "Failed to fetch preparations");
   },

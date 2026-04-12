@@ -18,7 +18,7 @@ describe("flightPreparationService", () => {
 
     const result = await flightPreparationService.getPreparations(flightId);
 
-    expect(result).toHaveLength(1);
+    expect(result.preparations).toHaveLength(1);
     expect(apiClient.get).toHaveBeenCalledWith(expect.stringContaining("preparations"), expect.any(Object));
   });
 
