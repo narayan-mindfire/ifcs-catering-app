@@ -14,6 +14,7 @@ interface QRScannerProps {
   onClose: () => void;
   scanned: boolean;
   title?: string;
+  subtitle?: string;
 }
 
 export const QRScanner: React.FC<QRScannerProps> = ({
@@ -21,6 +22,7 @@ export const QRScanner: React.FC<QRScannerProps> = ({
   onClose,
   scanned,
   title = "Align QR code within the frame",
+  subtitle,
 }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [zoom, setZoom] = useState(0);
@@ -132,9 +134,17 @@ export const QRScanner: React.FC<QRScannerProps> = ({
         </View>
 
         <View className="flex-1 justify-center items-center">
-          <Text className="text-white font-medium text-xl mb-10 opacity-90">
+          <Text className="text-white font-black text-xl mb-1 opacity-95 text-center px-6">
             {title}
           </Text>
+          {subtitle && (
+            <Text
+              style={{ color: "#B79EFA" }}
+              className="font-black text-xs mb-8 text-center uppercase tracking-[2px]"
+            >
+              {subtitle}
+            </Text>
+          )}
 
           <View className="w-[300px] h-[300px] relative bg-transparent overflow-hidden">
             <View className="absolute top-0 left-0 w-10 h-10 border-t-[6px] border-l-[6px] border-[#5046e5] rounded-tl-xl" />

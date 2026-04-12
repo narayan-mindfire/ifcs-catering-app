@@ -24,6 +24,7 @@ interface TaskState {
   ) => void;
   syncTaskCompletion: (
     taskId: string,
+    userId: string,
     expected: string,
     actual: string,
   ) => Promise<void>;
@@ -80,11 +81,12 @@ export const useTaskStore = create<TaskState>()(
         }));
       },
 
-      syncTaskCompletion: async (taskId, expected, actual) => {
+      syncTaskCompletion: async (taskId, userId, expected, actual) => {
         set({ isLoading: true, error: null });
         try {
           const response = await taskService.patchTaskCompletion(
             taskId,
+            userId,
             expected,
             actual,
           );

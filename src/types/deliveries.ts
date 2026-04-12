@@ -3,6 +3,8 @@ export interface Delivery {
   flightId: string;
   fmId?: string | null;
   deliveryName: string;
+  truckId?: string | null;
+  dispatchAssignmentId?: string | null;
 
   /** SECURITY FIELDS (Backend names) */
   securityProvider?: string | null;

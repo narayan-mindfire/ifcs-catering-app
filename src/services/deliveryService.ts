@@ -20,10 +20,16 @@ const resolveFlightId = (flightId: string) => {
 };
 
 export const deliveryService = {
-  getDeliveries: async (flightId: string): Promise<Delivery[]> => {
+  getDeliveries: async (
+    flightId: string,
+    dispatchAssignmentId?: string,
+  ): Promise<Delivery[]> => {
     const callFlight = resolveFlightId(flightId);
     const response = await apiClient.get<ApiResponse<Delivery[]>>(
       `/flights/${callFlight}/deliveries`,
+      {
+        params: dispatchAssignmentId ? { dispatchAssignmentId } : {},
+      },
     );
     return response.data.data || [];
   },

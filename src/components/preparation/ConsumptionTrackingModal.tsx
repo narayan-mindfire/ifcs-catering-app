@@ -26,16 +26,13 @@ interface ConsumptionModalProps {
   preparationId: string;
   packingStandardId?: string;
   packingStandardItemId?: string;
+  flightPrepProvisionItemId?: string;
   locationInfo: {
     galley: string | null;
     stowage: string | null;
     carrier: string | null;
-    position?: string | null;
-    containerNumber?: string | null;
   };
   presentationStyle?: "modal" | "overlay";
-  labelData?: any;
-  activeDrawerIndex?: number | null;
   drawerName?: string;
 }
 
@@ -48,10 +45,9 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
   preparationId,
   packingStandardId,
   packingStandardItemId,
+  flightPrepProvisionItemId,
   locationInfo,
   presentationStyle = "modal",
-  labelData,
-  drawerName,
 }) => {
   const [remainingInput, setRemainingInput] = useState<string>("");
 
@@ -101,28 +97,6 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         consumedQty: consumedQty,
         addQty: 0,
         returnedQty: remainingQty,
-
-        // Position & Label Upgrades
-        labelPosition: labelData?.position || null,
-        loadingPlanValue: labelData?.loadingPlanValue || null,
-        galleyPosition:
-          !locationInfo.galley || locationInfo.galley === "N/A"
-            ? null
-            : locationInfo.galley,
-        stowage:
-          !locationInfo.stowage || locationInfo.stowage === "N/A"
-            ? null
-            : locationInfo.stowage,
-        containerNumber:
-          !locationInfo.containerNumber ||
-          locationInfo.containerNumber === "N/A"
-            ? null
-            : locationInfo.containerNumber,
-        drawerName: !drawerName || drawerName === "N/A" ? null : drawerName,
-        itemPosition:
-          !item.position || item.position === "N/A" ? null : item.position,
-        isFront: item.isFront ?? null,
-        isRear: item.isRear ?? null,
       };
 
       if (existingRecord) {
@@ -139,17 +113,21 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
         };
 
         if (item.isDynamic) {
-          createPayload.flightPreparationDynamicItemId =
-            item.flightPreparationDynamicItemId || item.id;
+          createPayload.flightPreparationId = preparationId;
+          createPayload.flightPreparationDynamicItemId = item.id;
           createPayload.foodOrderItemId = item.foodOrderItemId;
           createPayload.mealId = item.mealId;
-
-          createPayload.flightPrepPackingStandardId = undefined;
-          createPayload.flightPrepPackingStandardItemId = undefined;
         } else {
+          createPayload.flightPreparationId = preparationId;
           createPayload.flightPrepPackingStandardId = packingStandardId;
           createPayload.flightPrepPackingStandardItemId =
             packingStandardItemId || item.id;
+          createPayload.flightPrepProvisionItemId =
+            flightPrepProvisionItemId ||
+            (item as any).itemId ||
+            (item as any).provisionId;
+          createPayload.foodOrderItemId = item.foodOrderItemId;
+          createPayload.mealId = item.mealId;
         }
         const result = await createConsumptionRecord(flightId, createPayload);
         resultSuccess = result.success;

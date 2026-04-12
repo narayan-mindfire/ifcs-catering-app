@@ -16,6 +16,7 @@ import {
   ScanActionType,
 } from "../../components/preparation/PreparationsHeader";
 import { PreparationsList } from "../../components/preparation/PreparationsList";
+import { TruckSelectionModal } from "../../components/preparation/TruckSelectionModal";
 import { usePreparationActions } from "../../hooks/usePreparationActions";
 import { usePreparationData } from "../../hooks/usePreparationData";
 import { usePreparationModals } from "../../hooks/usePreparationModals";
@@ -40,6 +41,7 @@ export const PreparationsScreen: React.FC = () => {
     addUserSignature,
     linkPriorPrep,
     fetchPreparationById,
+    trucks,
   } = useFlightPreparationStore();
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
@@ -59,6 +61,8 @@ export const PreparationsScreen: React.FC = () => {
   const [pendingCurrentItem, setPendingCurrentItem] =
     useState<PreparationItem | null>(null);
 
+  const [isTruckModalOpen, setIsTruckModalOpen] = useState(false);
+
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const modals = usePreparationModals();
@@ -71,6 +75,8 @@ export const PreparationsScreen: React.FC = () => {
     updatePreparationFlag,
     hasUserSignature,
     modals,
+    trucks,
+    currentUser: user,
   });
 
   useEffect(() => {
@@ -218,19 +224,64 @@ export const PreparationsScreen: React.FC = () => {
   };
 
   const handleScanPress = (actionType: ScanActionType) => {
-    useScannerStore.getState().setOnScan((data) => {
-      if (actionType) {
-        const parsedData = parseQRData(data);
-        if (parsedData) {
-          handleScanAction(actionType, parsedData);
+    if (actionType === "load") {
+      if (!trucks || trucks.length === 0) {
+        Alert.alert("Error", "No trucks assigned to this flight.");
+        return;
+      }
+
+      if (trucks.length > 1) {
+        setIsTruckModalOpen(true);
+        return;
+      } else {
+        // Only one truck, auto-select it
+        const truck = trucks[0];
+        const assignment = truck.dispatchAssignments?.[0];
+        if (assignment) {
+          const config = {
+            truckId: truck.id,
+            dispatchAssignmentId: assignment.id,
+          };
+          openScannerWithConfig(actionType, config);
         } else {
-          Alert.alert("Error", "Invalid QR code format");
+          Alert.alert("Error", "No assignment for the assigned truck.");
         }
+        return;
+      }
+    }
+
+    openScannerWithConfig(actionType);
+  };
+
+  const openScannerWithConfig = (
+    actionType: ScanActionType,
+    config?: { truckId: string; dispatchAssignmentId: string },
+  ) => {
+    useScannerStore.getState().setOnScan((data) => {
+      const parsedData = parseQRData(data);
+      if (parsedData) {
+        handleScanAction(actionType, parsedData, config);
+      } else {
+        Alert.alert("Error", "Invalid QR code format");
       }
     });
 
+    let subtitle = "";
+    if (config && actionType === "load") {
+      const truck = trucks?.find((t) => t.id === config.truckId);
+      const driver = truck?.dispatchAssignments?.[0]?.assignedStaff?.find(
+        (s) => s.role === "DRIVER",
+      );
+      if (truck) {
+        subtitle = `Truck: ${truck.assetName}${
+          driver ? ` • Driver: ${driver.firstName} ${driver.lastName}` : ""
+        }`;
+      }
+    }
+
     navigation.navigate("QRCodeScanner", {
       title: getScannerTitle(actionType),
+      subtitle,
       continuous: true,
     });
   };
@@ -264,6 +315,7 @@ export const PreparationsScreen: React.FC = () => {
         | "load"
         | "consumption",
       scannedData: ParsedQRData,
+      loadTruckConfig?: { truckId: string; dispatchAssignmentId: string },
     ) => {
       log.info("Scan 1 Received:", actionType, scannedData);
       setRefreshKey((prev) => prev + 1);
@@ -346,7 +398,7 @@ export const PreparationsScreen: React.FC = () => {
           await actions.handleAssemblyAction(item);
           break;
         case "load":
-          await actions.handleLoadAction(item);
+          await actions.handleLoadAction(item, loadTruckConfig);
           break;
       }
     },
@@ -479,6 +531,7 @@ export const PreparationsScreen: React.FC = () => {
         onToggleFilter={handleToggleFilter}
         selectedFlight={selectedFlight}
         onScanPress={handleScanPress}
+        trucks={trucks}
       />
 
       <PreparationsList
@@ -486,6 +539,17 @@ export const PreparationsScreen: React.FC = () => {
         sectionedData={sectionedData}
         isUpdating={isUpdating}
         actions={actions}
+      />
+
+      <TruckSelectionModal
+        isOpen={isTruckModalOpen}
+        onClose={() => setIsTruckModalOpen(false)}
+        trucks={trucks}
+        onSelect={(truckId, dispatchAssignmentId) => {
+          setIsTruckModalOpen(false);
+          const config = { truckId, dispatchAssignmentId };
+          openScannerWithConfig("load", config);
+        }}
       />
     </View>
   );

@@ -5,6 +5,7 @@ import {
   PreparationDetailData,
   PreparationFlagUpdatePayload,
   PreparationItem,
+  Truck,
 } from "../types/preparations";
 import { log } from "../utils/logger";
 
@@ -30,6 +31,7 @@ interface FlightPreparationState {
   userSignatures: UserSignature[];
   isLoading: boolean;
   isPrinting: boolean;
+  trucks: Truck[];
   isPrepLoading: boolean;
   isUpdating: boolean;
   error: string | null;
@@ -73,6 +75,7 @@ interface FlightPreparationState {
 export const useFlightPreparationStore = create<FlightPreparationState>(
   (set, get) => ({
     preparations: [],
+    trucks: [],
     preparationDetail: null,
     userSignatures: [],
     isLoading: false,
@@ -84,9 +87,11 @@ export const useFlightPreparationStore = create<FlightPreparationState>(
     fetchPreparations: async (flightId: string) => {
       set({ isLoading: true, error: null });
       try {
-        const data = await flightPreparationService.getPreparations(flightId);
+        const { preparations, trucks } =
+          await flightPreparationService.getPreparations(flightId);
         set({
-          preparations: data,
+          preparations: preparations as unknown as PreparationItem[],
+          trucks,
           isLoading: false,
         });
       } catch (err: any) {

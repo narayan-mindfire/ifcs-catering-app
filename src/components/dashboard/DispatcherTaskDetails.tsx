@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useMemo } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 import {
   BoxIcon,
@@ -11,6 +11,7 @@ import {
   StringIconTrue,
 } from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { deliveryService } from "../../services/deliveryService";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useTaskStore } from "../../store/useTaskStore";
@@ -47,14 +48,13 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 }) => {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
-  const { deliveries, fetchDeliveries } = useDeliveryStore();
-  const {
-    taskStepsStatus,
-    setStepStatus,
-    taskTimerState,
-    setTaskTimer,
-    syncTaskCompletion,
-  } = useTaskStore();
+  const deliveries = useDeliveryStore((state) => state.deliveries);
+  const fetchDeliveries = useDeliveryStore((state) => state.fetchDeliveries);
+  const taskStepsStatus = useTaskStore((state) => state.taskStepsStatus);
+  const setStepStatus = useTaskStore((state) => state.setStepStatus);
+  const taskTimerState = useTaskStore((state) => state.taskTimerState);
+  const setTaskTimer = useTaskStore((state) => state.setTaskTimer);
+  const syncTaskCompletion = useTaskStore((state) => state.syncTaskCompletion);
   const checkedSteps = useMemo(
     () => taskStepsStatus[task.id] || {},
     [taskStepsStatus, task.id],
@@ -75,7 +75,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           d.driverStaffId === user?.raicNumber),
     );
   }, [deliveries, user]);
-  log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
+  // log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
 
   // Automatically sync declaration step status
   useEffect(() => {
@@ -84,9 +84,11 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
   }, [isDeclarationSigned, checkedSteps, setStepStatus, task.id]);
 
-  // Fetch deliveries for the flight associated with the task
+  // Fetch deliveries for the flight associated with the task only when flight changes
+  const lastFetchedFlightId = React.useRef<string | null>(null);
   useEffect(() => {
-    if (details.flightId) {
+    if (details.flightId && lastFetchedFlightId.current !== details.flightId) {
+      lastFetchedFlightId.current = details.flightId;
       fetchDeliveries(details.flightId);
     }
   }, [details.flightId, fetchDeliveries]);
@@ -119,7 +121,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   }, [checkedSteps, task.id, taskTimerState, setTaskTimer]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning) {
       interval = setInterval(() => {
         setTaskTimer(task.id, timeLeft + 1, true);
@@ -144,27 +146,95 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     toggleStep(step.id);
   };
 
-  const handleSignDeclaration = () => {
+  const handleSignDeclaration = async () => {
     log.info("Declaration step triggered", {
       details,
       flightId: details.flightId,
       flightNo: details.flightNo,
+      dispatchAssignmentId: task.metadata?.dispatchAssignmentId,
     });
 
-    navigation.navigate("FlightDetails", {
-      flightId: details.flightId || "mock-flight-id",
-      flightNumber: details.flightNo || "Unknown",
-      route: details.route || "Unknown",
-      date: new Date().toISOString(),
-      // @ts-ignore
-      screen: "Deliveries",
-      params: {
-        openDriverDeclaration: true,
-        fromDashboard: true,
-        taskId: task.id,
-        taskDate: task.startTime?.split("T")[0],
-      },
-    });
+    if (!details.flightId) {
+      Alert.alert("Error", "Flight information missing from task.");
+      return;
+    }
+
+    try {
+      log.info(
+        `GETTING DELIVERIES FOR FLIGHT: ${details.flightId} FILTERED BY: ${task.metadata?.dispatchAssignmentId}`,
+      );
+      const filteredDeliveries = await deliveryService.getDeliveries(
+        details.flightId,
+        task.metadata?.dispatchAssignmentId,
+      );
+
+      log.info(`API RETURNED ${filteredDeliveries?.length || 0} DELIVERIES`);
+      if (filteredDeliveries && filteredDeliveries.length > 0) {
+        // Detailed check for assignment matching
+        log.info(
+          "DELIVERY DATA RECEIVED:",
+          filteredDeliveries.map((d) => ({
+            id: d.id,
+            name: d.deliveryName,
+            assignmentId: d.dispatchAssignmentId,
+          })),
+        );
+
+        // Find the specific delivery for this task, or fallback to the first one returned
+        const targetDelivery =
+          filteredDeliveries.find((d) => d.dispatchAssignmentId === task.id) ||
+          filteredDeliveries[0];
+
+        log.info("CHOSEN TARGET DELIVERY:", {
+          id: targetDelivery.id,
+          matchesAssignment: targetDelivery.dispatchAssignmentId === task.id,
+        });
+
+        // Path A: Delivery Found
+        log.info("Navigating to Declaration with deliveries", {
+          targetDeliveryId: targetDelivery.id,
+        });
+        navigation.navigate("FlightDetails", {
+          flightId: details.flightId,
+          flightNumber: details.flightNo || "Unknown",
+          route: details.route || "Unknown",
+          date: new Date().toISOString(),
+          // @ts-ignore
+          screen: "Deliveries",
+          params: {
+            openDriverDeclaration: true,
+            fromDashboard: true,
+            taskId: task.id,
+            taskDate: task.startTime?.split("T")[0],
+            selectedDeliveryId: targetDelivery.id,
+          },
+        });
+      } else {
+        // Path B: No Delivery
+        log.info(
+          "NO DELIVERIES FOUND FOR THIS ASSIGNMENT. REDIRECTING TO PREPARATIONS.",
+        );
+        Alert.alert(
+          "Action Required",
+          "User has to do load scan for at least one label before doing signature.",
+        );
+        navigation.navigate("FlightDetails", {
+          flightId: details.flightId,
+          flightNumber: details.flightNo || "Unknown",
+          route: details.route || "Unknown",
+          date: new Date().toISOString(),
+          // @ts-ignore
+          screen: "Preparations",
+          params: {
+            fromDashboard: true,
+            taskId: task.id,
+          },
+        });
+      }
+    } catch (err) {
+      log.error("SIGN DECLARATION FLOW FAILED:", err);
+      Alert.alert("Error", "Failed to verify deliveries. Please try again.");
+    }
   };
 
   const allStepsChecked = steps.every((step) => checkedSteps[step.id]);
@@ -183,7 +253,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     log.info("Mark Task as Complete Payload", payload);
 
     // Sync with backend using duration strings (HH:mm:ss)
-    syncTaskCompletion(task.id, expectedCompletionTime, actualCompletionTime);
+    if (user?.id) {
+      syncTaskCompletion(
+        task.id,
+        user.id,
+        expectedCompletionTime,
+        actualCompletionTime,
+      );
+    }
   };
 
   const assignedStaff = details.assignedStaff || {};
@@ -275,16 +352,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   Expected Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
-                  {task.expectedCompletionTime
-                    ? new Date(task.expectedCompletionTime).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        },
-                      )
-                    : "-"}
+                  {task.expectedCompletionTime || "-"}
                 </Text>
               </View>
               <View className="w-1/3">
@@ -292,16 +360,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   Actual Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
-                  {task.actualCompletionTime
-                    ? new Date(task.actualCompletionTime).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        },
-                      )
-                    : "-"}
+                  {task.actualCompletionTime || "-"}
                 </Text>
               </View>
             </>

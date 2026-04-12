@@ -11,7 +11,7 @@ type Props = StackScreenProps<RootStackParamList, "QRCodeScanner">;
 
 const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
   const [scanned, setScanned] = useState(false);
-  const { title, continuous } = route.params || {};
+  const { title, subtitle, continuous } = route.params || {};
   const onScan = useScannerStore((state) => state.onScan);
   const clearOnScan = useScannerStore((state) => state.clearOnScan);
 
@@ -19,8 +19,11 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
   React.useEffect(() => {
     return () => {
       clearOnScan();
+      if (route.params?.onClose) {
+        route.params.onClose();
+      }
     };
-  }, [clearOnScan]);
+  }, [clearOnScan, route.params]);
 
   const handleBarCodeScanned = useCallback(
     (data: string) => {
@@ -93,6 +96,7 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
         onClose={() => navigation.goBack()}
         scanned={scanned}
         title={title || "Scan Preparation Label"}
+        subtitle={subtitle}
       />
       {scanned && continuous && (
         <View className="absolute top-1/2 left-0 right-0 items-center justify-center">

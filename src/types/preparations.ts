@@ -24,6 +24,8 @@ export interface PreparationItem {
   quantity: number;
   sealTagNumber: string;
   lockTagNumber: string;
+  truckId?: string | null;
+  dispatchAssignmentId?: string | null;
 
   qrCodeUrl: string;
   dynamicLoadingQrCodeUrl: string;
@@ -48,6 +50,9 @@ export interface PreparationItem {
   stowage: string;
   carrier: string;
   doorNumber: string;
+  trucks?: Truck[];
+  aircraftConfigGalleyPosition?: AircraftConfigGalleyPosition;
+  packingStandard?: PackingStandard;
 }
 
 export interface PreparationFlagUpdatePayload {
@@ -57,6 +62,8 @@ export interface PreparationFlagUpdatePayload {
   lockTagNumber?: number | string | null;
   loadedTruckFlag?: boolean;
   isContentPrepared?: boolean;
+  truckId?: string;
+  dispatchAssignmentId?: string;
 }
 
 export interface PromptModalState {
@@ -248,6 +255,31 @@ export interface PackingStandard {
   containers: PackingStandardContainer[];
 }
 
+export interface AssignedStaff {
+  userId: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface DispatchAssignment {
+  id: string;
+  flightId: string;
+  truckId: string;
+  status: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+  assignedStaff: AssignedStaff[];
+}
+
+export interface Truck {
+  id: string;
+  assetName: string;
+  vehicleNumber: string;
+  assetCategory: string;
+  dispatchAssignments: DispatchAssignment[];
+}
+
 export interface PreparationDetailData {
   id: string;
   flightId: string;
@@ -275,12 +307,26 @@ export interface PreparationDetailData {
   packingStandard: PackingStandard;
   isTrackConsumption: boolean;
   isContentPrepared: boolean;
+  trucks?: Truck[];
+  storageId?: string | null;
+  date?: string | null;
+  isDynamicLoadingIncomplete?: boolean;
+  isLockRequired?: boolean | null;
+  isSealRequired?: boolean | null;
+  positionRap?: string | null;
+  assemblyProcessFlag?: string | null;
+  loadedTruckFlag?: boolean | string | null;
+  quantity?: number | null;
+  weight?: string | number | null;
 }
 
 export interface PreparationDetailResponse {
   success: boolean;
   message: string;
-  data: PreparationDetailData | null;
+  data: {
+    preparation: PreparationDetailData | PreparationDetailData[];
+    trucks: Truck[];
+  } | null;
 }
 
 //****************************PREPARATION STORE STATE****************************************/

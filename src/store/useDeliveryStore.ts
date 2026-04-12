@@ -10,7 +10,10 @@ interface DeliveryStore {
   isLoading: boolean;
   error: string | null;
 
-  fetchDeliveries: (flightId: string) => Promise<void>;
+  fetchDeliveries: (
+    flightId: string,
+    dispatchAssignmentId?: string,
+  ) => Promise<void>;
   selectDelivery: (id: string) => void;
   createDelivery: (flightId: string, deliveryName: string) => Promise<void>;
   updateDelivery: (
@@ -38,10 +41,13 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchDeliveries: async (flightId: string) => {
+  fetchDeliveries: async (flightId: string, dispatchAssignmentId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const deliveriesArray = await deliveryService.getDeliveries(flightId);
+      const deliveriesArray = await deliveryService.getDeliveries(
+        flightId,
+        dispatchAssignmentId,
+      );
       set({
         deliveries: deliveriesArray,
         selectedDeliveryId:
@@ -136,18 +142,34 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
   },
 
   deleteDelivery: async (flightId: string, deliveryId: string) => {
+    log.info(`DELETING DELIVERY: ${deliveryId} for FLIGHT: ${flightId}`);
+    set({ isLoading: true, error: null });
     try {
       await deliveryService.deleteDelivery(flightId, deliveryId);
-      set((state) => ({
-        deliveries: state.deliveries.filter((d) => d.id !== deliveryId),
-        selectedDeliveryId:
+      log.info(`DELIVERY ${deliveryId} DELETED SUCCESSFULLY ON BACKEND`);
+
+      set((state) => {
+        const updatedDeliveries = state.deliveries.filter(
+          (d) => d.id !== deliveryId,
+        );
+        const newSelectedId =
           state.selectedDeliveryId === deliveryId
-            ? state.deliveries[0]?.id || null
-            : state.selectedDeliveryId,
-      }));
+            ? updatedDeliveries[0]?.id || null
+            : state.selectedDeliveryId;
+
+        log.info("PREVIOUS DELIVERIES COUNT:", state.deliveries.length);
+        log.info("NEW DELIVERIES COUNT:", updatedDeliveries.length);
+        log.info("NEW SELECTED ID:", newSelectedId);
+
+        return {
+          deliveries: updatedDeliveries,
+          selectedDeliveryId: newSelectedId,
+          isLoading: false,
+        };
+      });
     } catch (err: any) {
       log.error("Delete Delivery Error:", err);
-      set({ error: "Failed to delete delivery" });
+      set({ error: "Failed to delete delivery", isLoading: false });
     }
   },
 

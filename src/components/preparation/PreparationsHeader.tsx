@@ -1,8 +1,9 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { ScanIcon } from "../../assets/icons";
+import { Truck } from "../../types/preparations";
 import { AppButton } from "../common/AppButton";
 import { MultiSelectFilter } from "./MultiSelectFilter";
 
@@ -22,6 +23,7 @@ export interface PreparationsHeaderProps {
   onToggleFilter: (option: string) => void;
   selectedFlight: any;
   onScanPress: (actionType: ScanActionType) => void;
+  trucks?: Truck[];
 }
 
 export interface ParsedQRData {
@@ -42,47 +44,168 @@ export interface ParsedQRData {
   consumptionFlag: string;
 }
 
+const TruckInfo: React.FC<{ truck: Truck }> = ({ truck }) => {
+  const driver = truck.dispatchAssignments?.[0]?.assignedStaff?.find(
+    (s) => s.role === "DRIVER",
+  );
+  if (!driver) return null;
+
+  const initials = `${driver.firstName[0]}${driver.lastName[0]}`.toUpperCase();
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "white",
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
+        marginRight: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      }}
+    >
+      <View style={{ marginRight: 20 }}>
+        <Text
+          style={{
+            fontSize: 9,
+            fontWeight: "900",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            color: "#6B7280",
+            marginBottom: 2,
+          }}
+        >
+          Truck ID
+        </Text>
+        <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
+          {truck.assetName.trim()}
+        </Text>
+      </View>
+
+      <View style={{ position: "relative" }}>
+        <View
+          style={{
+            height: 40,
+            width: 40,
+            borderRadius: 20,
+            backgroundColor: "#4F46E5",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 2,
+            borderColor: "white",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 5,
+          }}
+        >
+          <Text style={{ color: "white", fontSize: 14, fontWeight: "bold" }}>
+            {initials}
+          </Text>
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            height: 14,
+            width: 14,
+            backgroundColor: "#10B981",
+            borderRadius: 7,
+            borderWidth: 2,
+            borderColor: "white",
+          }}
+        />
+      </View>
+
+      <View style={{ marginLeft: 16 }}>
+        <Text
+          style={{
+            fontSize: 9,
+            fontWeight: "900",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+            color: "#6B7280",
+            marginBottom: 2,
+          }}
+        >
+          Assigned Driver
+        </Text>
+        <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
+          {driver.firstName} {driver.lastName}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
   filterOptions,
   selectedFilters,
   onToggleFilter,
   onScanPress,
+  trucks,
 }) => {
   return (
     <View className="flex-row mb-5 z-10">
-      {/* Scroll container */}
       <View className="flex-1 relative">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             flexDirection: "row",
-            paddingRight: 32, // space so last button isn’t hidden under gradient
+            alignItems: "center",
+            paddingRight: 32,
           }}
         >
-          {SCAN_ACTIONS.map(({ label, actionType }) => (
-            <AppButton
-              type="tertiary"
-              key={label}
-              title={label}
-              onPress={() => onScanPress(actionType)}
-              IconComponent={<ScanIcon height={28} width={24} />}
+          <View className="flex-row items-center">
+            {SCAN_ACTIONS.map(({ label, actionType }) => (
+              <AppButton
+                type="tertiary"
+                key={label}
+                title={label}
+                onPress={() => onScanPress(actionType)}
+                IconComponent={<ScanIcon height={28} width={24} />}
+                style={{
+                  marginRight: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 6,
+                }}
+                textStyle={{
+                  fontSize: 17,
+                  fontWeight: "400",
+                  color: "#111827",
+                }}
+              />
+            ))}
+          </View>
+
+          {trucks && trucks.length > 0 && (
+            <View
               style={{
-                marginRight: 12,
-                paddingVertical: 10,
-                paddingHorizontal: 16,
-                borderRadius: 6,
+                flexDirection: "row",
+                alignItems: "center",
+                borderLeftWidth: 1,
+                borderColor: "#E5E7EB",
+                paddingLeft: 16,
+                marginLeft: 4,
               }}
-              textStyle={{
-                fontSize: 17,
-                fontWeight: "400",
-                color: "var(--text-primary)",
-              }}
-            />
-          ))}
+            >
+              {trucks.map((truck) => (
+                <TruckInfo key={truck.id} truck={truck} />
+              ))}
+            </View>
+          )}
         </ScrollView>
 
-        {/* Scroll hint */}
         <LinearGradient
           colors={["transparent", "rgba(0,0,0,0.15)"]}
           start={{ x: 0, y: 0 }}
@@ -93,14 +216,12 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             top: 0,
             bottom: 0,
             width: 28,
-            justifyContent: "center",
-            alignItems: "center",
           }}
           pointerEvents="none"
         />
       </View>
 
-      <View className="flex-row ms-3 justify-end">
+      <View className="flex-row ms-3 justify-end items-center">
         <MultiSelectFilter
           options={filterOptions}
           selectedOptions={selectedFilters}
