@@ -374,6 +374,7 @@ export const usePreparationActions = ({
         });
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [modals, updatePreparationFlag, trucks, currentUser?.id],
   );
 

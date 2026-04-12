@@ -20,13 +20,13 @@ apiClient.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    log.info("--- AXIOS REQUEST DEBUG ---");
-    log.info("Method:", config.method);
-    log.info("Base URL:", config.baseURL);
-    log.info("URL:", config.url);
-    log.info("Headers:", config.headers);
-    log.info("Params:", config.params);
-    log.info("Body:", config.data);
+    // log.info("--- AXIOS REQUEST DEBUG ---");
+    // log.info("Method:", config.method);
+    // log.info("Base URL:", config.baseURL);
+    // log.info("URL:", config.url);
+    // log.info("Headers:", config.headers);
+    // log.info("Params:", config.params);
+    // log.info("Body:", config.data);
     return config;
   },
   (error) => Promise.reject(error),
@@ -34,9 +34,9 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    log.error("--- AXIOS RESPONSE DEBUG ---");
-    log.error("Status:", response.status);
-    log.error("Data:", response.data);
+    // log.error("--- AXIOS RESPONSE DEBUG ---");
+    // log.error("Status:", response.status);
+    // log.error("Data:", response.data);
     return response;
   },
   (error) => {

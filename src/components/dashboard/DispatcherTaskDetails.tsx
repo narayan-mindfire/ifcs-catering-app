@@ -75,7 +75,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           d.driverStaffId === user?.raicNumber),
     );
   }, [deliveries, user]);
-  log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
+  // log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
 
   // Automatically sync declaration step status
   useEffect(() => {
@@ -151,7 +151,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       details,
       flightId: details.flightId,
       flightNo: details.flightNo,
-      dispatchAssignmentId: task.id,
+      dispatchAssignmentId: task.metadata?.dispatchAssignmentId,
     });
 
     if (!details.flightId) {
@@ -160,14 +160,40 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
 
     try {
+      log.info(
+        `GETTING DELIVERIES FOR FLIGHT: ${details.flightId} FILTERED BY: ${task.metadata?.dispatchAssignmentId}`,
+      );
       const filteredDeliveries = await deliveryService.getDeliveries(
         details.flightId,
-        task.id,
+        task.metadata?.dispatchAssignmentId,
       );
 
+      log.info(`API RETURNED ${filteredDeliveries?.length || 0} DELIVERIES`);
       if (filteredDeliveries && filteredDeliveries.length > 0) {
+        // Detailed check for assignment matching
+        log.info(
+          "DELIVERY DATA RECEIVED:",
+          filteredDeliveries.map((d) => ({
+            id: d.id,
+            name: d.deliveryName,
+            assignmentId: d.dispatchAssignmentId,
+          })),
+        );
+
+        // Find the specific delivery for this task, or fallback to the first one returned
+        const targetDelivery =
+          filteredDeliveries.find((d) => d.dispatchAssignmentId === task.id) ||
+          filteredDeliveries[0];
+
+        log.info("CHOSEN TARGET DELIVERY:", {
+          id: targetDelivery.id,
+          matchesAssignment: targetDelivery.dispatchAssignmentId === task.id,
+        });
+
         // Path A: Delivery Found
-        log.info("Navigating to Declaration with deliveries");
+        log.info("Navigating to Declaration with deliveries", {
+          targetDeliveryId: targetDelivery.id,
+        });
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
           flightNumber: details.flightNo || "Unknown",
@@ -180,9 +206,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             fromDashboard: true,
             taskId: task.id,
             taskDate: task.startTime?.split("T")[0],
-            selectedDeliveryId: filteredDeliveries[0].id,
+            selectedDeliveryId: targetDelivery.id,
           },
         });
+      } else {
+        // Path B: No Delivery
+        log.info(
+          "NO DELIVERIES FOUND FOR THIS ASSIGNMENT. REDIRECTING TO PREPARATIONS.",
+        );
         Alert.alert(
           "Action Required",
           "User has to do load scan for at least one label before doing signature.",
@@ -201,7 +232,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         });
       }
     } catch (err) {
-      log.error("Sign Declaration Redirect Error:", err);
+      log.error("SIGN DECLARATION FLOW FAILED:", err);
       Alert.alert("Error", "Failed to verify deliveries. Please try again.");
     }
   };
