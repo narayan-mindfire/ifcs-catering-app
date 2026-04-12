@@ -37,6 +37,8 @@ export type RootStackParamList = {
     fromDashboard?: boolean;
     taskId?: string;
     taskDate?: string;
+    openDriverDeclaration?: boolean;
+    selectedDeliveryId?: string;
   };
   SpotCheckSelection: undefined;
   QRCodeScanner: {

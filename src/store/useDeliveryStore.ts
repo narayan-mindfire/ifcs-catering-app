@@ -10,7 +10,10 @@ interface DeliveryStore {
   isLoading: boolean;
   error: string | null;
 
-  fetchDeliveries: (flightId: string) => Promise<void>;
+  fetchDeliveries: (
+    flightId: string,
+    dispatchAssignmentId?: string,
+  ) => Promise<void>;
   selectDelivery: (id: string) => void;
   createDelivery: (flightId: string, deliveryName: string) => Promise<void>;
   updateDelivery: (
@@ -38,10 +41,13 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchDeliveries: async (flightId: string) => {
+  fetchDeliveries: async (flightId: string, dispatchAssignmentId?: string) => {
     set({ isLoading: true, error: null });
     try {
-      const deliveriesArray = await deliveryService.getDeliveries(flightId);
+      const deliveriesArray = await deliveryService.getDeliveries(
+        flightId,
+        dispatchAssignmentId,
+      );
       set({
         deliveries: deliveriesArray,
         selectedDeliveryId:

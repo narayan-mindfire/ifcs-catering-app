@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import React, { useEffect, useMemo } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 import {
   BoxIcon,
@@ -11,6 +11,7 @@ import {
   StringIconTrue,
 } from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { deliveryService } from "../../services/deliveryService";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useTaskStore } from "../../store/useTaskStore";
@@ -47,14 +48,13 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 }) => {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
-  const { deliveries, fetchDeliveries } = useDeliveryStore();
-  const {
-    taskStepsStatus,
-    setStepStatus,
-    taskTimerState,
-    setTaskTimer,
-    syncTaskCompletion,
-  } = useTaskStore();
+  const deliveries = useDeliveryStore((state) => state.deliveries);
+  const fetchDeliveries = useDeliveryStore((state) => state.fetchDeliveries);
+  const taskStepsStatus = useTaskStore((state) => state.taskStepsStatus);
+  const setStepStatus = useTaskStore((state) => state.setStepStatus);
+  const taskTimerState = useTaskStore((state) => state.taskTimerState);
+  const setTaskTimer = useTaskStore((state) => state.setTaskTimer);
+  const syncTaskCompletion = useTaskStore((state) => state.syncTaskCompletion);
   const checkedSteps = useMemo(
     () => taskStepsStatus[task.id] || {},
     [taskStepsStatus, task.id],
@@ -84,9 +84,11 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
   }, [isDeclarationSigned, checkedSteps, setStepStatus, task.id]);
 
-  // Fetch deliveries for the flight associated with the task
+  // Fetch deliveries for the flight associated with the task only when flight changes
+  const lastFetchedFlightId = React.useRef<string | null>(null);
   useEffect(() => {
-    if (details.flightId) {
+    if (details.flightId && lastFetchedFlightId.current !== details.flightId) {
+      lastFetchedFlightId.current = details.flightId;
       fetchDeliveries(details.flightId);
     }
   }, [details.flightId, fetchDeliveries]);
@@ -119,7 +121,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   }, [checkedSteps, task.id, taskTimerState, setTaskTimer]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning) {
       interval = setInterval(() => {
         setTaskTimer(task.id, timeLeft + 1, true);
@@ -144,27 +146,64 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     toggleStep(step.id);
   };
 
-  const handleSignDeclaration = () => {
+  const handleSignDeclaration = async () => {
     log.info("Declaration step triggered", {
       details,
       flightId: details.flightId,
       flightNo: details.flightNo,
+      dispatchAssignmentId: task.id,
     });
 
-    navigation.navigate("FlightDetails", {
-      flightId: details.flightId || "mock-flight-id",
-      flightNumber: details.flightNo || "Unknown",
-      route: details.route || "Unknown",
-      date: new Date().toISOString(),
-      // @ts-ignore
-      screen: "Deliveries",
-      params: {
-        openDriverDeclaration: true,
-        fromDashboard: true,
-        taskId: task.id,
-        taskDate: task.startTime?.split("T")[0],
-      },
-    });
+    if (!details.flightId) {
+      Alert.alert("Error", "Flight information missing from task.");
+      return;
+    }
+
+    try {
+      const filteredDeliveries = await deliveryService.getDeliveries(
+        details.flightId,
+        task.id,
+      );
+
+      if (filteredDeliveries && filteredDeliveries.length > 0) {
+        // Path A: Delivery Found
+        log.info("Navigating to Declaration with deliveries");
+        navigation.navigate("FlightDetails", {
+          flightId: details.flightId,
+          flightNumber: details.flightNo || "Unknown",
+          route: details.route || "Unknown",
+          date: new Date().toISOString(),
+          // @ts-ignore
+          screen: "Deliveries",
+          params: {
+            openDriverDeclaration: true,
+            fromDashboard: true,
+            taskId: task.id,
+            taskDate: task.startTime?.split("T")[0],
+            selectedDeliveryId: filteredDeliveries[0].id,
+          },
+        });
+        Alert.alert(
+          "Action Required",
+          "User has to do load scan for at least one label before doing signature.",
+        );
+        navigation.navigate("FlightDetails", {
+          flightId: details.flightId,
+          flightNumber: details.flightNo || "Unknown",
+          route: details.route || "Unknown",
+          date: new Date().toISOString(),
+          // @ts-ignore
+          screen: "Preparations",
+          params: {
+            fromDashboard: true,
+            taskId: task.id,
+          },
+        });
+      }
+    } catch (err) {
+      log.error("Sign Declaration Redirect Error:", err);
+      Alert.alert("Error", "Failed to verify deliveries. Please try again.");
+    }
   };
 
   const allStepsChecked = steps.every((step) => checkedSteps[step.id]);

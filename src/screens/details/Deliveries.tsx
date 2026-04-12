@@ -30,23 +30,22 @@ const DeliveriesScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const flightId = useFlightStore((state) => state.selectedFlight?.id);
 
-  const {
-    deliveries,
-    selectedDeliveryId,
-    isLoading,
-    error,
-    fetchDeliveries,
-    selectDelivery,
-    createDelivery,
-    updateDelivery,
-    addSignature,
-    deleteDelivery,
-  } = useDeliveryStore();
+  const deliveries = useDeliveryStore((state) => state.deliveries);
+  const selectedDeliveryId = useDeliveryStore(
+    (state) => state.selectedDeliveryId,
+  );
+  const isLoading = useDeliveryStore((state) => state.isLoading);
+  const error = useDeliveryStore((state) => state.error);
+  const fetchDeliveries = useDeliveryStore((state) => state.fetchDeliveries);
+  const selectDelivery = useDeliveryStore((state) => state.selectDelivery);
+  const createDelivery = useDeliveryStore((state) => state.createDelivery);
+  const updateDelivery = useDeliveryStore((state) => state.updateDelivery);
+  const addSignature = useDeliveryStore((state) => state.addSignature);
+  const deleteDelivery = useDeliveryStore((state) => state.deleteDelivery);
 
-  const { setSelectedTaskId } = useTaskStore();
+  const setSelectedTaskId = useTaskStore((state) => state.setSelectedTaskId);
 
   const [activeTab, setActiveTab] = useState<TabType>("preparers");
-  const [isAutoSelecting, setIsAutoSelecting] = useState(false);
   const [hasInitialFetched, setHasInitialFetched] = useState(false);
   const lastHandledParamRef = React.useRef<string | null>(null);
 
@@ -55,55 +54,62 @@ const DeliveriesScreen: React.FC = () => {
     setHasInitialFetched(false);
   }, [flightId]);
 
-  // Handle auto-open driver declaration from navigation params
   useEffect(() => {
-    const params = route.params;
+    const params = route.params as any;
     const openParam = params?.openDriverDeclaration;
 
-    // unique key to track if we've already handled this redirection request
-    const paramKey = openParam ? `${flightId}-open` : null;
+    log.info("Deliveries redirect check", {
+      openParam,
+      hasInitialFetched,
+      isLoading,
+      alreadyHandled: lastHandledParamRef.current,
+      flightId,
+    });
+
+    if (!openParam) {
+      if (lastHandledParamRef.current !== null) {
+        log.info("Resetting redirect ref because openParam is gone");
+        lastHandledParamRef.current = null;
+      }
+      return;
+    }
+
+    const paramKey = `${flightId}-open`;
 
     if (
-      openParam &&
       flightId &&
       hasInitialFetched &&
+      !isLoading &&
       lastHandledParamRef.current !== paramKey
     ) {
-      if (!isLoading) {
-        if (deliveries.length === 0) {
-          if (!isAutoSelecting) {
-            setIsAutoSelecting(true);
-            const name = "Delivery 1";
-            createDelivery(flightId, name);
-          }
-        } else {
-          const latestDelivery = deliveries[deliveries.length - 1];
-          setActiveTab("driver");
+      if (deliveries.length > 0) {
+        log.info("Executing redirect to delivery", {
+          targetId: params?.selectedDeliveryId || deliveries[0].id,
+        });
+        lastHandledParamRef.current = paramKey;
+        const targetId = params?.selectedDeliveryId || deliveries[0].id;
+        setActiveTab("driver");
 
-          if (selectedDeliveryId !== latestDelivery.id) {
-            selectDelivery(latestDelivery.id);
-          }
-
-          // Mark as handled before clearing param to avoid loops
-          lastHandledParamRef.current = paramKey;
-          setIsAutoSelecting(false);
-          navigation.setParams({ openDriverDeclaration: undefined } as any);
+        if (selectedDeliveryId !== targetId) {
+          selectDelivery(targetId);
         }
+
+        navigation.setParams({
+          openDriverDeclaration: undefined,
+          selectedDeliveryId: undefined,
+        } as any);
+      } else {
+        log.info("Redirect pending: Deliveries empty");
       }
-    } else if (!openParam) {
-      // Reset ref when param is gone
-      lastHandledParamRef.current = null;
     }
   }, [
     route.params,
     deliveries,
     isLoading,
     flightId,
-    createDelivery,
     selectDelivery,
     selectedDeliveryId,
     navigation,
-    isAutoSelecting,
     hasInitialFetched,
   ]);
 
