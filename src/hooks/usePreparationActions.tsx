@@ -374,7 +374,7 @@ export const usePreparationActions = ({
         });
       }
     },
-    [selectedFlight.id, modals, updatePreparationFlag, trucks, currentUser?.id],
+    [modals, updatePreparationFlag, trucks, currentUser?.id],
   );
 
   return {
