@@ -253,7 +253,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     log.info("Mark Task as Complete Payload", payload);
 
     // Sync with backend using duration strings (HH:mm:ss)
-    syncTaskCompletion(task.id, expectedCompletionTime, actualCompletionTime);
+    if (user?.id) {
+      syncTaskCompletion(
+        task.id,
+        user.id,
+        expectedCompletionTime,
+        actualCompletionTime,
+      );
+    }
   };
 
   const assignedStaff = details.assignedStaff || {};
@@ -345,16 +352,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   Expected Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
-                  {task.expectedCompletionTime
-                    ? new Date(task.expectedCompletionTime).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        },
-                      )
-                    : "-"}
+                  {task.expectedCompletionTime || "-"}
                 </Text>
               </View>
               <View className="w-1/3">
@@ -362,16 +360,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   Actual Duration
                 </Text>
                 <Text className="text-lg font-bold text-text-primary">
-                  {task.actualCompletionTime
-                    ? new Date(task.actualCompletionTime).toLocaleTimeString(
-                        [],
-                        {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false,
-                        },
-                      )
-                    : "-"}
+                  {task.actualCompletionTime || "-"}
                 </Text>
               </View>
             </>

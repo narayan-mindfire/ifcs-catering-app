@@ -27,6 +27,7 @@ export const taskService = {
 
   patchTaskCompletion: async (
     taskId: string,
+    userId: string,
     expectedCompletionTime: string,
     actualCompletionTime: string,
   ): Promise<{ success: boolean; data?: UnifiedTask }> => {
@@ -35,10 +36,16 @@ export const taskService = {
     const response = await apiClient.patch<{
       success: boolean;
       data: UnifiedTask;
-    }>(`/tasks/${taskId}/completion`, {
-      expectedCompletionTime,
-      actualCompletionTime,
-    });
+    }>(
+      `/tasks/${taskId}/completion`,
+      {
+        expectedCompletionTime,
+        actualCompletionTime,
+      },
+      {
+        headers: { "x-user-id": userId },
+      },
+    );
 
     return response.data;
   },
