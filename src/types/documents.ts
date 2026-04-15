@@ -15,17 +15,23 @@ export interface DocumentFolder {
   id: string;
   name: string;
   parentId: string | null;
+  filesCount?: number;
+  color?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdByUserName?: string;
+  updatedByUserName?: string;
   hierarchy?: { id: string; name: string }[];
   createdAt?: string;
-  modifiedAt?: string;
+  updatedAt?: string;
 }
 
 export interface FolderItem {
   id: string;
   name: string;
-  itemCount?: number;
+  filesCount?: number;
   createdAt?: string;
-  modifiedAt?: string;
+  updatedAt?: string;
 }
 
 export interface FileSystemItem {

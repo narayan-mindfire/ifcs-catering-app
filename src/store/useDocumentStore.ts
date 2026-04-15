@@ -55,7 +55,17 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
         folderDetailsPromise ? folderDetailsPromise : Promise.resolve(null),
       ]);
 
-      const folders: FileSystemItem[] = foldersData.map((f) => ({
+      // Filter folders to only show children of the current folder
+      const filteredFolders = foldersData.filter((f) => {
+        if (folderId === null) {
+          return (
+            f.parentId === null || f.parentId === "null" || f.parentId === ""
+          );
+        }
+        return f.parentId === folderId;
+      });
+
+      const folders: FileSystemItem[] = filteredFolders.map((f) => ({
         type: "folder" as const,
         data: f,
       }));
