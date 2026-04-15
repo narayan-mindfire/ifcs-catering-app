@@ -24,7 +24,7 @@ describe("dateFormatter", () => {
   });
 
   describe("formatDate", () => {
-    it("formats date to MMM DD YYYY", () => {
+    it("formats date to MM DD YYYY", () => {
       const formatted = formatDate("2024-03-16");
       expect(formatted).toBe("MAR 16 2024");
     });
