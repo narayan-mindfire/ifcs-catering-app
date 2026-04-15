@@ -1,0 +1,187 @@
+export type AcheckModalMode = "create" | "view" | "edit";
+
+// Full API response object
+export interface TruckACheck {
+  id: string;
+  truckId: string;
+  assignmentId: string;
+  userId: string;
+  name: string;
+  vehicleNo: string;
+  checkedDate: string;
+  lightIndicator: boolean;
+  lightCabin: boolean;
+  lightLowBeam: boolean;
+  lightPlatform: boolean;
+  lightHighBeam: boolean;
+  lightBrake: boolean;
+  lightParking: boolean;
+  lightHazard: boolean;
+  lightTail: boolean;
+  lightCargo: boolean;
+  lightTurnSignal: boolean;
+  opIgnition: boolean;
+  opFootBrake: boolean;
+  opHorn: boolean;
+  opClutch: boolean;
+  opSteering: boolean;
+  opHeatingVentilation: boolean;
+  opParkingBrake: boolean;
+  opWindshieldWiper: boolean;
+  opWindow: boolean;
+  opHandGas: boolean;
+  opAuxiliaryWindow: boolean;
+  opSeatAdjustment: boolean;
+  auxDoesNotRelease: boolean;
+  auxFootBrake: boolean;
+  auxHorn: boolean;
+  auxClutch: boolean;
+  auxSteering: boolean;
+  auxHeatingVentilation: boolean;
+  auxSupportNotRetract: boolean;
+  auxWindshieldWiper: boolean;
+  auxWindow: boolean;
+  auxHandGas: boolean;
+  auxAuxiliaryWindow: boolean;
+  auxSeatAdjustment: boolean;
+  hydVl: boolean;
+  hydVr: boolean;
+  hydMl: boolean;
+  hydMr: boolean;
+  hydHl: boolean;
+  hydHr: boolean;
+  compEngine: string;
+  compTransmission: string;
+  compAirLineLeaking: string;
+  tireVl: boolean;
+  tireVr: boolean;
+  tireHl: boolean;
+  tireHr: boolean;
+  structBodyAPillar: boolean;
+  structBodyBPillar: boolean;
+  structBodyLadder: boolean;
+  structBodyDPillar: boolean;
+  structBodyCPillar: boolean;
+  fallLeft: boolean;
+  fallJammed: boolean;
+  fallBent: boolean;
+  fallRight: boolean;
+  details: string;
+  hasAccidentHazard: boolean;
+  externalDamage: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy: string;
+}
+
+// POST body
+export interface CreateACheckPayload {
+  truckId?: string;
+  assignmentId?: string;
+  userId?: string;
+  name: string;
+  vehicleNo: string;
+  checkedDate: string;
+  lightIndicator: boolean;
+  lightCabin: boolean;
+  lightLowBeam: boolean;
+  lightPlatform: boolean;
+  lightHighBeam: boolean;
+  lightBrake: boolean;
+  lightParking: boolean;
+  lightHazard: boolean;
+  lightTail: boolean;
+  lightCargo: boolean;
+  lightTurnSignal: boolean;
+  opIgnition: boolean;
+  opFootBrake: boolean;
+  opHorn: boolean;
+  opClutch: boolean;
+  opSteering: boolean;
+  opHeatingVentilation: boolean;
+  opParkingBrake: boolean;
+  opWindshieldWiper: boolean;
+  opWindow: boolean;
+  opHandGas: boolean;
+  opAuxiliaryWindow: boolean;
+  opSeatAdjustment: boolean;
+  auxDoesNotRelease: boolean;
+  auxFootBrake: boolean;
+  auxHorn: boolean;
+  auxClutch: boolean;
+  auxSteering: boolean;
+  auxHeatingVentilation: boolean;
+  auxSupportNotRetract: boolean;
+  auxWindshieldWiper: boolean;
+  auxWindow: boolean;
+  auxHandGas: boolean;
+  auxAuxiliaryWindow: boolean;
+  auxSeatAdjustment: boolean;
+  hydVl: boolean;
+  hydVr: boolean;
+  hydMl: boolean;
+  hydMr: boolean;
+  hydHl: boolean;
+  hydHr: boolean;
+  compEngine: string;
+  compTransmission: string;
+  compAirLineLeaking: string;
+  tireVl: boolean;
+  tireVr: boolean;
+  tireHl: boolean;
+  tireHr: boolean;
+  structBodyAPillar: boolean;
+  structBodyBPillar: boolean;
+  structBodyLadder: boolean;
+  structBodyDPillar: boolean;
+  structBodyCPillar: boolean;
+  fallLeft: boolean;
+  fallJammed: boolean;
+  fallBent: boolean;
+  fallRight: boolean;
+  details: string;
+  hasAccidentHazard: boolean;
+  externalDamage: string;
+}
+
+// PUT body — only mutable fields
+export interface UpdateACheckPayload {
+  name?: string;
+  vehicleNo?: string;
+  hasAccidentHazard?: boolean;
+  details?: string;
+}
+
+export interface AcheckFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  mode: AcheckModalMode;
+  initialData?: TruckACheck;
+  truckId?: string;
+  assignmentId?: string;
+  userId?: string;
+  onSubmit?: (payload: CreateACheckPayload) => Promise<void>;
+  onUpdate?: (id: string, payload: UpdateACheckPayload) => Promise<void>;
+  onRequestEdit?: () => void;
+}
+
+/** @deprecated Use AcheckFormProps instead */
+export interface DefectReportData {
+  name: string;
+  vehicleNo: string;
+  date: string;
+  lighting: Record<string, boolean>;
+  operation: Record<string, boolean>;
+  auxiliaryDrive: Record<string, boolean>;
+  hydraulicsFailAt: Record<string, boolean>;
+  engine: string;
+  transmission: string;
+  tires: Record<string, boolean>;
+  compressedAirLineLeaking: string;
+  bodyDamage: Record<string, boolean>;
+  fallProtection: Record<string, boolean>;
+  details: string;
+  accidentHazard: "yes" | "no" | null;
+  externalDamage: string;
+}

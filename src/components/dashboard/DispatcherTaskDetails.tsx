@@ -1,6 +1,6 @@
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 import {
@@ -11,13 +11,21 @@ import {
   StringIconTrue,
 } from "../../assets/icons";
 import { RootStackParamList } from "../../navigation/AppNavigator";
+import { acheckService } from "../../services/acheckService";
 import { deliveryService } from "../../services/deliveryService";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useDeliveryStore } from "../../store/useDeliveryStore";
 import { useTaskStore } from "../../store/useTaskStore";
+import {
+  AcheckModalMode,
+  CreateACheckPayload,
+  TruckACheck,
+  UpdateACheckPayload,
+} from "../../types/acheck";
 import { UnifiedTask } from "../../types/task";
 import { log } from "../../utils/logger";
 import { AppButton } from "../common/AppButton";
+import { AcheckForm } from "../deliveries/AcheckForm";
 
 interface TaskStep {
   id: string;
@@ -62,6 +70,12 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const { timeLeft = 0, isTimerRunning = false } =
     taskTimerState[task.id] || {};
 
+  const [acheckModalMode, setAcheckModalMode] =
+    useState<AcheckModalMode | null>(null);
+  const [existingACheck, setExistingACheck] = useState<TruckACheck | null>(
+    null,
+  );
+
   const details = task.taskDetails || {};
 
   // Logic to check if declaration is signed on backend
@@ -92,6 +106,60 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       fetchDeliveries(details.flightId);
     }
   }, [details.flightId, fetchDeliveries]);
+
+  // Fetch existing a-check for this dispatcher assignment
+  const assignmentId = task.metadata?.dispatchAssignmentId as
+    | string
+    | undefined;
+  const truckId = task.metadata?.truckId as string | undefined;
+  const lastFetchedAssignmentId = React.useRef<string | null>(null);
+  useEffect(() => {
+    if (assignmentId && lastFetchedAssignmentId.current !== assignmentId) {
+      lastFetchedAssignmentId.current = assignmentId;
+      acheckService
+        .getAChecks({ assignmentId })
+        .then((results) => {
+          if (results.length > 0) {
+            setExistingACheck(results[0]);
+            // Reflect existing a-check in step status
+            if (!checkedSteps["a-check"]) {
+              setStepStatus(task.id, "a-check", true);
+            }
+          }
+        })
+        .catch((err) => log.error("Failed to fetch existing a-check:", err));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assignmentId]);
+
+  const handleACheckSubmit = async (payload: CreateACheckPayload) => {
+    try {
+      const created = await acheckService.createACheck(payload);
+      setExistingACheck(created);
+      setStepStatus(task.id, "a-check", true);
+      setAcheckModalMode(null);
+      log.info("A-Check created successfully", { id: created.id });
+    } catch (err) {
+      log.error("Failed to create A-Check:", err);
+      Alert.alert("Error", "Failed to submit A-Check. Please try again.");
+    }
+  };
+
+  // Update a-check handler
+  const handleACheckUpdate = async (
+    id: string,
+    payload: UpdateACheckPayload,
+  ) => {
+    try {
+      const updated = await acheckService.updateACheck(id, payload);
+      setExistingACheck(updated);
+      setAcheckModalMode("view");
+      log.info("A-Check updated successfully", { id: updated.id });
+    } catch (err) {
+      log.error("Failed to update A-Check:", err);
+      Alert.alert("Error", "Failed to update A-Check. Please try again.");
+    }
+  };
 
   const toggleStep = (id: string) => {
     // Prevent any changes if the task is already completed
@@ -491,8 +559,10 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
               {step.id === "a-check" && checkedSteps["a-check"] && (
                 <AppButton
-                  title="Fill A-Check"
-                  onPress={() => log.info("Fill A-Check pressed")}
+                  title={existingACheck ? "View A-Check" : "Fill A-Check"}
+                  onPress={() =>
+                    setAcheckModalMode(existingACheck ? "view" : "create")
+                  }
                   disabled={task.status === "COMPLETE"}
                   IconComponent={
                     <DocsIcon width={14} height={14} fill="#fff" />
@@ -561,6 +631,20 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           )} */}
         </View>
       </View>
+
+      {/* A-Check Modal */}
+      <AcheckForm
+        isOpen={acheckModalMode !== null}
+        onClose={() => setAcheckModalMode(null)}
+        mode={acheckModalMode ?? "create"}
+        initialData={existingACheck ?? undefined}
+        assignmentId={assignmentId}
+        userId={user?.id}
+        truckId={truckId}
+        onSubmit={handleACheckSubmit}
+        onUpdate={handleACheckUpdate}
+        onRequestEdit={() => setAcheckModalMode("edit")}
+      />
     </View>
   );
 };

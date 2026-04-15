@@ -74,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ userName, position }) => {
           ]}
         >
           <NavigationCard
-            title="Flights"
+            title="Flight Hub"
             IconComponent={AirplaneIcon}
             onPress={() => handleNavigate("Flights")}
           />

@@ -63,11 +63,16 @@ export default function App() {
   const prefix = Linking.createURL("/");
 
   const linking = {
-    prefixes: [prefix, "ifcs-catering-app://"],
+    prefixes: [
+      prefix,
+      "ifcs-catering-app://",
+      "msauth.com.ifcs-catering.app://",
+    ],
     config: {
       screens: {
         Dashboard: "dashboard",
         Login: "login",
+        SSOCallback: "auth",
       },
     },
   };

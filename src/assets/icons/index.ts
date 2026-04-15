@@ -37,6 +37,7 @@ import LockIcon from "./lock.svg";
 import LockActiveIcon from "./lockActive.svg";
 import LockInactiveIcon from "./locked.svg";
 import MemosIcon from "./memos.svg";
+import MicrosoftLogo from "./Microsoft_Logo.svg";
 import NoFlightsIcon from "./noflight.svg";
 import NoMemoIcon from "./noMemo.svg";
 import BoxInactiveIcon from "./packageInactive.svg";
@@ -132,6 +133,7 @@ export {
   LockInactiveIcon,
   LockOpenIcon,
   MemosIcon,
+  MicrosoftLogo,
   NoFlightsIcon,
   NoMemoIcon,
   PawsIcon,
