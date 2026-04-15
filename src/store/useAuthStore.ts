@@ -15,6 +15,7 @@ interface AuthState {
   isLoading: boolean;
   expoPushToken: string | null;
   login: (username: string, password: string) => Promise<void>;
+  loginWithSSO: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   registerPushToken: () => Promise<void>;
   restoreSession: () => Promise<void>;
@@ -56,6 +57,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch (error) {
       set({ isLoading: false, token: null, user: null });
       log.error("Login Error:", error);
+      throw error;
+    }
+  },
+
+  loginWithSSO: async (idToken) => {
+    try {
+      set({ isLoading: true });
+      log.info("Attempting SSO login...");
+      const response = await apiClient.post("/auth/microsoft", { idToken });
+      const { token, user } = response.data.data;
+      if (token) {
+        await SecureStore.setItemAsync("userToken", token);
+        if (user) {
+          await SecureStore.setItemAsync("userData", JSON.stringify(user));
+        }
+        set({ token, user: user || null, isLoading: false });
+        get().registerPushToken();
+      }
+    } catch (error) {
+      set({ isLoading: false });
+      log.error("SSO Login Error:", error);
       throw error;
     }
   },

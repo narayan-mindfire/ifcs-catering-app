@@ -8,19 +8,28 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1"
+        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1",
+        "EXPO_PUBLIC_AZURE_CLIENT_ID": "a7a29d4a-3142-4611-987e-29919a9c58e5",
+        "EXPO_PUBLIC_AZURE_TENANT_ID": "456ceee3-7fed-44e8-a399-cd4111988137",
+        "EXPO_PUBLIC_AZURE_REDIRECT_URI": "msauth.com.ifcs-catering.app://auth"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1"
+        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1",
+        "EXPO_PUBLIC_AZURE_CLIENT_ID": "a7a29d4a-3142-4611-987e-29919a9c58e5",
+        "EXPO_PUBLIC_AZURE_TENANT_ID": "456ceee3-7fed-44e8-a399-cd4111988137",
+        "EXPO_PUBLIC_AZURE_REDIRECT_URI": "msauth.com.ifcs-catering.app://auth"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1"
+        "EXPO_PUBLIC_BASE_URL": "https://oman.stg.api.ifcs.aero/api/v1",
+        "EXPO_PUBLIC_AZURE_CLIENT_ID": "a7a29d4a-3142-4611-987e-29919a9c58e5",
+        "EXPO_PUBLIC_AZURE_TENANT_ID": "456ceee3-7fed-44e8-a399-cd4111988137",
+        "EXPO_PUBLIC_AZURE_REDIRECT_URI": "msauth.com.ifcs-catering.app://auth"
       }
     }
   },

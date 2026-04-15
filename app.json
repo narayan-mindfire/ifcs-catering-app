@@ -5,7 +5,10 @@
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "scheme": "ifcs-catering-app",
+    "scheme": [
+      "ifcs-catering-app",
+      "msauth.com.ifcs-catering.app"
+    ],
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -56,6 +59,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "expo-web-browser",
       [
         "expo-camera",
         {

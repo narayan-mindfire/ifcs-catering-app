@@ -1,3 +1,5 @@
+import * as AuthSession from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -13,11 +15,57 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useAuthStore } from "../../store/useAuthStore";
+import { log } from "../../utils/logger";
+
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, isLoading } = useAuthStore();
+  const { login, loginWithSSO, isLoading: authLoading } = useAuthStore();
+
+  const discovery = AuthSession.useAutoDiscovery(
+    `https://login.microsoftonline.com/${process.env.EXPO_PUBLIC_AZURE_TENANT_ID || "common"}/v2.0`,
+  );
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: process.env.EXPO_PUBLIC_AZURE_CLIENT_ID || "",
+      scopes: ["openid", "profile", "email", "offline_access"],
+      responseType: AuthSession.ResponseType.IdToken,
+      extraParams: {
+        nonce: "custom_nonce_value", // In a real app, generate a unique nonce
+      },
+      redirectUri: AuthSession.makeRedirectUri({
+        scheme: "msauth.com.ifcs-catering.app",
+        path: "auth",
+      }),
+    },
+    discovery,
+  );
+
+  React.useEffect(() => {
+    log.info("RESPONSE: ", response);
+    if (response?.type === "success") {
+      const { params } = response;
+      if (params.id_token) {
+        loginWithSSO(params.id_token).catch((err) => {
+          Alert.alert(
+            "SSO Login Failed",
+            err.message || "Failed to log in with Microsoft.",
+          );
+        });
+      } else if (params.code) {
+        loginWithSSO(params.code).catch((err) => {
+          Alert.alert(
+            "SSO Login Failed",
+            err.message || "Failed to log in with Microsoft.",
+          );
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [response]);
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -78,16 +126,39 @@ const LoginScreen = () => {
 
         <TouchableOpacity
           onPress={handleLogin}
-          disabled={isLoading}
-          className={`bg-blue-600 rounded-2xl py-4 mt-8 items-center shadow-lg shadow-blue-600/30 ${isLoading ? "opacity-70" : ""}`}
+          disabled={authLoading}
+          className={`bg-blue-600 rounded-2xl py-4 mt-8 items-center shadow-lg shadow-blue-600/30 ${authLoading ? "opacity-70" : ""}`}
         >
-          {isLoading ? (
+          {authLoading && !request ? (
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white text-lg font-bold tracking-wide">
               Sign In
             </Text>
           )}
+        </TouchableOpacity>
+
+        <View className="flex-row items-center my-8">
+          <View className="flex-1 h-[1px] bg-slate-700" />
+          <Text className="mx-4 text-slate-500 font-medium">OR</Text>
+          <View className="flex-1 h-[1px] bg-slate-700" />
+        </View>
+
+        <TouchableOpacity
+          onPress={() => promptAsync()}
+          disabled={!request || authLoading}
+          className={`bg-white rounded-2xl py-4 flex-row justify-center items-center shadow-lg ${!request || authLoading ? "opacity-50" : ""}`}
+        >
+          <Image
+            source={{
+              uri: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
+            }}
+            className="w-5 h-5 mr-3"
+            resizeMode="contain"
+          />
+          <Text className="text-slate-900 text-lg font-bold tracking-wide">
+            Sign In with Microsoft
+          </Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
     </SafeAreaView>
