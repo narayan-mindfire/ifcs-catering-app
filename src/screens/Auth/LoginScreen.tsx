@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { MicrosoftLogo } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { log } from "../../utils/logger";
 
@@ -96,7 +97,7 @@ const LoginScreen = () => {
             Welcome Back
           </Text>
           <Text className="text-slate-400 text-base font-medium">
-            Sign in to continue to CATERING APP
+            Sign in to continue to the LOAD APP
           </Text>
         </View>
 
@@ -147,15 +148,9 @@ const LoginScreen = () => {
         <TouchableOpacity
           onPress={() => promptAsync()}
           disabled={!request || authLoading}
-          className={`bg-white rounded-2xl py-4 flex-row justify-center items-center shadow-lg ${!request || authLoading ? "opacity-50" : ""}`}
+          className={`bg-white rounded-2xl py-2 flex-row justify-center items-center gap-x-3 self-center px-8 shadow-lg ${!request || authLoading ? "opacity-50" : ""}`}
         >
-          <Image
-            source={{
-              uri: "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",
-            }}
-            className="w-5 h-5 mr-3"
-            resizeMode="contain"
-          />
+          <MicrosoftLogo width={20} height={20} />
           <Text className="text-slate-900 text-lg font-bold tracking-wide">
             Sign In with Microsoft
           </Text>
