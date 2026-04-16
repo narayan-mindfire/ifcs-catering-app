@@ -25,8 +25,8 @@ interface TaskState {
   syncTaskCompletion: (
     taskId: string,
     userId: string,
-    expected: string,
-    actual: string,
+    expected?: string,
+    actual?: string,
   ) => Promise<void>;
   clearTasks: () => void;
 }

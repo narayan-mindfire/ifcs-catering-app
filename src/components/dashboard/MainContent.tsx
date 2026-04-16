@@ -2,7 +2,7 @@
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
@@ -21,6 +21,7 @@ import { UnifiedTask } from "../../types/task";
 import { formatTo24Hour, getShiftTimeRange } from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
 import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
+import { ProductionTaskDetails } from "./ProductionTaskDetails";
 
 const formatTimeHoursMinutes = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
@@ -437,6 +438,7 @@ const TasksCard: React.FC = () => {
   const selectedTaskId = useTaskStore((state) => state.selectedTaskId);
   const setSelectedTaskId = useTaskStore((state) => state.setSelectedTaskId);
   const { user } = useAuthStore();
+  const navigation = useNavigation<any>();
 
   const selectedTask = useMemo(() => {
     return tasks.find((t) => t.id === selectedTaskId) || null;
@@ -446,6 +448,11 @@ const TasksCard: React.FC = () => {
   const isDriver = true;
 
   const handleViewDetails = (task: UnifiedTask) => {
+    const type = (task as any).task_type || task.sourceType;
+    if (type === "MEMO") {
+      navigation.navigate("Memos");
+      return;
+    }
     if (isDriver) {
       setSelectedTaskId(task.id);
     }
@@ -568,9 +575,16 @@ const TaskDetailPanel: React.FC<{
   const renderTaskDetails = () => {
     // Render Dispatcher task details for now, can be extended for other job types
     // Using task.sourceType or task.task_type
-    const type = (task as any).task_type || task.sourceType;
+    const type = (
+      (task as any).task_type ||
+      task.sourceType ||
+      ""
+    ).toUpperCase();
     if (type === "DISPATCH") {
       return <DispatcherTaskDetails task={task} />;
+    }
+    if (type === "PRODUCTION" || type === "PORTIONING") {
+      return <ProductionTaskDetails task={task} />;
     }
     return (
       <View className="py-10 items-center">

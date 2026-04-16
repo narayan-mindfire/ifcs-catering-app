@@ -50,6 +50,7 @@ export interface UnifiedTask {
     flightId?: string;
     [key: string]: any;
   };
+  task_type?: TaskSourceType;
   taskDetails?: TaskDetails;
   createdAt: string;
   updatedAt: string;

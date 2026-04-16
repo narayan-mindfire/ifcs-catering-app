@@ -12,9 +12,12 @@ jest.mock("../../src/store/useTimerStore");
 jest.mock("../../src/store/useAuthStore");
 // Mock useTaskStore
 jest.mock("../../src/store/useTaskStore");
-// Mock useRoute
+// Mock useRoute and useNavigation
 jest.mock("@react-navigation/native", () => ({
   useRoute: jest.fn(),
+  useNavigation: () => ({
+    navigate: jest.fn(),
+  }),
 }));
 
 // Mock icons
