@@ -1,9 +1,10 @@
-import React from "react";
-import { render } from "@testing-library/react-native";
-import MemosScreen from "../../src/screens/MemosScreen";
-import { useMemoStore } from "../../src/store/useMemosStore";
-import { useAuthStore } from "../../src/store/useAuthStore";
 import { NavigationContainer } from "@react-navigation/native";
+import { render } from "@testing-library/react-native";
+import React from "react";
+
+import MemosScreen from "../../src/screens/MemosScreen";
+import { useAuthStore } from "../../src/store/useAuthStore";
+import { useMemoStore } from "../../src/store/useMemosStore";
 
 // Mock stores
 jest.mock("../../src/store/useMemosStore");
@@ -18,16 +19,25 @@ jest.mock("react-native", () => {
   return rn;
 });
 
-// Mock icons
-jest.mock("../../src/assets/icons", () => ({
-  TrayIconActive: "TrayIconActive",
-  TrayIcon: "TrayIcon",
-  CheckIconActive: "CheckIconActive",
-  CheckIcon: "CheckIcon",
-  SparkleIcon: "SparkleIcon",
-  DocsIconDark: "DocsIconDark",
-  NoMemoIcon: "NoMemoIcon",
-}));
+// Mock icons — factory must be self-contained since jest.mock is hoisted
+jest.mock("../../src/assets/icons", () => {
+  const mockIcon = (name: string) => {
+    const Icon = (props: any) => null;
+    Icon.displayName = name;
+    return Icon;
+  };
+  return {
+    TrayIconActive: mockIcon("TrayIconActive"),
+    TrayIcon: mockIcon("TrayIcon"),
+    CheckIconActive: mockIcon("CheckIconActive"),
+    CheckIcon: mockIcon("CheckIcon"),
+    SparkleIcon: mockIcon("SparkleIcon"),
+    DocsIconDark: mockIcon("DocsIconDark"),
+    NoMemoIcon: mockIcon("NoMemoIcon"),
+    SquaresIcon: mockIcon("SquaresIcon"),
+    ListChecksIcon: mockIcon("ListChecksIcon"),
+  };
+});
 
 // Mock BreadCrumb
 jest.mock("../../src/components/common/BreadCrumbs", () => ({
@@ -58,8 +68,11 @@ describe("MemosScreen", () => {
   it("renders correctly and fetches memos on mount", () => {
     render(
       <NavigationContainer>
-        <MemosScreen navigation={mockNavigation as any} route={mockRoute as any} />
-      </NavigationContainer>
+        <MemosScreen
+          navigation={mockNavigation as any}
+          route={mockRoute as any}
+        />
+      </NavigationContainer>,
     );
 
     expect(mockFetchMemos).toHaveBeenCalled();
@@ -68,8 +81,11 @@ describe("MemosScreen", () => {
   it("shows empty state when no memos found", () => {
     const { getByText } = render(
       <NavigationContainer>
-        <MemosScreen navigation={mockNavigation as any} route={mockRoute as any} />
-      </NavigationContainer>
+        <MemosScreen
+          navigation={mockNavigation as any}
+          route={mockRoute as any}
+        />
+      </NavigationContainer>,
     );
 
     expect(getByText("No Memos Found")).toBeTruthy();

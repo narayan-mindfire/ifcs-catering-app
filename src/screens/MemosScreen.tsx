@@ -20,8 +20,10 @@ import {
   CheckIcon,
   CheckIconActive,
   DocsIconDark,
+  ListChecksIcon,
   NoMemoIcon,
   SparkleIcon,
+  SquaresIcon,
   TrayIcon,
   TrayIconActive,
 } from "../assets/icons";
@@ -49,6 +51,8 @@ const formatDate = (dateString: string) => {
 
 const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 
+type ViewMode = "grid" | "list";
+
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const { memos, fetchMemos, isLoading } = useMemoStore();
   const { user } = useAuthStore();
@@ -56,6 +60,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -109,8 +114,11 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <View className="flex-1 bg-bg-quaternary z-0">
       <BreadCrumb items={breadcrumbs} />
+
+      {/* Search bar + View toggle */}
       <View className="px-5 py-4 bg-bg-surface z-10">
         <View className="flex-row items-center gap-3">
+          {/* Search input */}
           <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-3">
             <TextInput
               placeholder="Search by subject..."
@@ -125,6 +133,36 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             )}
           </View>
+
+          {/* View mode toggler */}
+          <View className="flex-row items-center bg-bg-tertiary rounded-lg overflow-hidden">
+            <TouchableOpacity
+              onPress={() => setViewMode("grid")}
+              className={`p-3 ${
+                viewMode === "grid" ? "bg-bg-accent" : "bg-transparent"
+              }`}
+              accessibilityLabel="Grid view"
+            >
+              <SquaresIcon
+                width={22}
+                height={22}
+                color={viewMode === "grid" ? "#ffffff" : "#A09CAB"}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setViewMode("list")}
+              className={`p-3 ${
+                viewMode === "list" ? "bg-bg-accent" : "bg-transparent"
+              }`}
+              accessibilityLabel="List view"
+            >
+              <ListChecksIcon
+                width={22}
+                height={22}
+                color={viewMode === "list" ? "#ffffff" : "#A09CAB"}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {searchQuery !== debouncedSearch && (
@@ -134,6 +172,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </View>
 
+      {/* Tabs */}
       <View className="flex-row items-center bg-bg-surface border-b border-border-muted">
         <View className="flex-row flex-1 bg-bg-tertiary rounded-full mx-5 my-0">
           {TABS.map((tab) => {
@@ -183,6 +222,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
+      {/* Content */}
       {isLoading && memos.length === 0 ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#602AF3" />
@@ -203,23 +243,19 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                   : "No Memos Found"}
               </Text>
             </View>
-          ) : (
+          ) : viewMode === "grid" ? (
+            /* ── GRID VIEW ── */
             <View className="flex-row flex-wrap px-3 py-4">
               {memos.map((memo) => {
                 const formattedDate = formatDate(memo.createdAt);
                 const isPriority = memo.priority === 3;
-
-                // Fallback: If isRead is missing, treat as Read (true)
-                // to avoid showing 'Unread' for items the user sent themselves.
                 const displayIsRead = memo.isRead ?? true;
 
                 return (
                   <TouchableOpacity
                     key={memo.id}
                     onPress={() =>
-                      navigation.navigate("MemoDetail", {
-                        memoId: memo.id,
-                      })
+                      navigation.navigate("MemoDetail", { memoId: memo.id })
                     }
                     className="w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 p-2"
                   >
@@ -280,6 +316,81 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                             v{memo.version}
                           </Text>
                         )}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ) : (
+            /* ── LIST VIEW ── */
+            <View className="px-3 py-4 gap-2">
+              {memos.map((memo) => {
+                const formattedDate = formatDate(memo.createdAt);
+                const isPriority = memo.priority === 3;
+                const displayIsRead = memo.isRead ?? true;
+
+                return (
+                  <TouchableOpacity
+                    key={memo.id}
+                    onPress={() =>
+                      navigation.navigate("MemoDetail", { memoId: memo.id })
+                    }
+                    className="w-full"
+                  >
+                    <View
+                      className={`rounded-xl px-4 py-3 flex-row items-center gap-3 ${
+                        isPriority
+                          ? "bg-[#FFDD99]/40 border-2 border-[#FFDD99]"
+                          : "bg-white border border-gray-200"
+                      }`}
+                    >
+                      {/* Icon */}
+                      <View className="shrink-0">
+                        {isPriority ? <SparkleIcon /> : <DocsIconDark />}
+                      </View>
+
+                      {/* Subject + note */}
+                      <View className="flex-1 min-w-0">
+                        <Text
+                          className="text-sm font-semibold text-gray-900"
+                          numberOfLines={1}
+                        >
+                          {memo.subject}
+                        </Text>
+                        <Text
+                          className="text-xs text-gray-500 mt-0.5"
+                          numberOfLines={1}
+                        >
+                          {memo.note}
+                        </Text>
+                      </View>
+
+                      {/* Date + version */}
+                      <View className="items-end shrink-0 gap-1">
+                        <Text className="text-xs text-gray-400">
+                          {formattedDate}
+                        </Text>
+                        {memo.version && (
+                          <Text className="text-xs text-gray-400 bg-gray-100 px-1.5 rounded">
+                            v{memo.version}
+                          </Text>
+                        )}
+                      </View>
+
+                      {/* Read badge */}
+                      <View
+                        className={`px-2.5 py-1 rounded-md shrink-0 ${
+                          displayIsRead ? "bg-green-100" : "bg-red-100"
+                        }`}
+                      >
+                        <Text
+                          className={`text-xs font-semibold ${
+                            displayIsRead ? "text-green-700" : "text-red-700"
+                          }`}
+                        >
+                          {displayIsRead ? "Read" : "Unread"}
+                        </Text>
                       </View>
                     </View>
                   </TouchableOpacity>
