@@ -46,9 +46,9 @@ export const Header: React.FC<{ onUserPress: () => void }> = ({
         </TouchableOpacity>
 
         <View className="absolute right-5 bottom-[-30px] z-10">
-          <View className="w-[65px] h-[60px] md:w-[60px] md:h-[65px] rounded-lg justify-center items-center">
+          <View className="h-[80px] md:h-[85px] rounded-lg justify-center items-center">
             <Image
-              source={require("../../assets/images/Oman_Catering.png")}
+              source={require("../../assets/images/TRANSOM.png")}
               style={{ width: 75, height: 70 }}
               resizeMode="contain"
             />
