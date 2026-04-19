@@ -198,17 +198,24 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     return () => clearInterval(interval);
   }, [isTimerRunning, timeLeft, task.id, setTaskTimer]);
 
-  const steps: TaskStep[] = [
-    {
-      id: "a-check",
-      label: "A-Check",
-    },
-    {
-      id: "job-type",
-      label: details.jobType || "Job Type",
-    },
-    { id: "declaration", label: "Declaration" },
-  ];
+  const steps: TaskStep[] = useMemo(() => {
+    const s: TaskStep[] = [
+      {
+        id: "a-check",
+        label: "A-Check",
+      },
+      {
+        id: "job-type",
+        label: details.jobType || "Job Type",
+      },
+    ];
+
+    if (details.jobType?.trim() !== "FULL_STRIP") {
+      s.push({ id: "declaration", label: "Declaration" });
+    }
+
+    return s;
+  }, [details.jobType]);
 
   const handleStepPress = (step: TaskStep) => {
     toggleStep(step.id);
@@ -608,7 +615,10 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <AppButton
                   title="Sign Declaration"
                   onPress={handleSignDeclaration}
-                  disabled={task.status === "COMPLETE"}
+                  disabled={
+                    task.status === "COMPLETE" ||
+                    details.jobType?.trim() === "FULL_STRIP"
+                  }
                   IconComponent={
                     <StringIconTrue width={14} height={14} fill="#fff" />
                   }
