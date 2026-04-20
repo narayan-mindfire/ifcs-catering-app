@@ -517,7 +517,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   : "Mark Task as Complete"
               }
               onPress={handleMarkComplete}
-              disabled={task.status === "COMPLETE"}
+              disabled={!allStepsChecked || task.status === "COMPLETE"}
               IconComponent={
                 <CheckIconSuccess
                   width={16}
@@ -534,16 +534,11 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 paddingHorizontal: 12,
                 height: 42,
                 backgroundColor:
-                  task.status === "COMPLETE" || !allStepsChecked
-                    ? "#E5E5E5"
-                    : undefined,
+                  task.status === "COMPLETE" ? "#E5E5E5" : undefined,
               }}
               textStyle={{
                 fontSize: 12,
-                color:
-                  task.status === "COMPLETE" || !allStepsChecked
-                    ? "#666"
-                    : undefined,
+                color: task.status === "COMPLETE" ? "#666" : undefined,
               }}
             />
           </View>

@@ -25,6 +25,7 @@ export interface TaskDetails {
   reachBayAt?: string;
   jobType?: string;
   timeToLoad?: string;
+  timeToStrip?: string;
   galleysToLoad?: number;
   galleysToStrip?: number;
   route?: string;
