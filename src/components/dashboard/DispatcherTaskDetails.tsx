@@ -406,7 +406,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           </View>
           <View className="w-1/3">
             <Text className="text-sm text-text-tertiary mb-1">
-              Time to Load
+              Time to Load/Strip
             </Text>
             <Text className="text-lg font-bold text-text-primary">
               {details.timeToLoad || "-"}
@@ -418,6 +418,14 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
             </Text>
             <Text className="text-lg font-bold text-text-primary">
               {details.galleysToLoad || "-"}
+            </Text>
+          </View>
+          <View className="w-1/3">
+            <Text className="text-sm text-text-tertiary mb-1">
+              Galleys to Strip
+            </Text>
+            <Text className="text-lg font-bold text-text-primary">
+              {details.galleysToStrip || "-"}
             </Text>
           </View>
           {task.status === "COMPLETE" && (
@@ -651,6 +659,8 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         assignmentId={assignmentId}
         userId={user?.id}
         truckId={truckId}
+        driverName={user ? `${user.firstName} ${user.lastName}` : undefined}
+        truckNo={details.truckNo}
         onSubmit={handleACheckSubmit}
         onUpdate={handleACheckUpdate}
         onRequestEdit={() => setAcheckModalMode("edit")}

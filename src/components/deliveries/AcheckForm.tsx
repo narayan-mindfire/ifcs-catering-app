@@ -28,11 +28,28 @@ import {
 
 interface SectionTitleProps {
   label: string;
+  onCheckAll?: () => void;
+  showCheckAll?: boolean;
 }
-const SectionTitle: React.FC<SectionTitleProps> = ({ label }) => (
-  <Text className="text-text-primary font-semibold text-sm mb-2 mt-1">
-    {label}
-  </Text>
+const SectionTitle: React.FC<SectionTitleProps> = ({
+  label,
+  onCheckAll,
+  showCheckAll = false,
+}) => (
+  <View className="flex-row items-center justify-between mb-2 mt-1">
+    <Text className="text-text-primary font-semibold text-sm">{label}</Text>
+    {showCheckAll && onCheckAll && (
+      <TouchableOpacity
+        onPress={onCheckAll}
+        className="bg-bg-accent px-2 py-1 rounded border border-border-muted"
+        activeOpacity={0.7}
+      >
+        <Text className="text-bg-button text-[10px] font-bold">
+          Mark All OK
+        </Text>
+      </TouchableOpacity>
+    )}
+  </View>
 );
 
 interface CheckboxItemProps {
@@ -180,6 +197,12 @@ function toggleKey(
   key: string,
 ): Record<string, boolean> {
   return { ...state, [key]: !state[key] };
+}
+
+function checkAll(state: Record<string, boolean>): Record<string, boolean> {
+  const newState = { ...state };
+  Object.keys(newState).forEach((k) => (newState[k] = true));
+  return newState;
 }
 
 const LIGHTING_KEY_MAP: Record<string, keyof CreateACheckPayload> = {
@@ -354,6 +377,8 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
   truckId,
   assignmentId,
   userId,
+  driverName,
+  truckNo,
   onSubmit,
   onUpdate,
   onRequestEdit,
@@ -412,8 +437,8 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
       setExternalDamage(seeded.externalDamage);
     } else if (mode === "create") {
       // Default Values for Create Mode
-      setName("");
-      setVehicleNo("");
+      setName(driverName || "");
+      setVehicleNo(truckNo || "");
       setDate(new Date().toISOString()); // <-- PATCH: Default to today
       setLighting(makeCheckboxState(LIGHTING_ITEMS));
       setOperation(makeCheckboxState(OPERATION_ITEMS));
@@ -429,7 +454,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
       setAccidentHazard(null);
       setExternalDamage("");
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, driverName, truckNo]);
 
   const handleCreate = async () => {
     if (!onSubmit) return;
@@ -551,7 +576,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted mb-3" />
 
-            <SectionTitle label="Lighting" />
+            <SectionTitle
+              label="Lighting"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setLighting((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={LIGHTING_ITEMS}
               state={lighting}
@@ -561,7 +590,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted my-3" />
 
-            <SectionTitle label="Operation" />
+            <SectionTitle
+              label="Operation"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setOperation((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={OPERATION_ITEMS}
               state={operation}
@@ -571,7 +604,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted my-3" />
 
-            <SectionTitle label="Auxiliary Drive" />
+            <SectionTitle
+              label="Auxiliary Drive"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setAuxiliaryDrive((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={AUXILIARY_DRIVE_ITEMS}
               state={auxiliaryDrive}
@@ -581,7 +618,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted my-3" />
 
-            <SectionTitle label="Hydraulics Fail At" />
+            <SectionTitle
+              label="Hydraulics Fail At"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setHydraulicsFailAt((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={HYDRAULICS_ITEMS}
               state={hydraulicsFailAt}
@@ -609,7 +650,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted mb-3" />
 
-            <SectionTitle label="Tires" />
+            <SectionTitle
+              label="Tires"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setTires((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={TIRES_ITEMS}
               state={tires}
@@ -630,7 +675,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted mb-3" />
 
-            <SectionTitle label="Body Damage" />
+            <SectionTitle
+              label="Body Damage"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setBodyDamage((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={BODY_DAMAGE_ITEMS}
               state={bodyDamage}
@@ -640,7 +689,11 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             <View className="h-px bg-border-muted my-3" />
 
-            <SectionTitle label="Fall Protection" />
+            <SectionTitle
+              label="Fall Protection"
+              showCheckAll={!isReadOnly}
+              onCheckAll={() => setFallProtection((s) => checkAll(s))}
+            />
             <CheckboxGrid
               items={FALL_PROTECTION_ITEMS}
               state={fallProtection}

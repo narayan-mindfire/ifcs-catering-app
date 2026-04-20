@@ -161,6 +161,8 @@ export interface AcheckFormProps {
   truckId?: string;
   assignmentId?: string;
   userId?: string;
+  driverName?: string;
+  truckNo?: string;
   onSubmit?: (payload: CreateACheckPayload) => Promise<void>;
   onUpdate?: (id: string, payload: UpdateACheckPayload) => Promise<void>;
   onRequestEdit?: () => void;
