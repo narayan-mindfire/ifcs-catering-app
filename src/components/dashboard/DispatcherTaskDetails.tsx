@@ -312,9 +312,29 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
   };
 
-  const allStepsChecked = steps.every((step) => checkedSteps[step.id]);
+  const allStepsChecked =
+    steps.every((step) => checkedSteps[step.id]) && !!existingACheck;
 
   const handleMarkComplete = () => {
+    if (!existingACheck) {
+      Alert.alert(
+        "Action Required",
+        "Please fill and submit the A-Check form before completing the task.",
+      );
+      return;
+    }
+
+    const missingSteps = steps.filter((step) => !checkedSteps[step.id]);
+    if (missingSteps.length > 0) {
+      Alert.alert(
+        "Action Required",
+        `Please complete all steps (${missingSteps
+          .map((s) => s.label)
+          .join(", ")}) before completing the task.`,
+      );
+      return;
+    }
+
     const expectedCompletionTime = details.timeToLoad || "00:00:00";
     const actualCompletionTime = formatSeconds(timeLeft);
 
@@ -497,7 +517,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   : "Mark Task as Complete"
               }
               onPress={handleMarkComplete}
-              disabled={!allStepsChecked || task.status === "COMPLETE"}
+              disabled={task.status === "COMPLETE"}
               IconComponent={
                 <CheckIconSuccess
                   width={16}
@@ -514,11 +534,16 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 paddingHorizontal: 12,
                 height: 42,
                 backgroundColor:
-                  task.status === "COMPLETE" ? "#E5E5E5" : undefined,
+                  task.status === "COMPLETE" || !allStepsChecked
+                    ? "#E5E5E5"
+                    : undefined,
               }}
               textStyle={{
                 fontSize: 12,
-                color: task.status === "COMPLETE" ? "#666" : undefined,
+                color:
+                  task.status === "COMPLETE" || !allStepsChecked
+                    ? "#666"
+                    : undefined,
               }}
             />
           </View>
@@ -606,14 +631,22 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                       title="Stop"
                       onPress={() => setTaskTimer(task.id, timeLeft, false)}
                       disabled={task.status === "COMPLETE"}
-                      style={{
-                        marginTop: 4,
-                        paddingVertical: 2,
-                        height: 34,
-                        borderColor: "#602AF3",
-                        backgroundColor: "#fff",
-                      }}
-                      textStyle={{ fontSize: 10, color: "#602AF3" }}
+                      style={
+                        task.status === "COMPLETE"
+                          ? { marginTop: 4, paddingVertical: 2, height: 34 }
+                          : {
+                              marginTop: 4,
+                              paddingVertical: 2,
+                              height: 34,
+                              borderColor: "#602AF3",
+                              backgroundColor: "#fff",
+                            }
+                      }
+                      textStyle={
+                        task.status === "COMPLETE"
+                          ? { fontSize: 10 }
+                          : { fontSize: 10, color: "#602AF3" }
+                      }
                     />
                   </View>
                 </View>
