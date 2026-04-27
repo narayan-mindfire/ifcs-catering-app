@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -233,15 +233,17 @@ export const FlightPreparationDetailsModal: React.FC<
 
   const packingStd = preparationDetail?.packingStandard;
   const allContainers = packingStd?.containers || [];
-  const hasDirectionalDrawers = allContainers.some(
-    (c) => c.isFront || c.isRear,
+  const hasDirectionalDrawers = useMemo(
+    () => allContainers.some((c) => c.isFront || c.isRear),
+    [allContainers],
   );
 
-  const drawersToRender = !hasDirectionalDrawers
-    ? allContainers
-    : allContainers.filter((container) =>
-        viewMode === "front" ? container.isFront : container.isRear,
-      );
+  const drawersToRender = useMemo(() => {
+    if (!hasDirectionalDrawers) return allContainers;
+    return allContainers.filter((container) =>
+      viewMode === "front" ? container.isFront : container.isRear,
+    );
+  }, [hasDirectionalDrawers, allContainers, viewMode]);
 
   useEffect(() => {
     if (!preparationDetail) return;

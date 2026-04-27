@@ -93,6 +93,10 @@ export const OvenVisualizer: React.FC<CartProps> = ({
     defaultOpenDrawer,
   );
 
+  useEffect(() => {
+    setOpenDrawerIndex(defaultOpenDrawer);
+  }, [defaultOpenDrawer]);
+
   const drawerPositions = [
     { top: 5.5 },
     { top: 13.5 },
