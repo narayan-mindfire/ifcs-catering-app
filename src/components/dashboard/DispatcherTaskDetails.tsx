@@ -83,6 +83,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
   const details = task.taskDetails || {};
 
+  const expectedSeconds = useMemo(() => {
+    const timeStr = details.timeToLoad || "00:00:00";
+    const parts = timeStr.split(":").map(Number);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    return 0;
+  }, [details.timeToLoad]);
+
   // Logic to check if declaration is signed on backend
   const isDeclarationSigned = useMemo(() => {
     if (!deliveries.length) return false;
@@ -205,7 +214,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
     calculateTime();
 
-    let interval: ReturnType<typeof setInterval>;
+    let interval: any;
     if (isTimerRunning) {
       interval = setInterval(calculateTime, 1000);
     }
@@ -476,7 +485,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <Text className="text-sm text-text-tertiary mb-1">
                   Actual Duration
                 </Text>
-                <Text className="text-lg font-bold text-text-primary">
+                <Text
+                  className={`text-lg font-bold ${task.actualCompletionTime ? "text-green-500" : "text-text-primary"}`}
+                >
                   {task.actualCompletionTime || "-"}
                 </Text>
               </View>
@@ -622,9 +633,34 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               )}
               {step.id === "job-type" && checkedSteps["job-type"] && (
                 <View className="mt-1 ml-7">
-                  <Text className="text-bg-button font-bold text-lg mb-2">
-                    {formatSeconds(currentTime)}
-                  </Text>
+                  <View className="flex-row gap-8 mb-2">
+                    <View>
+                      <Text className="text-[10px] text-text-tertiary uppercase font-medium mb-0.5">
+                        Expected
+                      </Text>
+                      <Text className="text-text-primary font-bold text-lg">
+                        {details.timeToLoad || "00:00:00"}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="text-[10px] text-text-tertiary uppercase font-medium mb-0.5">
+                        Actual
+                      </Text>
+                      <Text
+                        className="font-bold text-lg"
+                        style={{
+                          color:
+                            task.status === "COMPLETE"
+                              ? currentTime > expectedSeconds
+                                ? "#EF4444" // Red
+                                : "#10B981" // Green
+                              : "#602AF3", // Default Purple
+                        }}
+                      >
+                        {formatSeconds(currentTime)}
+                      </Text>
+                    </View>
+                  </View>
                   <View className="flex-row gap-2">
                     <AppButton
                       title={isTimerRunning ? "Pause" : "Start"}

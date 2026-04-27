@@ -7,7 +7,9 @@ import {
   DriverDeclarationSchema,
   driverDeclarationSchema,
 } from "../../schemas/deliverySchemas";
+import { useAuthStore } from "../../store/useAuthStore";
 import { DriversDeclaration } from "../../types/deliveries";
+import { log } from "../../utils/logger";
 import { AppButton } from "../common/AppButton";
 import { FormInput } from "../common/FormInput";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
@@ -22,6 +24,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   driversDeclaration,
   onUpdateDeclaration,
 }) => {
+  const { user } = useAuthStore();
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -47,10 +50,26 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
 
   const sealIntact = watch("sealIntact");
   const signature = watch("signature");
-  // const driverName = watch("driverName");
 
   useEffect(() => {
-    if (driversDeclaration) {
+    log.info("DriversDeclarationTab Effect Triggered", {
+      hasDeclaration: !!driversDeclaration,
+      declarationKeys: driversDeclaration
+        ? Object.keys(driversDeclaration)
+        : [],
+      hasUser: !!user,
+    });
+
+    // Check if there is actual meaningful content in the existing declaration
+    const hasExistingContent =
+      driversDeclaration &&
+      (driversDeclaration.driverName ||
+        driversDeclaration.driverStaffId ||
+        driversDeclaration.driverCompany ||
+        driversDeclaration.signature);
+
+    if (hasExistingContent) {
+      log.info("Using existing declaration data");
       reset({
         driverName: driversDeclaration.driverName || "",
         driverStaffId: driversDeclaration.driverStaffId || "",
@@ -59,17 +78,26 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
         signature: driversDeclaration.signature || "",
         sealIntact: driversDeclaration.sealIntact || false,
       });
-    } else {
+    } else if (user) {
+      log.info("No content found, auto-filling from user profile:", {
+        name: `${user.firstName} ${user.lastName}`,
+        badge: user.badgeNumber,
+        org: user.organization,
+      });
       reset({
-        driverName: "",
-        driverStaffId: "",
+        driverName: `${user.firstName} ${user.lastName}`.trim(),
+        driverStaffId: user.badgeNumber || "",
         truckSeal: "",
-        driverCompany: "",
+        driverCompany: user.organization || "",
         signature: "",
         sealIntact: false,
       });
+    } else {
+      log.warn(
+        "Neither existing declaration nor user profile available for filling",
+      );
     }
-  }, [driversDeclaration, reset]);
+  }, [driversDeclaration, reset, user]);
 
   const onSubmit = async (data: DriverDeclarationSchema) => {
     setIsSaving(true);

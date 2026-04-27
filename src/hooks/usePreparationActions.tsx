@@ -66,7 +66,6 @@ export const usePreparationActions = ({
           action: "prepared",
           isContentPrepared: true,
         });
-        // if (success) Alert.alert("Success", "Marked as prepared");
       }
     },
     [selectedFlight?.id, updatePreparationFlag, modals],
@@ -338,40 +337,41 @@ export const usePreparationActions = ({
           return;
         }
 
-        // Try to find if user is assigned to a specific truck
-        let selectedTruck = trucks.find((t) =>
-          t.dispatchAssignments?.some((da: any) =>
-            da.assignedStaff?.some((s: any) => s.userId === currentUser?.id),
-          ),
-        );
-
-        // Fallback to first truck if none found and only one truck exists
-        if (!selectedTruck && trucks.length === 1) {
-          selectedTruck = trucks[0];
+        if (trucks.length > 1) {
+          modals.openTruckSelection(item);
+          return;
         }
 
-        if (!selectedTruck) {
-          // If multiple trucks and none assigned to user, we pick the first one for now
-          // but we could ideally show a selection modal here.
-          selectedTruck = trucks[0];
-        }
-
+        // Only one truck exists - auto-assign it
+        const selectedTruck = trucks[0];
         const selectedAssignment = selectedTruck.dispatchAssignments?.[0];
 
         if (!selectedAssignment) {
           Alert.alert(
             "No Assignment",
-            "Selected truck has no active dispatch assignments.",
+            `Truck ${selectedTruck.assetName} has no active dispatch assignments.`,
           );
           return;
         }
 
-        await updatePreparationFlag(selectedFlight.id, item.id, {
-          action: "load",
-          loadedTruckFlag: true,
-          truckId: selectedTruck.id,
-          dispatchAssignmentId: selectedAssignment.id,
-        });
+        // Inform the user which truck is being used
+        // Alert.alert(
+        //   "Auto-Assign Truck",
+        //   `Loading item into Truck: ${selectedTruck.assetName}`,
+        //   [
+        //     {
+        //       text: "OK",
+        //       onPress: async () => {
+        //         await updatePreparationFlag(selectedFlight.id, item.id, {
+        //           action: "load",
+        //           loadedTruckFlag: true,
+        //           truckId: selectedTruck.id,
+        //           dispatchAssignmentId: selectedAssignment.id,
+        //         });
+        //       },
+        //     },
+        //   ],
+        // );
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
