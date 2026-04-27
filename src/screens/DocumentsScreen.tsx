@@ -42,7 +42,10 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
 
   useEffect(() => {
     fetchFolderContent(null);
-  }, [fetchFolderContent]);
+    return () => {
+      selectFile(null);
+    };
+  }, [fetchFolderContent, selectFile]);
 
   useEffect(() => {
     if (debouncedSearchTimer.current) {

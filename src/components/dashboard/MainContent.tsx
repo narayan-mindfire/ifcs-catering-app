@@ -177,9 +177,11 @@ const ShiftControlCard: React.FC<{
   }, [shiftState, syncTime]);
 
   // Calculate display times based on selected date
-  const displayTime = Math.floor(totalWorkedMs / 1000) + currentSessionDuration;
+  const displayTime =
+    Math.floor(totalWorkedMs / 1000) + (isToday ? currentSessionDuration : 0);
   const displayBreakTime =
-    Math.floor(totalBreakMs / 1000) + currentBreakSessionDuration;
+    Math.floor(totalBreakMs / 1000) +
+    (isToday ? currentBreakSessionDuration : 0);
 
   const handleStartShift = () => {
     startShift();

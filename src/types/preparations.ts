@@ -199,6 +199,8 @@ export interface EquipmentItem {
 export interface PackingStandardContainer {
   id: string;
   name: string;
+  isFront?: boolean;
+  isRear?: boolean;
   equipmentItem: EquipmentItem;
   items: PackingStandardItem[];
 }
@@ -207,6 +209,7 @@ export interface PackingStandardItem {
   id: string;
 
   fmId?: string | null;
+  itemId?: string | null;
 
   packingStandardId?: string | null;
   provisionId?: string | null;
@@ -214,8 +217,10 @@ export interface PackingStandardItem {
   mealItemId?: string | null;
 
   name?: string | null;
+  code?: string | null;
+  description?: string | null;
 
-  isContainer: boolean;
+  isContainer?: boolean;
   isDynamic: boolean;
   isTrackConsumption: boolean;
 
@@ -231,8 +236,8 @@ export interface PackingStandardItem {
   mealId?: string;
   flightPreparationDynamicItemId?: string;
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AircraftConfigGalleyPosition {
@@ -290,43 +295,57 @@ export interface PreparationDetailData {
   positionRap: string | null;
   rotationCode: string;
   direction: string;
-  weight: string | null;
+  weight: string | number | null;
   galleyCode: string | null;
   galleyPosition: string | null;
   preparedBy: string;
+  sealedBy?: string | null;
+  lockedBy?: string | null;
+  preparedByUser?: any;
+  sealedByUser?: any;
+  lockedByUser?: any;
+  assemblyProcessedByUser?: any;
+  loadTruckByUser?: any;
   priority: number | null;
   equipment: string;
   sealTagNumber: string | null;
-  lockTagNumber: string | null;
+  lockTagNumber?: string | null;
   assemblyProcessFlag: string | null;
-  loadedTruckFlag: string | null;
+  loadedTruckFlag: boolean | string | null;
+  equipmentItemType?: string;
   labelUrl: string | null;
+  isRear: boolean;
+  isFront: boolean;
+  truck: any;
   qrCodeUrl: string | null;
-  door: string | null;
   aircraftConfigGalleyPosition: AircraftConfigGalleyPosition;
+  door: string | null;
+  galleyNumber: string | null;
+  doorNumber: string | null;
+  stowage: string | null;
+  carrier: string | null;
   packingStandard: PackingStandard;
   isTrackConsumption: boolean;
-  isContentPrepared: boolean;
+  isContentPrepared?: boolean;
   trucks?: Truck[];
   storageId?: string | null;
   date?: string | null;
   isDynamicLoadingIncomplete?: boolean;
   isLockRequired?: boolean | null;
   isSealRequired?: boolean | null;
-  positionRap?: string | null;
-  assemblyProcessFlag?: string | null;
-  loadedTruckFlag?: boolean | string | null;
   quantity?: number | null;
-  weight?: string | number | null;
 }
 
 export interface PreparationDetailResponse {
   success: boolean;
   message: string;
-  data: {
-    preparation: PreparationDetailData | PreparationDetailData[];
-    trucks: Truck[];
-  } | null;
+  data:
+    | {
+        preparation: PreparationDetailData | PreparationDetailData[];
+        trucks: Truck[];
+      }
+    | PreparationDetailData
+    | null;
 }
 
 //****************************PREPARATION STORE STATE****************************************/

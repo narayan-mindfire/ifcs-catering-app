@@ -921,7 +921,9 @@ export const FlightPreparationDetailsModal: React.FC<
             preparationId={preparationId}
             packingStandardId={preparationDetail?.packingStandard?.id}
             flightPrepProvisionItemId={
-              consumptionItem?.provisionId || undefined
+              consumptionItem?.itemId ||
+              consumptionItem?.provisionId ||
+              undefined
             }
           />
           <SealNumberModal

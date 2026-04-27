@@ -1,4 +1,5 @@
 /* eslint-env jest */
+process.env.EXPO_OS = "ios";
 
 // Mock react-native-reanimated
 jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
@@ -40,4 +41,30 @@ jest.mock("react-native-safe-area-context", () => ({
   SafeAreaProvider: ({ children }) => children,
   SafeAreaView: ({ children }) => children,
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
+}));
+
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(() => Promise.resolve(null)),
+  setItemAsync: jest.fn(() => Promise.resolve()),
+  deleteItemAsync: jest.fn(() => Promise.resolve()),
+}));
+
+jest.mock("expo-device", () => ({
+  isDevice: true,
+  brand: "Apple",
+  modelName: "iPhone",
+  osName: "iOS",
+  osVersion: "15.0",
+}));
+
+jest.mock("expo-notifications", () => ({
+  addPushTokenListener: jest.fn(),
+  removePushTokenListener: jest.fn(),
+  setNotificationHandler: jest.fn(),
+  getExpoPushTokenAsync: jest.fn(() => Promise.resolve({ data: "token" })),
+  getDevicePushTokenAsync: jest.fn(() => Promise.resolve({ data: "token" })),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: "granted" }),
+  ),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
 }));

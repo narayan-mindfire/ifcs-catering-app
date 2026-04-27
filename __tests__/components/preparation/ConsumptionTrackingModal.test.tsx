@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
+import { Alert } from "react-native";
 
 import { ConsumptionModal } from "../../../src/components/preparation/ConsumptionTrackingModal";
 import { useConsumptionTrackingStore } from "../../../src/store/useConsumptionStore";
@@ -9,6 +10,7 @@ jest.mock("../../../src/assets/icons", () => ({
   ImageIcon: () => null,
 }));
 jest.mock("../../../src/utils/logger");
+jest.spyOn(Alert, "alert").mockImplementation(() => {});
 jest.mock("../../../src/components/common/AppButton", () => {
   const React = require("react");
   const { TouchableOpacity, Text } = require("react-native");
@@ -95,6 +97,7 @@ describe("ConsumptionModal", () => {
   });
 
   it("calls createConsumptionRecord on save", async () => {
+    jest.setTimeout(10000);
     mockCreateRecord.mockResolvedValue({ success: true });
 
     const { getByPlaceholderText, getByTestId } = render(

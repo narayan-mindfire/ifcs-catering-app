@@ -28,10 +28,22 @@ export const flightPreparationService = {
     );
 
     if (response.data.success && response.data.data) {
-      const { preparation, trucks } = response.data.data;
-      const preparations =
-        (Array.isArray(preparation) ? preparation : [preparation]) || [];
-      return { preparations, trucks: trucks || [] };
+      const data = response.data.data;
+      if ("preparation" in data) {
+        const { preparation, trucks } = data;
+        const preparations =
+          (Array.isArray(preparation) ? preparation : [preparation]) || [];
+        return { preparations, trucks: trucks || [] };
+      } else {
+        // New format where data is preparation(s)
+        const preparations = Array.isArray(data)
+          ? (data as PreparationDetailData[])
+          : [data as PreparationDetailData];
+        const trucks = Array.isArray(data)
+          ? [] // Or extract from each prep if needed, but trucks is usually top-level
+          : (data as PreparationDetailData).trucks || [];
+        return { preparations, trucks };
+      }
     }
     throw new Error(response.data.message || "Failed to fetch preparations");
   },
@@ -44,15 +56,26 @@ export const flightPreparationService = {
       `/flights/${flightId}/preparations/${preparationId}`,
     );
     if (response.data?.success && response.data?.data) {
-      const { preparation, trucks } = response.data.data;
-      const prep = Array.isArray(preparation)
-        ? preparation.find((p) => p.id === preparationId) || preparation[0]
-        : preparation;
+      const data = response.data.data;
 
-      return {
-        ...prep,
-        trucks,
-      };
+      if ("preparation" in data) {
+        const { preparation, trucks } = data;
+        const prep = Array.isArray(preparation)
+          ? preparation.find((p) => p.id === preparationId) || preparation[0]
+          : preparation;
+
+        return {
+          ...prep,
+          trucks,
+        };
+      } else {
+        // New format where data is the preparation itself
+        const prep = data as PreparationDetailData;
+        return {
+          ...prep,
+          trucks: prep.trucks || [],
+        };
+      }
     }
     log.info("PREPARATION BY ID WE GOT: ", response.data?.data);
     throw new Error(

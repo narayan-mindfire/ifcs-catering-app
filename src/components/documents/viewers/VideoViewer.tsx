@@ -1,3 +1,4 @@
+import { useIsFocused } from "@react-navigation/native";
 import { Audio } from "expo-av";
 import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useEffect } from "react";
@@ -37,11 +38,23 @@ export const VideoViewer: React.FC<ViewerProps> = ({
     enableAudio();
   }, []);
 
+  const isFocused = useIsFocused();
+
   // 2. Initialize the Modern Player
   const player = useVideoPlayer(file.url, (playerInstance) => {
     playerInstance.loop = false;
     playerInstance.play(); // Auto-play when loaded
   });
+
+  useEffect(() => {
+    if (!isFocused) {
+      try {
+        player.pause();
+      } catch (error) {
+        log.error("Failed to pause video player", error);
+      }
+    }
+  }, [isFocused, player]);
 
   return (
     <View className="flex-1 bg-bg-surface rounded-xl overflow-hidden border border-border-muted ml-5">

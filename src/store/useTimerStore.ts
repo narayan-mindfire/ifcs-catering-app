@@ -102,11 +102,20 @@ export const useTimerStore = create<TimerStoreState>()(
               totalBreakMs: 0,
               shiftType: null,
               isLoading: false,
+              shiftState: "OFF",
+              lastStatusChangeAt: null,
             });
           }
         } catch (err) {
           log.error("Fetch history error:", err);
-          set({ totalWorkedMs: 0, shiftType: null, isLoading: false });
+          set({
+            totalWorkedMs: 0,
+            totalBreakMs: 0,
+            shiftType: null,
+            isLoading: false,
+            shiftState: "OFF",
+            lastStatusChangeAt: null,
+          });
         }
       },
 
