@@ -18,18 +18,14 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useTaskStore } from "../../store/useTaskStore";
 import { useTimerStore } from "../../store/useTimerStore";
 import { UnifiedTask } from "../../types/task";
-import { formatTo24Hour, getShiftTimeRange } from "../../utils/dateFormatter";
+import {
+  formatDurationSeconds,
+  formatTo24Hour,
+  getShiftTimeRange,
+} from "../../utils/dateFormatter";
 import { AppButton } from "../common/AppButton";
 import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
 import { ProductionTaskDetails } from "./ProductionTaskDetails";
-
-const formatTimeHoursMinutes = (totalSeconds: number) => {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  return `${String(hours).padStart(2, "0")} Hrs ${String(minutes).padStart(2, "0")} Mins ${String(seconds).padStart(2, "0")} Secs`;
-};
 
 const formatDateDisplay = (date: Date) => {
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -177,9 +173,11 @@ const ShiftControlCard: React.FC<{
   }, [shiftState, syncTime]);
 
   // Calculate display times based on selected date
-  const displayTime = Math.floor(totalWorkedMs / 1000) + currentSessionDuration;
+  const displayTime =
+    Math.floor(totalWorkedMs / 1000) + (isToday ? currentSessionDuration : 0);
   const displayBreakTime =
-    Math.floor(totalBreakMs / 1000) + currentBreakSessionDuration;
+    Math.floor(totalBreakMs / 1000) +
+    (isToday ? currentBreakSessionDuration : 0);
 
   const handleStartShift = () => {
     startShift();
@@ -320,7 +318,7 @@ const ShiftControlCard: React.FC<{
                 Worked Time
               </Text>
               <Text className="text-lg font-bold text-text-primary">
-                {formatTimeHoursMinutes(displayTime)}
+                {formatDurationSeconds(displayTime)}
               </Text>
             </View>
 
@@ -331,7 +329,7 @@ const ShiftControlCard: React.FC<{
                 Break Time
               </Text>
               <Text className="text-lg font-bold text-text-primary">
-                {formatTimeHoursMinutes(displayBreakTime)}
+                {formatDurationSeconds(displayBreakTime)}
               </Text>
             </View>
           </View>

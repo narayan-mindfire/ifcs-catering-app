@@ -67,8 +67,13 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     () => taskStepsStatus[task.id] || {},
     [taskStepsStatus, task.id],
   );
-  const { timeLeft = 0, isTimerRunning = false } =
-    taskTimerState[task.id] || {};
+  const {
+    accumulatedTime = 0,
+    startTime = null,
+    isTimerRunning = false,
+  } = taskTimerState[task.id] || {};
+
+  const [currentTime, setCurrentTime] = useState(0);
 
   const [acheckModalMode, setAcheckModalMode] =
     useState<AcheckModalMode | null>(null);
@@ -77,6 +82,15 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   );
 
   const details = task.taskDetails || {};
+
+  const expectedSeconds = useMemo(() => {
+    const timeStr = details.timeToLoad || "00:00:00";
+    const parts = timeStr.split(":").map(Number);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    return 0;
+  }, [details.timeToLoad]);
 
   // Logic to check if declaration is signed on backend
   const isDeclarationSigned = useMemo(() => {
@@ -189,14 +203,23 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   }, [checkedSteps, task.id, taskTimerState, setTaskTimer]);
 
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
+    const calculateTime = () => {
+      if (isTimerRunning && startTime) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setCurrentTime(accumulatedTime + elapsed);
+      } else {
+        setCurrentTime(accumulatedTime);
+      }
+    };
+
+    calculateTime();
+
+    let interval: any;
     if (isTimerRunning) {
-      interval = setInterval(() => {
-        setTaskTimer(task.id, timeLeft + 1, true);
-      }, 1000);
+      interval = setInterval(calculateTime, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timeLeft, task.id, setTaskTimer]);
+  }, [isTimerRunning, startTime, accumulatedTime]);
 
   const steps: TaskStep[] = useMemo(() => {
     const s: TaskStep[] = [
@@ -336,7 +359,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
 
     const expectedCompletionTime = details.timeToLoad || "00:00:00";
-    const actualCompletionTime = formatSeconds(timeLeft);
+    const actualCompletionTime = formatSeconds(currentTime);
 
     const payload = {
       taskId: task.id,
@@ -462,7 +485,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <Text className="text-sm text-text-tertiary mb-1">
                   Actual Duration
                 </Text>
-                <Text className="text-lg font-bold text-text-primary">
+                <Text
+                  className={`text-lg font-bold ${task.actualCompletionTime ? "text-green-500" : "text-text-primary"}`}
+                >
                   {task.actualCompletionTime || "-"}
                 </Text>
               </View>
@@ -606,17 +631,41 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   textStyle={{ fontSize: 10 }}
                 />
               )}
-
               {step.id === "job-type" && checkedSteps["job-type"] && (
                 <View className="mt-1 ml-7">
-                  <Text className="text-bg-button font-bold text-lg mb-2">
-                    {formatSeconds(timeLeft)}
-                  </Text>
+                  <View className="flex-row gap-8 mb-2">
+                    <View>
+                      <Text className="text-[10px] text-text-tertiary uppercase font-medium mb-0.5">
+                        Expected
+                      </Text>
+                      <Text className="text-text-primary font-bold text-lg">
+                        {details.timeToLoad || "00:00:00"}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="text-[10px] text-text-tertiary uppercase font-medium mb-0.5">
+                        Actual
+                      </Text>
+                      <Text
+                        className="font-bold text-lg"
+                        style={{
+                          color:
+                            task.status === "COMPLETE"
+                              ? currentTime > expectedSeconds
+                                ? "#EF4444" // Red
+                                : "#10B981" // Green
+                              : "#602AF3", // Default Purple
+                        }}
+                      >
+                        {formatSeconds(currentTime)}
+                      </Text>
+                    </View>
+                  </View>
                   <View className="flex-row gap-2">
                     <AppButton
                       title={isTimerRunning ? "Pause" : "Start"}
                       onPress={() =>
-                        setTaskTimer(task.id, timeLeft, !isTimerRunning)
+                        setTaskTimer(task.id, currentTime, !isTimerRunning)
                       }
                       disabled={task.status === "COMPLETE"}
                       style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
@@ -624,7 +673,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     />
                     <AppButton
                       title="Stop"
-                      onPress={() => setTaskTimer(task.id, timeLeft, false)}
+                      onPress={() => setTaskTimer(task.id, currentTime, false)}
                       disabled={task.status === "COMPLETE"}
                       style={
                         task.status === "COMPLETE"

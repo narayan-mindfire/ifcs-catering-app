@@ -61,8 +61,6 @@ export const PreparationsScreen: React.FC = () => {
   const [pendingCurrentItem, setPendingCurrentItem] =
     useState<PreparationItem | null>(null);
 
-  const [isTruckModalOpen, setIsTruckModalOpen] = useState(false);
-
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const modals = usePreparationModals();
@@ -231,7 +229,7 @@ export const PreparationsScreen: React.FC = () => {
       }
 
       if (trucks.length > 1) {
-        setIsTruckModalOpen(true);
+        modals.openTruckSelection();
         return;
       } else {
         // Only one truck, auto-select it
@@ -542,13 +540,17 @@ export const PreparationsScreen: React.FC = () => {
       />
 
       <TruckSelectionModal
-        isOpen={isTruckModalOpen}
-        onClose={() => setIsTruckModalOpen(false)}
+        isOpen={modals.truckModalVisible}
+        onClose={() => modals.closeTruckSelection()}
         trucks={trucks}
         onSelect={(truckId, dispatchAssignmentId) => {
-          setIsTruckModalOpen(false);
+          modals.closeTruckSelection();
           const config = { truckId, dispatchAssignmentId };
-          openScannerWithConfig("load", config);
+          if (modals.currentActionItem) {
+            actions.handleLoadAction(modals.currentActionItem, config);
+          } else {
+            openScannerWithConfig("load", config);
+          }
         }}
       />
     </View>

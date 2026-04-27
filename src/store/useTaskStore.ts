@@ -10,7 +10,14 @@ interface TaskState {
   tasks: UnifiedTask[];
   selectedTaskId: string | null;
   taskStepsStatus: Record<string, Record<string, boolean>>;
-  taskTimerState: Record<string, { timeLeft: number; isTimerRunning: boolean }>;
+  taskTimerState: Record<
+    string,
+    {
+      accumulatedTime: number;
+      startTime: number | null;
+      isTimerRunning: boolean;
+    }
+  >;
   isLoading: boolean;
   error: string | null;
 
@@ -19,8 +26,9 @@ interface TaskState {
   setStepStatus: (taskId: string, stepId: string, status: boolean) => void;
   setTaskTimer: (
     taskId: string,
-    timeLeft: number,
+    accumulatedTime: number,
     isTimerRunning: boolean,
+    startTime?: number | null,
   ) => void;
   syncTaskCompletion: (
     taskId: string,
@@ -72,11 +80,20 @@ export const useTaskStore = create<TaskState>()(
         }));
       },
 
-      setTaskTimer: (taskId, timeLeft, isTimerRunning) => {
+      setTaskTimer: (taskId, accumulatedTime, isTimerRunning, startTime) => {
         set((state) => ({
           taskTimerState: {
             ...state.taskTimerState,
-            [taskId]: { timeLeft, isTimerRunning },
+            [taskId]: {
+              accumulatedTime,
+              isTimerRunning,
+              startTime:
+                startTime !== undefined
+                  ? startTime
+                  : isTimerRunning
+                    ? Date.now()
+                    : null,
+            },
           },
         }));
       },

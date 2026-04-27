@@ -123,9 +123,7 @@ export const ConsumptionModal: React.FC<ConsumptionModalProps> = ({
           createPayload.flightPrepPackingStandardItemId =
             packingStandardItemId || item.id;
           createPayload.flightPrepProvisionItemId =
-            flightPrepProvisionItemId ||
-            (item as any).itemId ||
-            (item as any).provisionId;
+            flightPrepProvisionItemId || item.itemId || item.provisionId;
           createPayload.foodOrderItemId = item.foodOrderItemId;
           createPayload.mealId = item.mealId;
         }

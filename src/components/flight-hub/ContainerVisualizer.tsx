@@ -21,7 +21,6 @@ interface DrawerItemProps {
 const DrawerItem: React.FC<DrawerItemProps> = ({
   isOpen,
   positionTop,
-  // originalIndex,
   imageUrl,
   label,
   onPress,
@@ -90,7 +89,6 @@ export const ContainerVisualizer: React.FC<ContainerProps> = ({
   const [openDrawerIndex, setOpenDrawerIndex] = useState<number | null>(
     defaultOpenDrawer,
   );
-
   // Sync prop changes
   useEffect(() => {
     setOpenDrawerIndex(defaultOpenDrawer);
@@ -127,11 +125,10 @@ export const ContainerVisualizer: React.FC<ContainerProps> = ({
 
         return (
           <DrawerItem
-            key={drawer.id} // Use ID instead of index for better React keys
+            key={drawer.id}
             isOpen={isOpen}
             positionTop={positionTop}
             originalIndex={originalIndex}
-            // Updated property access for new PackingStandardContainer type
             imageUrl={
               isOpen
                 ? drawer.equipmentItem?.pictureOpen
