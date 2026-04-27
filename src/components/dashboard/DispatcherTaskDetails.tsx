@@ -67,8 +67,13 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     () => taskStepsStatus[task.id] || {},
     [taskStepsStatus, task.id],
   );
-  const { timeLeft = 0, isTimerRunning = false } =
-    taskTimerState[task.id] || {};
+  const {
+    accumulatedTime = 0,
+    startTime = null,
+    isTimerRunning = false,
+  } = taskTimerState[task.id] || {};
+
+  const [currentTime, setCurrentTime] = useState(0);
 
   const [acheckModalMode, setAcheckModalMode] =
     useState<AcheckModalMode | null>(null);
@@ -189,14 +194,23 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   }, [checkedSteps, task.id, taskTimerState, setTaskTimer]);
 
   useEffect(() => {
+    const calculateTime = () => {
+      if (isTimerRunning && startTime) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setCurrentTime(accumulatedTime + elapsed);
+      } else {
+        setCurrentTime(accumulatedTime);
+      }
+    };
+
+    calculateTime();
+
     let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning) {
-      interval = setInterval(() => {
-        setTaskTimer(task.id, timeLeft + 1, true);
-      }, 1000);
+      interval = setInterval(calculateTime, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, timeLeft, task.id, setTaskTimer]);
+  }, [isTimerRunning, startTime, accumulatedTime]);
 
   const steps: TaskStep[] = useMemo(() => {
     const s: TaskStep[] = [
@@ -336,7 +350,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
 
     const expectedCompletionTime = details.timeToLoad || "00:00:00";
-    const actualCompletionTime = formatSeconds(timeLeft);
+    const actualCompletionTime = formatSeconds(currentTime);
 
     const payload = {
       taskId: task.id,
@@ -606,17 +620,16 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   textStyle={{ fontSize: 10 }}
                 />
               )}
-
               {step.id === "job-type" && checkedSteps["job-type"] && (
                 <View className="mt-1 ml-7">
                   <Text className="text-bg-button font-bold text-lg mb-2">
-                    {formatSeconds(timeLeft)}
+                    {formatSeconds(currentTime)}
                   </Text>
                   <View className="flex-row gap-2">
                     <AppButton
                       title={isTimerRunning ? "Pause" : "Start"}
                       onPress={() =>
-                        setTaskTimer(task.id, timeLeft, !isTimerRunning)
+                        setTaskTimer(task.id, currentTime, !isTimerRunning)
                       }
                       disabled={task.status === "COMPLETE"}
                       style={{ marginTop: 4, paddingVertical: 2, height: 34 }}
@@ -624,7 +637,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                     />
                     <AppButton
                       title="Stop"
-                      onPress={() => setTaskTimer(task.id, timeLeft, false)}
+                      onPress={() => setTaskTimer(task.id, currentTime, false)}
                       disabled={task.status === "COMPLETE"}
                       style={
                         task.status === "COMPLETE"
