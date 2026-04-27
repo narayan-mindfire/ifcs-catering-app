@@ -100,18 +100,31 @@ export const CartVisualizer: React.FC<CartProps> = ({
 
   let drawerPositions = [11, 22, 33, 44, 55, 66, 77];
 
+  const generateDrawerPositions = (count: number) => {
+    const maxDrawers = 7;
+    const displayCount = Math.min(count, maxDrawers);
+    const positions = [];
+    const startPosition = 10;
+    const endPosition = 80;
+    const spacing = (endPosition - startPosition) / (displayCount - 1);
+
+    for (let i = 0; i < displayCount; i++) {
+      positions.push(startPosition + spacing * i);
+    }
+
+    return positions;
+  };
+
   if (numberOfDrawers > 7) {
-    const startPosition = 9;
-    const endPosition = 69;
-    const spacing = (endPosition - startPosition) / (numberOfDrawers - 1);
-    drawerPositions = Array.from(
-      { length: numberOfDrawers },
-      (_, i) => startPosition + spacing * i,
-    );
+    drawerPositions = generateDrawerPositions(numberOfDrawers);
   }
 
-  const reversedDrawers = [...drawers].reverse();
-  const reversedPositions = [...drawerPositions].reverse();
+  // Slice to 7 drawers and then reverse for rendering
+  const visualDrawers = drawers.slice(0, 7);
+  const reversedDrawers = [...visualDrawers].reverse();
+  const reversedPositions = [
+    ...drawerPositions.slice(0, visualDrawers.length),
+  ].reverse();
 
   return (
     <View className="relative w-[180px] h-[360px] items-center justify-center">
@@ -122,7 +135,7 @@ export const CartVisualizer: React.FC<CartProps> = ({
       />
 
       {reversedDrawers.map((drawer, index) => {
-        const originalIndex = numberOfDrawers - 1 - index;
+        const originalIndex = visualDrawers.length - 1 - index;
         const isOpen = openDrawerIndex === originalIndex;
         const positionTop = reversedPositions[index];
 
@@ -132,7 +145,6 @@ export const CartVisualizer: React.FC<CartProps> = ({
             isOpen={isOpen}
             positionTop={positionTop}
             originalIndex={originalIndex}
-            // Updated property access for new PackingStandardContainer type
             imageUrl={
               isOpen
                 ? drawer.equipmentItem?.pictureOpen

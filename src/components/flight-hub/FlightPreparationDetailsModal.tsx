@@ -135,6 +135,7 @@ export const FlightPreparationDetailsModal: React.FC<
   const [consumptionItem, setConsumptionItem] =
     useState<PackingStandardItem | null>(null);
 
+  const [viewMode, setViewMode] = useState<"front" | "rear">("front");
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [confirmModalData, setConfirmModalData] = useState<{
     title: string;
@@ -229,12 +230,24 @@ export const FlightPreparationDetailsModal: React.FC<
   };
 
   const derivedEquipmentType = getDerivedEquipmentType();
+
+  const packingStd = preparationDetail?.packingStandard;
+  const allContainers = packingStd?.containers || [];
+  const hasDirectionalDrawers = allContainers.some(
+    (c) => c.isFront || c.isRear,
+  );
+
+  const drawersToRender = !hasDirectionalDrawers
+    ? allContainers
+    : allContainers.filter((container) =>
+        viewMode === "front" ? container.isFront : container.isRear,
+      );
+
   useEffect(() => {
     if (!preparationDetail) return;
 
     const packingStd = preparationDetail?.packingStandard;
     const parentContents = packingStd?.items || [];
-    const drawers = packingStd?.containers || [];
     const equipmentName = packingStd?.equipmentItem?.name || "";
     const parentName = packingStd?.name || "Equipment Contents";
 
@@ -246,14 +259,19 @@ export const FlightPreparationDetailsModal: React.FC<
         setActiveEquipmentName(parentName);
         setActiveDrawerEquipmentItemName(equipmentName);
         setActiveDrawerIndex(null);
-      } else if (drawers.length > 0) {
-        const firstDrawer = drawers[0];
+      } else if (drawersToRender.length > 0) {
+        const firstDrawer = drawersToRender[0];
         setSelectedDrawerContents(firstDrawer.items || []);
         setActiveEquipmentName(firstDrawer.name || "N/A");
         setActiveDrawerEquipmentItemName(
           firstDrawer.equipmentItem?.name || "N/A",
         );
         setActiveDrawerIndex(0);
+      } else {
+        setSelectedDrawerContents([]);
+        setActiveEquipmentName("");
+        setActiveDrawerEquipmentItemName("");
+        setActiveDrawerIndex(null);
       }
     } else if (
       type === "Tray" ||
@@ -266,7 +284,7 @@ export const FlightPreparationDetailsModal: React.FC<
       setActiveDrawerEquipmentItemName(equipmentName);
       setActiveDrawerIndex(null);
     }
-  }, [preparationDetail, derivedEquipmentType]);
+  }, [preparationDetail, derivedEquipmentType, viewMode, drawersToRender]);
 
   const handleDrawerClick = (
     drawerIndex: number | null,
@@ -545,8 +563,6 @@ export const FlightPreparationDetailsModal: React.FC<
     onFinishConsumption();
   };
 
-  const packingStd = preparationDetail?.packingStandard;
-  const containers = packingStd?.containers || [];
   const positionImage =
     preparationDetail?.aircraftConfigGalleyPosition?.picture;
 
@@ -713,61 +729,111 @@ export const FlightPreparationDetailsModal: React.FC<
                   )}
 
                 <View className="flex-row gap-4 mt-6 h-[500px]">
-                  <View className="flex-[2] bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
-                    <View className="flex-1 items-center justify-center">
-                      {positionImage ? (
-                        <Image
-                          source={{ uri: positionImage }}
-                          className="w-full h-full"
-                          resizeMode="contain"
-                        />
-                      ) : (
-                        <Text className="text-text-tertiary">
-                          No Position Image
-                        </Text>
-                      )}
+                  <View className="flex-[2] gap-4">
+                    <View className="flex-1 bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
+                      <View className="flex-1 items-center justify-center">
+                        {positionImage ? (
+                          <Image
+                            source={{ uri: positionImage }}
+                            className="w-full h-full"
+                            resizeMode="contain"
+                          />
+                        ) : (
+                          <Text className="text-text-tertiary">
+                            No Position Image
+                          </Text>
+                        )}
+                      </View>
+                      <View className="flex-1 items-center justify-center">
+                        {derivedEquipmentType === "Atlas" ||
+                        derivedEquipmentType === "Container" ? (
+                          <ContainerVisualizer
+                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                            numberOfDrawers={drawersToRender.length}
+                            drawersData={drawersToRender}
+                            defaultOpenDrawer={activeDrawerIndex}
+                            onDrawerClick={(idx: any) =>
+                              idx !== null && drawersToRender[idx]
+                                ? handleDrawerClick(idx, drawersToRender[idx])
+                                : handleDrawerClick(null, null)
+                            }
+                          />
+                        ) : derivedEquipmentType === "Cart" ? (
+                          <CartVisualizer
+                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                            numberOfDrawers={drawersToRender.length}
+                            drawers={drawersToRender}
+                            defaultOpenDrawer={activeDrawerIndex}
+                            onDrawerClick={handleDrawerClick}
+                          />
+                        ) : derivedEquipmentType === "Oven" ? (
+                          <OvenVisualizer
+                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
+                            numberOfDrawers={drawersToRender.length}
+                            drawers={drawersToRender}
+                            defaultOpenDrawer={activeDrawerIndex}
+                            onDrawerClick={handleDrawerClick}
+                          />
+                        ) : (
+                          <Image
+                            source={{
+                              uri: packingStd?.equipmentItem?.picture || "",
+                            }}
+                            className="w-full h-full"
+                            resizeMode="contain"
+                          />
+                        )}
+                      </View>
                     </View>
-                    <View className="flex-1 items-center justify-center">
-                      {derivedEquipmentType === "Atlas" ||
-                      derivedEquipmentType === "Container" ? (
-                        <ContainerVisualizer
-                          cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                          numberOfDrawers={containers.length}
-                          drawersData={containers}
-                          defaultOpenDrawer={activeDrawerIndex}
-                          onDrawerClick={(idx: any) =>
-                            idx !== null && containers[idx]
-                              ? handleDrawerClick(idx, containers[idx])
-                              : handleDrawerClick(null, null)
-                          }
-                        />
-                      ) : derivedEquipmentType === "Cart" ? (
-                        <CartVisualizer
-                          cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                          numberOfDrawers={containers.length}
-                          drawers={containers}
-                          defaultOpenDrawer={activeDrawerIndex}
-                          onDrawerClick={handleDrawerClick}
-                        />
-                      ) : derivedEquipmentType === "Oven" ? (
-                        <OvenVisualizer
-                          cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                          numberOfDrawers={containers.length}
-                          drawers={containers}
-                          defaultOpenDrawer={activeDrawerIndex}
-                          onDrawerClick={handleDrawerClick}
-                        />
-                      ) : (
-                        <Image
-                          source={{
-                            uri: packingStd?.equipmentItem?.picture || "",
+
+                    {hasDirectionalDrawers && (
+                      <View className="flex-row justify-center gap-4">
+                        <TouchableOpacity
+                          onPress={() => {
+                            setViewMode("front");
+                            setActiveDrawerIndex(null);
                           }}
-                          className="w-full h-full"
-                          resizeMode="contain"
-                        />
-                      )}
-                    </View>
+                          className={`px-8 py-2 rounded-full border ${
+                            viewMode === "front"
+                              ? "bg-bg-button border-bg-button"
+                              : "bg-white border-border-muted"
+                          }`}
+                        >
+                          <Text
+                            className={`font-bold ${
+                              viewMode === "front"
+                                ? "text-white"
+                                : "text-text-tertiary"
+                            }`}
+                          >
+                            FRONT
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => {
+                            setViewMode("rear");
+                            setActiveDrawerIndex(null);
+                          }}
+                          className={`px-8 py-2 rounded-full border ${
+                            viewMode === "rear"
+                              ? "bg-bg-button border-bg-button"
+                              : "bg-white border-border-muted"
+                          }`}
+                        >
+                          <Text
+                            className={`font-bold ${
+                              viewMode === "rear"
+                                ? "text-white"
+                                : "text-text-tertiary"
+                            }`}
+                          >
+                            REAR
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
                   </View>
+
                   <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
                     <View className="p-3 border-b border-border-muted bg-bg-secondary">
                       <View className="mb-2">
