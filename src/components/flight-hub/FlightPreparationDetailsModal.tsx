@@ -1063,16 +1063,6 @@ export const FlightPreparationDetailsModal: React.FC<
                   </View>
                 )}
               </View>
-              <View className="mt-4 flex-row justify-end">
-                <TouchableOpacity
-                  onPress={closeImagePreview}
-                  className="bg-bg-button py-2 px-6 rounded-lg"
-                >
-                  <Text className="text-white font-semibold text-sm">
-                    Close
-                  </Text>
-                </TouchableOpacity>
-              </View>
             </View>
           </View>
         </Modal>
