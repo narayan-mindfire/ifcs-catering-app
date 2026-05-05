@@ -69,7 +69,13 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
         clearTimeout(debouncedSearchTimer.current);
       }
     };
-  }, [searchQuery, searchDocuments, fetchFolderContent]);
+  }, [
+    searchQuery,
+    searchDocuments,
+    fetchFolderContent,
+    items.length,
+    breadcrumbs,
+  ]);
 
   const handleSelectItem = useCallback(
     (item: FileSystemItem) => {

@@ -32,6 +32,7 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
 
 # typescript
 *.tsbuildinfo
@@ -40,8 +41,9 @@ yarn-error.*
 /ios
 /android
 
-#environment files
-/.env
+#test coverage files
+/coverage
 
 # release files
 release.ipa
+eas.json
