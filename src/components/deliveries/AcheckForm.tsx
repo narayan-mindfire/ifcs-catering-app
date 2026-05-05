@@ -382,6 +382,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
   onSubmit,
   onUpdate,
   onRequestEdit,
+  canEdit = true,
 }) => {
   const isReadOnly = mode === "view";
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -530,7 +531,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <Text className="text-text-primary text-lg font-bold">
               {modalTitle}
             </Text>
-            {mode === "view" && onRequestEdit && (
+            {mode === "view" && onRequestEdit && canEdit && (
               <TouchableOpacity
                 onPress={onRequestEdit}
                 className="bg-bg-button px-3 py-1.5 rounded-lg"

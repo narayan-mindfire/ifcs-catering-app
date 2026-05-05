@@ -506,15 +506,18 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   : "Mark Task as Complete"
               }
               onPress={handleMarkComplete}
-              disabled={!allStepsChecked || task.status === "COMPLETE"}
+              type={allStepsChecked ? "primary" : "accent"}
+              disabled={task.status === "COMPLETE"}
               IconComponent={
                 <CheckIconSuccess
                   width={16}
                   height={16}
                   fill={
-                    allStepsChecked && task.status !== "COMPLETE"
-                      ? "#fff"
-                      : "#999"
+                    task.status === "COMPLETE"
+                      ? "#999"
+                      : allStepsChecked
+                        ? "#fff"
+                        : "#602AF3"
                   }
                 />
               }
@@ -587,7 +590,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   onPress={() =>
                     handleOpenAcheck(existingACheck ? "view" : "create")
                   }
-                  disabled={task.status === "COMPLETE"}
+                  disabled={!existingACheck && task.status === "COMPLETE"}
                   IconComponent={
                     <DocsIcon width={14} height={14} fill="#fff" />
                   }
@@ -705,6 +708,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         onSubmit={handleACheckSubmit}
         onUpdate={handleACheckUpdate}
         onRequestEdit={() => setAcheckModalMode("edit")}
+        canEdit={task.status !== "COMPLETE"}
       />
     </View>
   );

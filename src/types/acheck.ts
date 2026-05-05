@@ -160,6 +160,7 @@ export interface AcheckFormProps {
   onSubmit?: (payload: CreateACheckPayload) => Promise<void>;
   onUpdate?: (id: string, payload: UpdateACheckPayload) => Promise<void>;
   onRequestEdit?: () => void;
+  canEdit?: boolean;
 }
 
 /** @deprecated Use AcheckFormProps instead */
