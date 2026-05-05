@@ -70,7 +70,7 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
       });
     } else if (user) {
       reset({
-        driverName: `${user.firstName} ${user.lastName}`.trim(),
+        driverName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         driverStaffId: user.badgeNumber || "",
         truckSeal: "",
         driverCompany: user.organization || "",

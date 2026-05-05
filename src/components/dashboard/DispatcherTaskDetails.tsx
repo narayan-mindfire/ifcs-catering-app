@@ -83,14 +83,28 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
   const details = task.taskDetails || {};
 
-  const expectedSeconds = useMemo(() => {
-    const timeStr = details.timeToLoad || "00:00:00";
+  const timeToSeconds = (timeStr: string | undefined): number => {
+    if (!timeStr) return 0;
     const parts = timeStr.split(":").map(Number);
     if (parts.length === 3) {
       return parts[0] * 3600 + parts[1] * 60 + parts[2];
     }
+    if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
     return 0;
-  }, [details.timeToLoad]);
+  };
+
+  const expectedSeconds = useMemo(() => {
+    return (
+      timeToSeconds(details.timeToLoad) ||
+      timeToSeconds(task.expectedCompletionTime)
+    );
+  }, [details.timeToLoad, task.expectedCompletionTime]);
+
+  const actualSecondsFromTask = useMemo(() => {
+    return timeToSeconds(task.actualCompletionTime);
+  }, [task.actualCompletionTime]);
 
   // Logic to check if declaration is signed on backend
   const isDeclarationSigned = useMemo(() => {
@@ -260,15 +274,25 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
 
     try {
-      const filteredDeliveries = await deliveryService.getDeliveries(
+      let filteredDeliveries = await deliveryService.getDeliveries(
         details.flightId,
-        task.metadata?.dispatchAssignmentId,
+        task.metadata?.dispatchAssignmentId || task.id,
       );
+
+      // If no deliveries for specific assignment, check all deliveries for the flight
+      if (!filteredDeliveries || filteredDeliveries.length === 0) {
+        filteredDeliveries = await deliveryService.getDeliveries(
+          details.flightId,
+        );
+      }
 
       if (filteredDeliveries && filteredDeliveries.length > 0) {
         const targetDelivery =
-          filteredDeliveries.find((d) => d.dispatchAssignmentId === task.id) ||
-          filteredDeliveries[0];
+          filteredDeliveries.find(
+            (d) =>
+              d.dispatchAssignmentId ===
+              (task.metadata?.dispatchAssignmentId || task.id),
+          ) || filteredDeliveries[0];
 
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
@@ -288,7 +312,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       } else {
         Alert.alert(
           "Action Required",
-          "User has to do load scan for at least one label before doing signature.",
+          "At least one item must be marked as loaded before signing the declaration.",
         );
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
@@ -618,13 +642,16 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                         style={{
                           color:
                             task.status === "COMPLETE"
-                              ? currentTime > expectedSeconds
-                                ? "#EF4444" // Red
-                                : "#10B981" // Green
+                              ? (actualSecondsFromTask || currentTime) >
+                                expectedSeconds
+                                ? "#EF4444" // Red for late
+                                : "#10B981" // Green for on-time/early
                               : "#602AF3", // Default Purple
                         }}
                       >
-                        {formatSeconds(currentTime)}
+                        {task.status === "COMPLETE" && task.actualCompletionTime
+                          ? task.actualCompletionTime
+                          : formatSeconds(currentTime)}
                       </Text>
                     </View>
                   </View>
@@ -703,7 +730,11 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         assignmentId={assignmentId}
         userId={user?.id}
         truckId={truckId}
-        driverName={user ? `${user.firstName} ${user.lastName}` : undefined}
+        driverName={
+          user
+            ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+            : undefined
+        }
         truckNo={details.truckNo}
         onSubmit={handleACheckSubmit}
         onUpdate={handleACheckUpdate}

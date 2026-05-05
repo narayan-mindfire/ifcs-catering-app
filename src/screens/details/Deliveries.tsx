@@ -23,6 +23,7 @@ import {
   getDriversDeclaration,
   getSecurityCompliance,
 } from "../../utils/deliveriesHelper";
+import { log } from "../../utils/logger";
 
 const DeliveriesScreen: React.FC = () => {
   const route = useRoute<any>();

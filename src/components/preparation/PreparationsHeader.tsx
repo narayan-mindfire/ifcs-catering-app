@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -52,6 +51,9 @@ const TruckInfo: React.FC<{ truck: Truck }> = ({ truck }) => {
   const initials = driver
     ? `${driver.firstName?.[0] || ""}${driver.lastName?.[0] || ""}`.toUpperCase()
     : "";
+
+  const firstName = driver?.firstName || "";
+  const lastName = driver?.lastName || "";
 
   return (
     <View
@@ -144,7 +146,7 @@ const TruckInfo: React.FC<{ truck: Truck }> = ({ truck }) => {
               Assigned Driver
             </Text>
             <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
-              {driver.firstName} {driver.lastName}
+              {firstName} {lastName}
             </Text>
           </View>
         </>
@@ -179,7 +181,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
   trucks,
 }) => {
   return (
-    <View className="flex-row mb-5 z-10">
+    <View className="flex-row mb-5 z-10" style={{ minHeight: 70 }}>
       <View className="flex-1 relative">
         <ScrollView
           horizontal
@@ -188,6 +190,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             flexDirection: "row",
             alignItems: "center",
             paddingRight: 32,
+            flexGrow: 1,
           }}
         >
           <View className="flex-row items-center">
@@ -230,20 +233,6 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             </View>
           )}
         </ScrollView>
-
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.15)"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 28,
-          }}
-          pointerEvents="none"
-        />
       </View>
 
       <View className="flex-row ms-3 justify-end items-center">

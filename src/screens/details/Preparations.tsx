@@ -27,6 +27,7 @@ import { useFlightPreparationStore } from "../../store/useFlightPreparationStore
 import { useFlightStore } from "../../store/useFlightStore";
 import { useScannerStore } from "../../store/useScannerStore";
 import { PreparationItem } from "../../types/preparations";
+import { log } from "../../utils/logger";
 
 export const PreparationsScreen: React.FC = () => {
   const selectedFlight = useFlightStore((state) => state.selectedFlight);
@@ -269,8 +270,11 @@ export const PreparationsScreen: React.FC = () => {
         (s) => s.role === "DRIVER",
       );
       if (truck) {
+        const driverName = driver
+          ? `${driver.firstName || ""} ${driver.lastName || ""}`.trim()
+          : "";
         subtitle = `Truck: ${truck.assetName}${
-          driver ? ` • Driver: ${driver.firstName} ${driver.lastName}` : ""
+          driverName ? ` • Driver: ${driverName}` : ""
         }`;
       }
     }

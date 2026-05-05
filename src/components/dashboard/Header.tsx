@@ -40,7 +40,9 @@ export const Header: React.FC<{ onUserPress: () => void }> = ({
           </View>
 
           <Text className="text-base md:text-lg font-semibold text-text-secondary mr-1.5">
-            {user ? `${user.firstName} ${user.lastName}` : "Loading..."}{" "}
+            {user
+              ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+              : "Loading..."}{" "}
             <DropdownIcon />
           </Text>
         </TouchableOpacity>
