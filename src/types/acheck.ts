@@ -145,13 +145,8 @@ export interface CreateACheckPayload {
   externalDamage: string;
 }
 
-// PUT body — only mutable fields
-export interface UpdateACheckPayload {
-  name?: string;
-  vehicleNo?: string;
-  hasAccidentHazard?: boolean;
-  details?: string;
-}
+// PUT body — supports full edit
+export interface UpdateACheckPayload extends Partial<CreateACheckPayload> {}
 
 export interface AcheckFormProps {
   isOpen: boolean;
