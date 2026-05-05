@@ -1,4 +1,5 @@
-import { NavigationProp } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
@@ -16,7 +17,6 @@ import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
 
 interface Props {
   flight: Flight;
-  navigation: NavigationProp<RootStackParamList>;
   isLastInGroup: boolean;
   isFirstInGroup: boolean;
   isPaired: boolean;
@@ -25,10 +25,11 @@ interface Props {
   onToggleExpand?: () => void;
 }
 
+type NavigationProp = StackNavigationProp<RootStackParamList>;
+
 export const FlightRow: React.FC<Props> = memo(
   ({
     flight,
-    navigation,
     isLastInGroup,
     isFirstInGroup,
     isPaired,
@@ -36,6 +37,7 @@ export const FlightRow: React.FC<Props> = memo(
     isExpanded = false,
     onToggleExpand,
   }) => {
+    const navigation = useNavigation<NavigationProp>();
     const rotation = useSharedValue(isExpanded ? 180 : 0);
 
     useEffect(() => {

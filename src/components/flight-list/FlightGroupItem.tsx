@@ -1,4 +1,3 @@
-import { StackNavigationProp } from "@react-navigation/stack";
 import React, { memo, useCallback, useState } from "react";
 import Animated, {
   FadeIn,
@@ -6,16 +5,14 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 
-import { RootStackParamList } from "../../navigation/AppNavigator";
 import { Flight } from "../../types/flight";
 import { FlightRow } from "./FlightRow";
 
 interface Props {
   group: Flight[];
-  navigation: StackNavigationProp<RootStackParamList, "Flights">;
 }
 
-const FlightGroupItemComponent: React.FC<Props> = ({ group, navigation }) => {
+const FlightGroupItemComponent: React.FC<Props> = ({ group }) => {
   const [expanded, setExpanded] = useState(false);
 
   const isPaired = group.length > 1;
@@ -38,7 +35,6 @@ const FlightGroupItemComponent: React.FC<Props> = ({ group, navigation }) => {
       <FlightRow
         key={firstFlight.id}
         flight={firstFlight}
-        navigation={navigation}
         isLastInGroup={isPaired ? firstIsVisuallyLast : true}
         isFirstInGroup={true}
         isPaired={isPaired}
@@ -58,7 +54,6 @@ const FlightGroupItemComponent: React.FC<Props> = ({ group, navigation }) => {
               <FlightRow
                 key={flight.id}
                 flight={flight}
-                navigation={navigation}
                 isLastInGroup={isLast}
                 isFirstInGroup={false}
                 isPaired={isPaired}
@@ -73,5 +68,12 @@ const FlightGroupItemComponent: React.FC<Props> = ({ group, navigation }) => {
   );
 };
 
-export const FlightGroupItem = memo(FlightGroupItemComponent);
+export const FlightGroupItem = memo(FlightGroupItemComponent, (prev, next) => {
+  if (prev.group.length !== next.group.length) return false;
+  for (let i = 0; i < prev.group.length; i++) {
+    if (prev.group[i].id !== next.group[i].id) return false;
+    if (prev.group[i].status !== next.group[i].status) return false;
+  }
+  return true;
+});
 FlightGroupItem.displayName = "FlightGroupItem";

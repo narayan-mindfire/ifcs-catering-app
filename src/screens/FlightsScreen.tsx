@@ -158,10 +158,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
 
   // --- UPDATED RENDER ITEM ---
   const renderFlightGroup: ListRenderItem<Flight[]> = useCallback(
-    ({ item: group }) => {
-      return <FlightGroupItem group={group} navigation={navigation} />;
-    },
-    [navigation],
+    ({ item: group }) => <FlightGroupItem group={group} />,
+    [],
   );
 
   const renderFooter = useCallback(() => {
@@ -329,14 +327,13 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           }
           onEndReached={handleLoadMore}
-          onEndReachedThreshold={3}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
-          removeClippedSubviews={true}
+          removeClippedSubviews={false}
           maxToRenderPerBatch={10}
           updateCellsBatchingPeriod={50}
-          initialNumToRender={10}
-          windowSize={10}
-          getItemLayout={undefined}
+          initialNumToRender={8}
+          windowSize={5}
         />
       )}
     </>

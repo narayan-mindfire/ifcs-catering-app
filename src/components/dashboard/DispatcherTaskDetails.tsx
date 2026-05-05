@@ -175,6 +175,21 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     }
   };
 
+  const handleOpenAcheck = async (mode: AcheckModalMode) => {
+    if (existingACheck?.id && mode === "view") {
+      try {
+        log.info("Fetching fresh A-Check for view mode", {
+          id: existingACheck.id,
+        });
+        const freshData = await acheckService.getACheck(existingACheck.id);
+        setExistingACheck(freshData);
+      } catch (err) {
+        log.error("Failed to fetch fresh A-Check data", err);
+      }
+    }
+    setAcheckModalMode(mode);
+  };
+
   const toggleStep = (id: string) => {
     // Prevent any changes if the task is already completed
     if (task.status === "COMPLETE") return;
@@ -621,7 +636,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <AppButton
                   title={existingACheck ? "View A-Check" : "Fill A-Check"}
                   onPress={() =>
-                    setAcheckModalMode(existingACheck ? "view" : "create")
+                    handleOpenAcheck(existingACheck ? "view" : "create")
                   }
                   disabled={task.status === "COMPLETE"}
                   IconComponent={

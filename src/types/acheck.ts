@@ -145,8 +145,7 @@ export interface CreateACheckPayload {
   externalDamage: string;
 }
 
-// PUT body — supports full edit
-export interface UpdateACheckPayload extends Partial<CreateACheckPayload> {}
+export type UpdateACheckPayload = Partial<CreateACheckPayload>;
 
 export interface AcheckFormProps {
   isOpen: boolean;
