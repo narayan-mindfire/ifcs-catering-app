@@ -14,10 +14,6 @@ export const spotCheckService = {
   submitPass: async (
     payload: SpotCheckPassPayload,
   ): Promise<SpotCheckResponse> => {
-    log.info(
-      `[SpotCheckService] Submitting PASS for Prep: ${payload.preparationId}`,
-    );
-
     try {
       const response = await apiClient.post<SpotCheckResponse>(
         `/flights/${payload.flightId}/preparations/${payload.preparationId}/spot-check/pass`,
@@ -35,10 +31,6 @@ export const spotCheckService = {
   submitFail: async (
     payload: SpotCheckFailPayload,
   ): Promise<SpotCheckResponse> => {
-    log.info("================= SPOT CHECK FAIL PAYLOAD =================");
-    log.info(`Reason: ${payload.reason} | Remarks: ${payload.remarks}`);
-    log.info(`Images Count: ${payload.images.length}`);
-
     const formData = new FormData();
 
     // Required API Fields
@@ -57,14 +49,10 @@ export const spotCheckService = {
       formData.append("loadingPlan", payload.loadingPlanId);
     formData.append("aircraftRegistration", payload.aircraftRegistration);
 
-    log.info("Starting image compression...");
-
     for (let index = 0; index < payload.images.length; index++) {
       const imageUri = payload.images[index];
 
       try {
-        log.info(`[Image ${index + 1}] Compressing: ${imageUri}`);
-
         const resizedImage = await ImageResizer.createResizedImage(
           imageUri,
           1200,
@@ -85,19 +73,11 @@ export const spotCheckService = {
           type: "image/jpeg",
         };
 
-        log.info(`[Image ${index + 1}] Compressed successfully`);
-        log.info(`[Image ${index + 1}] Original: ${imageUri}`);
-        log.info(`[Image ${index + 1}] Compressed: ${resizedImage.uri}`);
-        log.info(
-          `[Image ${index + 1}] New size: ${(resizedImage.size / 1024).toFixed(2)} KB`,
-        );
-
         // @ts-ignore
         formData.append("images", imageFile);
       } catch (compressionError) {
         log.error(`[Image ${index + 1}] Compression failed:`, compressionError);
 
-        log.info(`[Image ${index + 1}] Using original (uncompressed)`);
         const filename = imageUri.split("/").pop() || `photo_${index}.jpg`;
         const match = /\.(\w+)$/.exec(filename);
         const ext = match ? match[1].toLowerCase() : "jpg";
@@ -115,12 +95,7 @@ export const spotCheckService = {
       }
     }
 
-    log.info("Image compression completed");
-    log.info("===========================================================");
-
     try {
-      log.info("Uploading to API...");
-
       const response = await apiClient.post<SpotCheckResponse>(
         `/flights/${payload.flightId}/preparations/${payload.preparationId}/spot-check/fail`,
         formData,
@@ -135,7 +110,6 @@ export const spotCheckService = {
         },
       );
 
-      log.info("Upload successful!", response.data);
       return response.data;
     } catch (error: any) {
       log.error("--- AXIOS ERROR DEBUG ---");

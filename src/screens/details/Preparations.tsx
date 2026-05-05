@@ -27,7 +27,6 @@ import { useFlightPreparationStore } from "../../store/useFlightPreparationStore
 import { useFlightStore } from "../../store/useFlightStore";
 import { useScannerStore } from "../../store/useScannerStore";
 import { PreparationItem } from "../../types/preparations";
-import { log } from "../../utils/logger";
 
 export const PreparationsScreen: React.FC = () => {
   const selectedFlight = useFlightStore((state) => state.selectedFlight);
@@ -194,7 +193,6 @@ export const PreparationsScreen: React.FC = () => {
         .filter((line) => line.trim() !== "");
 
       if (lines.length < 12) {
-        log.error("Invalid QR data format - insufficient lines");
         return null;
       }
 
@@ -315,7 +313,6 @@ export const PreparationsScreen: React.FC = () => {
       scannedData: ParsedQRData,
       loadTruckConfig?: { truckId: string; dispatchAssignmentId: string },
     ) => {
-      log.info("Scan 1 Received:", actionType, scannedData);
       setRefreshKey((prev) => prev + 1);
 
       //Check Flight Match
@@ -333,8 +330,6 @@ export const PreparationsScreen: React.FC = () => {
 
         // B. Mismatch -> OLD Flight Detected -> Start Consumption Flow
         else {
-          log.info("Old Flight Detected. Starting Step 2 (Scan Current).");
-
           //Store Old Data Reference (Sync Ref & State)
           setPendingOldFlightData(scannedData);
           pendingOldFlightDataRef.current = scannedData;
@@ -427,15 +422,12 @@ export const PreparationsScreen: React.FC = () => {
         return;
       }
 
-      log.info("Current Flight Verified. Fetching Old Data...");
       setPendingCurrentItem(currentItem);
 
       const oldData = pendingOldFlightDataRef.current;
 
       if (oldData) {
-        log.info("back up", oldData);
-        navigation.goBack(); // Close Scanner
-        log.info("BACKED - Opening Modal");
+        navigation.goBack();
 
         await fetchPreparationById(oldData.flightId, oldData.flightPrepId);
 
@@ -444,7 +436,6 @@ export const PreparationsScreen: React.FC = () => {
           ...oldData,
         } as any);
       } else {
-        log.error("REF LOST - Data unavailable");
         Alert.alert("Error", "Session lost. Please try scanning again.");
         navigation.goBack();
       }
@@ -470,8 +461,6 @@ export const PreparationsScreen: React.FC = () => {
       setPendingCurrentItem(null);
       return;
     }
-
-    log.info("Finalizing Consumption Flow...");
 
     await actions.handlePreparedAction(pendingCurrentItem);
 

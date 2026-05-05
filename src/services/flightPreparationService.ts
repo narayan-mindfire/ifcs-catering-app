@@ -69,7 +69,6 @@ export const flightPreparationService = {
           trucks,
         };
       } else {
-        // New format where data is the preparation itself
         const prep = data as PreparationDetailData;
         return {
           ...prep,
@@ -77,7 +76,6 @@ export const flightPreparationService = {
         };
       }
     }
-    log.info("PREPARATION BY ID WE GOT: ", response.data?.data);
     throw new Error(
       response.data?.message || "Failed to fetch preparation details",
     );

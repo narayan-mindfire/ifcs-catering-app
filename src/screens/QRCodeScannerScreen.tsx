@@ -54,8 +54,6 @@ const QRCodeScannerScreen: React.FC<Props> = ({ navigation, route }) => {
           const prepName = lines[7].trim();
 
           if (flightPrepId && flightId) {
-            log.info(`Jumping to: ${prepName} (${flightPrepId})`);
-
             navigation.replace("SpotCheckDetails", {
               flightId: flightId,
               checkId: flightPrepId,

@@ -31,27 +31,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (username, password) => {
     try {
       set({ isLoading: true });
-      log.info("Attempting login for user:", username);
       const response = await apiClient.post("/auth/login", {
         username,
         password,
       });
-      log.info("Login response received:", response.data);
       const { token, user } = response.data.data;
-      log.info("Login successful, token and user extracted.", token, user);
       if (token) {
-        log.info("Login successful, saving token and user data.");
         await SecureStore.setItemAsync("userToken", token);
         if (user) {
           await SecureStore.setItemAsync("userData", JSON.stringify(user));
         }
-
-        log.info(
-          "Token and user data saved. Updating state and registering push token in background.",
-        );
         set({ token, user: user || null, isLoading: false });
 
-        log.info("Starting push token registration in background.");
         get().registerPushToken();
       }
     } catch (error) {
@@ -64,7 +55,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loginWithSSO: async (idToken) => {
     try {
       set({ isLoading: true });
-      log.info("Attempting SSO login...");
       const response = await apiClient.post("/auth/microsoft", { idToken });
       const { token, user } = response.data.data;
       if (token) {
@@ -88,7 +78,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const userData = await SecureStore.getItemAsync("userData");
 
       if (token) {
-        log.info("Token found, restoring session...");
         const user = userData ? JSON.parse(userData) : null;
         set({ token, user, isLoading: false });
 
@@ -108,13 +97,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchUser: async () => {
     try {
-      log.info("Background fetching user profile...");
       const response = await apiClient.get("/users/me");
       if (response.data.success) {
         const user = response.data.data;
         set({ user });
         await SecureStore.setItemAsync("userData", JSON.stringify(user));
-        log.info("User profile synced successfully.");
       }
     } catch (error: any) {
       log.error("Fetch User Error:", error);
@@ -138,13 +125,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (finalStatus !== "granted") return;
 
       const tokenData = await Notifications.getExpoPushTokenAsync();
-      log.info("Expo push token retrieved.");
       const pushToken = tokenData.data;
 
       set({ expoPushToken: pushToken });
 
-      // If this fails (e.g. 401), the internal catch handles it without affecting login state
-      log.info("Registering push token with backend.");
       await apiClient.post("/notifications/register", {
         pushToken,
         appId: "ifcs-catering",

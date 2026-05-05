@@ -73,10 +73,6 @@ export const usePreparationActions = ({
 
   const handleSealAction = useCallback(
     async (item: PreparationItem) => {
-      log.info("[handleSealAction] START");
-      log.info("[handleSealAction] item:", item);
-      log.info("[handleSealAction] selectedFlight:", selectedFlight);
-
       if (!selectedFlight?.id) {
         log.warn("[handleSealAction] EXIT → selectedFlight.id missing");
         return;
@@ -89,70 +85,35 @@ export const usePreparationActions = ({
         (item.assemblyProcessFlag === "inprogress" ||
           item.assemblyProcessFlag === "completed");
 
-      log.info("[handleSealAction] computed flags:", {
-        isPrepared,
-        isSealed,
-        isLocked,
-        hasUserSignature,
-      });
-
       if (!item.isSealRequired && !isSealed) {
-        log.info("[handleSealAction] BLOCKED → Sealing not required");
         Alert.alert("Info", "Sealing is not required for this item.");
         return;
       }
 
       if (isSealed) {
-        log.info("[handleSealAction] BRANCH → item is SEALED");
-
         if (isLocked) {
-          log.warn("[handleSealAction] BLOCKED → item is LOCKED");
           modals.showValidationMessage(
             "Cannot remove seal. Please unlock first.",
           );
           return;
         }
 
-        log.info("[handleSealAction] Opening REMOVE SEAL confirm modal");
-
         modals.openConfirm({
           title: "Remove Seal",
           message: "Are you sure you want to remove the seal from this item?",
           actionType: "disable",
           onConfirm: async () => {
-            log.info("[handleSealAction] CONFIRM → Remove Seal clicked");
-
             modals.closeConfirm();
 
-            log.info("[handleSealAction] Calling updatePreparationFlag");
-
-            const success = await updatePreparationFlag(
-              selectedFlight.id,
-              item.id,
-              {
-                action: "seal",
-                sealTagNumber: null,
-              },
-            );
-
-            log.info(
-              "[handleSealAction] updatePreparationFlag result:",
-              success,
-            );
-
-            if (success) {
-              log.info("[handleSealAction] Seal removed successfully");
-              // Alert.alert("Success", "Seal removed");
-            } else {
-              log.warn("[handleSealAction] Failed to remove seal");
-            }
+            await updatePreparationFlag(selectedFlight.id, item.id, {
+              action: "seal",
+              sealTagNumber: null,
+            });
           },
         });
 
         return;
       }
-
-      log.info("[handleSealAction] BRANCH → item is NOT sealed");
 
       if (!isPrepared) {
         log.warn("[handleSealAction] BLOCKED → item not prepared");
@@ -169,8 +130,6 @@ export const usePreparationActions = ({
       }
 
       modals.openSeal(item);
-
-      log.info("[handleSealAction] END");
     },
     [selectedFlight, hasUserSignature, modals, updatePreparationFlag],
   );
@@ -329,13 +288,13 @@ export const usePreparationActions = ({
         }
 
         // Handle truck selection (auto-selection logic)
-        if (!trucks || trucks.length === 0) {
-          Alert.alert(
-            "No Trucks assigned",
-            "There are no trucks assigned to this flight. Please assign a truck first.",
-          );
-          return;
-        }
+        // if (!trucks || trucks.length === 0) {
+        //   Alert.alert(
+        //     "No Trucks assigned",
+        //     "There are no trucks assigned to this flight. Please assign a truck first.",
+        //   );
+        //   return;
+        // }
 
         if (trucks.length > 1) {
           modals.openTruckSelection(item);

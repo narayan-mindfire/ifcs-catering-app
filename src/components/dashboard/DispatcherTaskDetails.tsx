@@ -103,7 +103,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           d.driverStaffId === user?.raicNumber),
     );
   }, [deliveries, user]);
-  // log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
 
   // Automatically sync declaration step status
   useEffect(() => {
@@ -152,7 +151,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       setExistingACheck(created);
       setStepStatus(task.id, "a-check", true);
       setAcheckModalMode(null);
-      log.info("A-Check created successfully", { id: created.id });
     } catch (err) {
       log.error("Failed to create A-Check:", err);
       Alert.alert("Error", "Failed to submit A-Check. Please try again.");
@@ -168,7 +166,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       const updated = await acheckService.updateACheck(id, payload);
       setExistingACheck(updated);
       setAcheckModalMode("view");
-      log.info("A-Check updated successfully", { id: updated.id });
     } catch (err) {
       log.error("Failed to update A-Check:", err);
       Alert.alert("Error", "Failed to update A-Check. Please try again.");
@@ -178,9 +175,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const handleOpenAcheck = async (mode: AcheckModalMode) => {
     if (existingACheck?.id && mode === "view") {
       try {
-        log.info("Fetching fresh A-Check for view mode", {
-          id: existingACheck.id,
-        });
         const freshData = await acheckService.getACheck(existingACheck.id);
         setExistingACheck(freshData);
       } catch (err) {
@@ -260,53 +254,22 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   };
 
   const handleSignDeclaration = async () => {
-    log.info("Declaration step triggered", {
-      details,
-      flightId: details.flightId,
-      flightNo: details.flightNo,
-      dispatchAssignmentId: task.metadata?.dispatchAssignmentId,
-    });
-
     if (!details.flightId) {
       Alert.alert("Error", "Flight information missing from task.");
       return;
     }
 
     try {
-      log.info(
-        `GETTING DELIVERIES FOR FLIGHT: ${details.flightId} FILTERED BY: ${task.metadata?.dispatchAssignmentId}`,
-      );
       const filteredDeliveries = await deliveryService.getDeliveries(
         details.flightId,
         task.metadata?.dispatchAssignmentId,
       );
 
-      log.info(`API RETURNED ${filteredDeliveries?.length || 0} DELIVERIES`);
       if (filteredDeliveries && filteredDeliveries.length > 0) {
-        // Detailed check for assignment matching
-        log.info(
-          "DELIVERY DATA RECEIVED:",
-          filteredDeliveries.map((d) => ({
-            id: d.id,
-            name: d.deliveryName,
-            assignmentId: d.dispatchAssignmentId,
-          })),
-        );
-
-        // Find the specific delivery for this task, or fallback to the first one returned
         const targetDelivery =
           filteredDeliveries.find((d) => d.dispatchAssignmentId === task.id) ||
           filteredDeliveries[0];
 
-        log.info("CHOSEN TARGET DELIVERY:", {
-          id: targetDelivery.id,
-          matchesAssignment: targetDelivery.dispatchAssignmentId === task.id,
-        });
-
-        // Path A: Delivery Found
-        log.info("Navigating to Declaration with deliveries", {
-          targetDeliveryId: targetDelivery.id,
-        });
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
           flightNumber: details.flightNo || "Unknown",
@@ -323,10 +286,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           },
         });
       } else {
-        // Path B: No Delivery
-        log.info(
-          "NO DELIVERIES FOUND FOR THIS ASSIGNMENT. REDIRECTING TO PREPARATIONS.",
-        );
         Alert.alert(
           "Action Required",
           "User has to do load scan for at least one label before doing signature.",
@@ -376,16 +335,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     const expectedCompletionTime = details.timeToLoad || "00:00:00";
     const actualCompletionTime = formatSeconds(currentTime);
 
-    const payload = {
-      taskId: task.id,
-      expectedCompletionTime,
-      actualCompletionTime,
-      jobType: details.jobType,
-      flightNo: details.flightNo,
-    };
-    log.info("Mark Task as Complete Payload", payload);
-
-    // Sync with backend using duration strings (HH:mm:ss)
     if (user?.id) {
       syncTaskCompletion(
         task.id,
