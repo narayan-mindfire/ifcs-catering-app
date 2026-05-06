@@ -10,6 +10,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { DocumentList } from "../components/documents/DocumentList";
+import { FilterModal } from "../components/documents/FilterModal";
 import { MediaViewer } from "../components/documents/viewers/MediaViewer";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useDocumentStore } from "../store/useDocumentStore";
@@ -35,10 +36,42 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
     searchDocuments,
     selectFile,
     downloadFile,
+    tagFilter,
+    fileTypeFilter,
+    departmentFilter,
   } = useDocumentStore();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const debouncedSearchTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      if (item.type === "folder") return true;
+      const file = item.data as DocumentFile;
+
+      if (tagFilter.trim()) {
+        const hasTag = file.tags?.some((t) =>
+          t.name.toLowerCase().includes(tagFilter.toLowerCase()),
+        );
+        if (!hasTag) return false;
+      }
+
+      if (fileTypeFilter !== "all") {
+        if (!file.mimeType.startsWith(fileTypeFilter)) return false;
+      }
+
+      if (departmentFilter !== "all") {
+        if (departmentFilter === "unassigned") {
+          if (file.department) return false;
+        } else if (file.department !== departmentFilter) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [items, tagFilter, fileTypeFilter, departmentFilter]);
 
   useEffect(() => {
     fetchFolderContent(null);
@@ -163,7 +196,7 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
       <BreadCrumb items={breadcrumbItems} />
       <View className="flex-1 flex-row p-5">
         <DocumentList
-          items={items}
+          items={filteredItems}
           selectedFile={selectedFile}
           onSelectItem={handleSelectItem}
           onNavigateUp={handleNavigateUp}
@@ -171,6 +204,7 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
           currentFolderId={currentFolderId}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onFilterPress={() => setIsFilterModalOpen(true)}
         />
         <MediaViewer
           file={selectedFile}
@@ -178,6 +212,10 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
           isDownloading={isDownloading}
         />
       </View>
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+      />
     </View>
   );
 };

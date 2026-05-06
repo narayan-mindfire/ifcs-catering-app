@@ -17,11 +17,21 @@ interface DocumentState {
   isLoading: boolean;
   isDownloading: boolean;
   error: string | null;
+  tagFilter: string;
+  fileTypeFilter: string;
+  departmentFilter: string;
+  departments: string[];
 
   fetchFolderContent: (folderId: string | null) => Promise<void>;
   searchDocuments: (query: string) => Promise<void>;
   selectFile: (file: DocumentFile | null) => void;
   downloadFile: (fileId: string, fileName: string) => Promise<void>;
+  setFilters: (
+    filters: Partial<
+      Pick<DocumentState, "tagFilter" | "fileTypeFilter" | "departmentFilter">
+    >,
+  ) => void;
+  fetchDepartments: () => Promise<void>;
 }
 
 export const useDocumentStore = create<DocumentState>((set, _get) => ({
@@ -32,6 +42,10 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
   isLoading: false,
   isDownloading: false,
   error: null,
+  tagFilter: "",
+  fileTypeFilter: "all",
+  departmentFilter: "all",
+  departments: [],
 
   fetchFolderContent: async (folderId: string | null) => {
     set({ isLoading: true, error: null, currentFolderId: folderId });
@@ -169,6 +183,18 @@ export const useDocumentStore = create<DocumentState>((set, _get) => ({
       set({ error: "Download failed" });
     } finally {
       set({ isDownloading: false });
+    }
+  },
+  setFilters: (filters) => {
+    set((state) => ({ ...state, ...filters }));
+  },
+
+  fetchDepartments: async () => {
+    try {
+      const data = await documentService.getDepartments();
+      set({ departments: data });
+    } catch (err) {
+      log.error("[ERROR] Fetch Departments Error:", err);
     }
   },
 }));
