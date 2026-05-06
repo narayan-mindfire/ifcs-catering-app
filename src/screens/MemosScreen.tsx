@@ -8,6 +8,8 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   RefreshControl,
   ScrollView,
   Text,
@@ -53,8 +55,21 @@ const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 
 type ViewMode = "grid" | "list";
 
+const isCloseToBottom = ({
+  layoutMeasurement,
+  contentOffset,
+  contentSize,
+}: NativeScrollEvent) => {
+  const paddingToBottom = 50;
+  return (
+    layoutMeasurement.height + contentOffset.y >=
+    contentSize.height - paddingToBottom
+  );
+};
+
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
-  const { memos, fetchMemos, isLoading } = useMemoStore();
+  const { memos, fetchMemos, isLoading, isLoadingMore, hasMore } =
+    useMemoStore();
   const { user } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");
@@ -92,6 +107,26 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
     }
   }, [activeTab, user?.id, debouncedSearch, fetchMemos]);
 
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && !isLoadingMore && hasMore && user?.id) {
+      fetchMemos(user.id, activeTab, debouncedSearch, true);
+    }
+  }, [
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    user?.id,
+    fetchMemos,
+    activeTab,
+    debouncedSearch,
+  ]);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (isCloseToBottom(event.nativeEvent)) {
+      handleLoadMore();
+    }
+  };
+
   const handleClearSearch = useCallback(() => {
     setSearchQuery("");
   }, []);
@@ -118,7 +153,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       {/* Search bar + View toggle */}
       <View className="px-5 py-4 bg-bg-surface z-10">
         <View className="flex-row items-center gap-3">
-          {/* Search input */}
           <View className="flex-1 flex-row items-center bg-bg-tertiary rounded-lg px-4 py-3">
             <TextInput
               placeholder="Search by subject..."
@@ -134,14 +168,12 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
             )}
           </View>
 
-          {/* View mode toggler */}
           <View className="flex-row items-center bg-bg-tertiary rounded-lg overflow-hidden">
             <TouchableOpacity
               onPress={() => setViewMode("grid")}
               className={`p-3 ${
                 viewMode === "grid" ? "bg-bg-accent" : "bg-transparent"
               }`}
-              accessibilityLabel="Grid view"
             >
               <SquaresIcon
                 width={22}
@@ -154,7 +186,6 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               className={`p-3 ${
                 viewMode === "list" ? "bg-bg-accent" : "bg-transparent"
               }`}
-              accessibilityLabel="List view"
             >
               <ListChecksIcon
                 width={22}
@@ -230,6 +261,8 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       ) : (
         <ScrollView
           className="flex-1 z-0"
+          onScroll={handleScroll}
+          scrollEventThrottle={400}
           refreshControl={
             <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
           }
@@ -396,6 +429,12 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                   </TouchableOpacity>
                 );
               })}
+            </View>
+          )}
+
+          {isLoadingMore && (
+            <View className="py-5 items-center">
+              <ActivityIndicator size="small" color="#602AF3" />
             </View>
           )}
         </ScrollView>

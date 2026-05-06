@@ -12,12 +12,14 @@ export const memoService = {
     userId: string,
     tab: MemoTab,
     search?: string,
+    limit = 20,
+    offset = 0,
   ): Promise<Memo[]> => {
     const viewParam = tab === "Inbox" ? "Inbox" : "Acknowledged";
     const params: Record<string, any> = {
       view: viewParam,
-      limit: 100,
-      offset: 0,
+      limit,
+      offset,
     };
     if (search && search.trim()) {
       params.search = search.trim();
