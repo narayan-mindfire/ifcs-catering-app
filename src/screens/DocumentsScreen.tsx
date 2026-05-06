@@ -89,11 +89,7 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
       debouncedSearchTimer.current = setTimeout(() => {
         searchDocuments(searchQuery);
       }, 500);
-    } else if (
-      searchQuery === "" &&
-      items.length > 0 &&
-      breadcrumbs[0]?.id === "search-results"
-    ) {
+    } else if (searchQuery === "" && breadcrumbs[0]?.id === "search-results") {
       fetchFolderContent(null);
     }
 
