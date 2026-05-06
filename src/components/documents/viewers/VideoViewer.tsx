@@ -60,6 +60,7 @@ export const VideoViewer: React.FC<ViewerProps> = ({
     <View className="flex-1 bg-bg-surface rounded-xl overflow-hidden border border-border-muted ml-5">
       <ViewerHeader
         title={file.name}
+        tags={file.tags}
         onDownload={onDownload}
         isDownloading={isDownloading}
         fileUrl={file.url}

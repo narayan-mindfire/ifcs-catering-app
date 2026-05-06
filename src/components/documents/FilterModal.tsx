@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { useDocumentStore } from "../../store/useDocumentStore";
+import { AppButton } from "../common/AppButton";
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -107,37 +108,31 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               />
             </View>
 
-            {/* By File Type */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wider">
                 By File Type
               </Text>
               <View className="flex-row flex-wrap gap-2">
                 {FILE_TYPE_OPTIONS.map((option) => (
-                  <TouchableOpacity
+                  <AppButton
                     key={option.value}
+                    title={option.label}
                     onPress={() => setLocalType(option.value)}
-                    className={`px-4 py-2 rounded-full border ${
-                      localType === option.value
-                        ? "bg-bg-accent border-bg-button"
-                        : "bg-bg-tertiary border-border-muted"
-                    }`}
-                  >
-                    <Text
-                      className={`text-sm font-medium ${
-                        localType === option.value
-                          ? "text-white"
-                          : "text-text-secondary"
-                      }`}
-                    >
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
+                    type={localType === option.value ? "accent" : "tertiary"}
+                    style={{
+                      borderRadius: 999,
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                    }}
+                    textStyle={{
+                      fontSize: 14,
+                      color: "#000",
+                    }}
+                  />
                 ))}
               </View>
             </View>
 
-            {/* By Department */}
             <View className="mb-6">
               <Text className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wider">
                 By Department
@@ -198,24 +193,28 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             </View>
           </ScrollView>
 
-          {/* Actions */}
           <View className="p-6 bg-bg-tertiary border-t border-border-muted flex-row gap-3">
-            <TouchableOpacity
+            <AppButton
+              title="Reset"
               onPress={handleReset}
-              className="flex-1 py-4 rounded-2xl bg-bg-surface border border-border-muted items-center"
-            >
-              <Text className="text-text-secondary font-bold text-base">
-                Reset
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+              type="secondary"
+              style={{
+                flex: 1,
+                paddingVertical: 16,
+                borderRadius: 16,
+              }}
+              textStyle={{
+                fontSize: 16,
+                fontWeight: "700",
+                color: "#6B7280",
+              }}
+            />
+
+            <AppButton
+              title="Apply Filters"
+              type="primary"
               onPress={handleApply}
-              className="flex-2 py-4 rounded-2xl bg-bg-button items-center"
-            >
-              <Text className="text-white font-bold text-base">
-                Apply Filters
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         </View>
       </View>
