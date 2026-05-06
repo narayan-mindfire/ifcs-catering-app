@@ -83,14 +83,28 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
 
   const details = task.taskDetails || {};
 
-  const expectedSeconds = useMemo(() => {
-    const timeStr = details.timeToLoad || "00:00:00";
+  const timeToSeconds = (timeStr: string | undefined): number => {
+    if (!timeStr) return 0;
     const parts = timeStr.split(":").map(Number);
     if (parts.length === 3) {
       return parts[0] * 3600 + parts[1] * 60 + parts[2];
     }
+    if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
     return 0;
-  }, [details.timeToLoad]);
+  };
+
+  const expectedSeconds = useMemo(() => {
+    return (
+      timeToSeconds(details.timeToLoad) ||
+      timeToSeconds(task.expectedCompletionTime)
+    );
+  }, [details.timeToLoad, task.expectedCompletionTime]);
+
+  const actualSecondsFromTask = useMemo(() => {
+    return timeToSeconds(task.actualCompletionTime);
+  }, [task.actualCompletionTime]);
 
   // Logic to check if declaration is signed on backend
   const isDeclarationSigned = useMemo(() => {
@@ -103,7 +117,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           d.driverStaffId === user?.raicNumber),
     );
   }, [deliveries, user]);
-  // log.info("Is Declaration Signed?", { isDeclarationSigned, deliveries, user });
 
   // Automatically sync declaration step status
   useEffect(() => {
@@ -152,7 +165,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       setExistingACheck(created);
       setStepStatus(task.id, "a-check", true);
       setAcheckModalMode(null);
-      log.info("A-Check created successfully", { id: created.id });
     } catch (err) {
       log.error("Failed to create A-Check:", err);
       Alert.alert("Error", "Failed to submit A-Check. Please try again.");
@@ -168,11 +180,22 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
       const updated = await acheckService.updateACheck(id, payload);
       setExistingACheck(updated);
       setAcheckModalMode("view");
-      log.info("A-Check updated successfully", { id: updated.id });
     } catch (err) {
       log.error("Failed to update A-Check:", err);
       Alert.alert("Error", "Failed to update A-Check. Please try again.");
     }
+  };
+
+  const handleOpenAcheck = async (mode: AcheckModalMode) => {
+    if (existingACheck?.id && mode === "view") {
+      try {
+        const freshData = await acheckService.getACheck(existingACheck.id);
+        setExistingACheck(freshData);
+      } catch (err) {
+        log.error("Failed to fetch fresh A-Check data", err);
+      }
+    }
+    setAcheckModalMode(mode);
   };
 
   const toggleStep = (id: string) => {
@@ -245,53 +268,32 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   };
 
   const handleSignDeclaration = async () => {
-    log.info("Declaration step triggered", {
-      details,
-      flightId: details.flightId,
-      flightNo: details.flightNo,
-      dispatchAssignmentId: task.metadata?.dispatchAssignmentId,
-    });
-
     if (!details.flightId) {
       Alert.alert("Error", "Flight information missing from task.");
       return;
     }
 
     try {
-      log.info(
-        `GETTING DELIVERIES FOR FLIGHT: ${details.flightId} FILTERED BY: ${task.metadata?.dispatchAssignmentId}`,
-      );
-      const filteredDeliveries = await deliveryService.getDeliveries(
+      let filteredDeliveries = await deliveryService.getDeliveries(
         details.flightId,
-        task.metadata?.dispatchAssignmentId,
+        task.metadata?.dispatchAssignmentId || task.id,
       );
 
-      log.info(`API RETURNED ${filteredDeliveries?.length || 0} DELIVERIES`);
-      if (filteredDeliveries && filteredDeliveries.length > 0) {
-        // Detailed check for assignment matching
-        log.info(
-          "DELIVERY DATA RECEIVED:",
-          filteredDeliveries.map((d) => ({
-            id: d.id,
-            name: d.deliveryName,
-            assignmentId: d.dispatchAssignmentId,
-          })),
+      // If no deliveries for specific assignment, check all deliveries for the flight
+      if (!filteredDeliveries || filteredDeliveries.length === 0) {
+        filteredDeliveries = await deliveryService.getDeliveries(
+          details.flightId,
         );
+      }
 
-        // Find the specific delivery for this task, or fallback to the first one returned
+      if (filteredDeliveries && filteredDeliveries.length > 0) {
         const targetDelivery =
-          filteredDeliveries.find((d) => d.dispatchAssignmentId === task.id) ||
-          filteredDeliveries[0];
+          filteredDeliveries.find(
+            (d) =>
+              d.dispatchAssignmentId ===
+              (task.metadata?.dispatchAssignmentId || task.id),
+          ) || filteredDeliveries[0];
 
-        log.info("CHOSEN TARGET DELIVERY:", {
-          id: targetDelivery.id,
-          matchesAssignment: targetDelivery.dispatchAssignmentId === task.id,
-        });
-
-        // Path A: Delivery Found
-        log.info("Navigating to Declaration with deliveries", {
-          targetDeliveryId: targetDelivery.id,
-        });
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
           flightNumber: details.flightNo || "Unknown",
@@ -308,13 +310,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
           },
         });
       } else {
-        // Path B: No Delivery
-        log.info(
-          "NO DELIVERIES FOUND FOR THIS ASSIGNMENT. REDIRECTING TO PREPARATIONS.",
-        );
         Alert.alert(
           "Action Required",
-          "User has to do load scan for at least one label before doing signature.",
+          "At least one item must be marked as loaded before signing the declaration.",
         );
         navigation.navigate("FlightDetails", {
           flightId: details.flightId,
@@ -361,16 +359,6 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
     const expectedCompletionTime = details.timeToLoad || "00:00:00";
     const actualCompletionTime = formatSeconds(currentTime);
 
-    const payload = {
-      taskId: task.id,
-      expectedCompletionTime,
-      actualCompletionTime,
-      jobType: details.jobType,
-      flightNo: details.flightNo,
-    };
-    log.info("Mark Task as Complete Payload", payload);
-
-    // Sync with backend using duration strings (HH:mm:ss)
     if (user?.id) {
       syncTaskCompletion(
         task.id,
@@ -542,15 +530,18 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                   : "Mark Task as Complete"
               }
               onPress={handleMarkComplete}
-              disabled={!allStepsChecked || task.status === "COMPLETE"}
+              type={allStepsChecked ? "primary" : "accent"}
+              disabled={task.status === "COMPLETE"}
               IconComponent={
                 <CheckIconSuccess
                   width={16}
                   height={16}
                   fill={
-                    allStepsChecked && task.status !== "COMPLETE"
-                      ? "#fff"
-                      : "#999"
+                    task.status === "COMPLETE"
+                      ? "#999"
+                      : allStepsChecked
+                        ? "#fff"
+                        : "#602AF3"
                   }
                 />
               }
@@ -621,9 +612,9 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                 <AppButton
                   title={existingACheck ? "View A-Check" : "Fill A-Check"}
                   onPress={() =>
-                    setAcheckModalMode(existingACheck ? "view" : "create")
+                    handleOpenAcheck(existingACheck ? "view" : "create")
                   }
-                  disabled={task.status === "COMPLETE"}
+                  disabled={!existingACheck && task.status === "COMPLETE"}
                   IconComponent={
                     <DocsIcon width={14} height={14} fill="#fff" />
                   }
@@ -651,13 +642,16 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
                         style={{
                           color:
                             task.status === "COMPLETE"
-                              ? currentTime > expectedSeconds
-                                ? "#EF4444" // Red
-                                : "#10B981" // Green
+                              ? (actualSecondsFromTask || currentTime) >
+                                expectedSeconds
+                                ? "#EF4444" // Red for late
+                                : "#10B981" // Green for on-time/early
                               : "#602AF3", // Default Purple
                         }}
                       >
-                        {formatSeconds(currentTime)}
+                        {task.status === "COMPLETE" && task.actualCompletionTime
+                          ? task.actualCompletionTime
+                          : formatSeconds(currentTime)}
                       </Text>
                     </View>
                   </View>
@@ -736,11 +730,16 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
         assignmentId={assignmentId}
         userId={user?.id}
         truckId={truckId}
-        driverName={user ? `${user.firstName} ${user.lastName}` : undefined}
+        driverName={
+          user
+            ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+            : undefined
+        }
         truckNo={details.truckNo}
         onSubmit={handleACheckSubmit}
         onUpdate={handleACheckUpdate}
         onRequestEdit={() => setAcheckModalMode("edit")}
+        canEdit={task.status !== "COMPLETE"}
       />
     </View>
   );

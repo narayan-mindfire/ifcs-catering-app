@@ -382,6 +382,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
   onSubmit,
   onUpdate,
   onRequestEdit,
+  canEdit = true,
 }) => {
   const isReadOnly = mode === "view";
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -491,12 +492,28 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
     if (!onUpdate || !initialData) return;
     setIsSubmitting(true);
     try {
-      await onUpdate(initialData.id, {
+      const payload = buildPayload(
         name,
         vehicleNo,
-        hasAccidentHazard: accidentHazard === "yes",
+        date,
+        lighting,
+        operation,
+        auxiliaryDrive,
+        hydraulicsFailAt,
+        engine,
+        transmission,
+        tires,
+        compressedAirLineLeaking,
+        bodyDamage,
+        fallProtection,
         details,
-      });
+        accidentHazard,
+        externalDamage,
+        truckId,
+        assignmentId,
+        userId,
+      );
+      await onUpdate(initialData.id, payload);
     } finally {
       setIsSubmitting(false);
     }
@@ -514,7 +531,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <Text className="text-text-primary text-lg font-bold">
               {modalTitle}
             </Text>
-            {mode === "view" && onRequestEdit && (
+            {mode === "view" && onRequestEdit && canEdit && (
               <TouchableOpacity
                 onPress={onRequestEdit}
                 className="bg-bg-button px-3 py-1.5 rounded-lg"
@@ -567,9 +584,9 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
                   // Render ISO date safely as localized string
                   value={date ? new Date(date).toLocaleDateString() : ""}
                   onChangeText={setDate}
-                  // Only editable during creation, locked for view/edit as per requirements
-                  editable={!isReadOnly && mode === "create"}
-                  className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly || mode === "edit" ? "opacity-60" : ""}`}
+                  // Locked for view, editable for create/edit
+                  editable={!isReadOnly}
+                  className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
                 />
               </View>
             </View>

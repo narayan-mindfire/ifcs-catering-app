@@ -1,5 +1,5 @@
 import { createStackNavigator } from "@react-navigation/stack";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View } from "react-native";
 
 import { UserDropdown } from "../components/common/UserDropdown";
@@ -22,26 +22,35 @@ export type { RootStackParamList };
 
 const Stack = createStackNavigator<RootStackParamList>();
 
+const CustomHeader = ({ onUserPress }: { onUserPress: () => void }) => {
+  return <Header onUserPress={onUserPress} />;
+};
+
 export const AppNavigator = () => {
   const { token, logout } = useAuthStore();
   const [isUserDropdownVisible, setIsUserDropdownVisible] = useState(false);
 
-  const CustomHeader = () => {
-    return <Header onUserPress={() => setIsUserDropdownVisible(true)} />;
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setIsUserDropdownVisible(false);
     await logout();
-  };
+  }, [logout]);
+
+  const handleUserPress = useCallback(() => {
+    setIsUserDropdownVisible(true);
+  }, []);
+
+  const renderHeader = useCallback(
+    () => <CustomHeader onUserPress={handleUserPress} />,
+    [handleUserPress],
+  );
 
   return (
     <View style={{ flex: 1 }}>
       <Stack.Navigator
         initialRouteName={token ? "Dashboard" : "Login"}
         screenOptions={{
+          header: renderHeader,
           headerShown: !!token,
-          header: token ? CustomHeader : undefined,
           cardStyle: { backgroundColor: "#fff" },
         }}
       >

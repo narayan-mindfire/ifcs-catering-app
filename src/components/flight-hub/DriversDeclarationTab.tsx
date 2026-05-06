@@ -52,15 +52,6 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
   const signature = watch("signature");
 
   useEffect(() => {
-    log.info("DriversDeclarationTab Effect Triggered", {
-      hasDeclaration: !!driversDeclaration,
-      declarationKeys: driversDeclaration
-        ? Object.keys(driversDeclaration)
-        : [],
-      hasUser: !!user,
-    });
-
-    // Check if there is actual meaningful content in the existing declaration
     const hasExistingContent =
       driversDeclaration &&
       (driversDeclaration.driverName ||
@@ -69,7 +60,6 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
         driversDeclaration.signature);
 
     if (hasExistingContent) {
-      log.info("Using existing declaration data");
       reset({
         driverName: driversDeclaration.driverName || "",
         driverStaffId: driversDeclaration.driverStaffId || "",
@@ -79,13 +69,8 @@ const DriversDeclarationTab: React.FC<DriversDeclarationTabProps> = ({
         sealIntact: driversDeclaration.sealIntact || false,
       });
     } else if (user) {
-      log.info("No content found, auto-filling from user profile:", {
-        name: `${user.firstName} ${user.lastName}`,
-        badge: user.badgeNumber,
-        org: user.organization,
-      });
       reset({
-        driverName: `${user.firstName} ${user.lastName}`.trim(),
+        driverName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
         driverStaffId: user.badgeNumber || "",
         truckSeal: "",
         driverCompany: user.organization || "",

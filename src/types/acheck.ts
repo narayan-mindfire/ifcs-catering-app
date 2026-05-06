@@ -145,13 +145,7 @@ export interface CreateACheckPayload {
   externalDamage: string;
 }
 
-// PUT body — only mutable fields
-export interface UpdateACheckPayload {
-  name?: string;
-  vehicleNo?: string;
-  hasAccidentHazard?: boolean;
-  details?: string;
-}
+export type UpdateACheckPayload = Partial<CreateACheckPayload>;
 
 export interface AcheckFormProps {
   isOpen: boolean;
@@ -166,6 +160,7 @@ export interface AcheckFormProps {
   onSubmit?: (payload: CreateACheckPayload) => Promise<void>;
   onUpdate?: (id: string, payload: UpdateACheckPayload) => Promise<void>;
   onRequestEdit?: () => void;
+  canEdit?: boolean;
 }
 
 /** @deprecated Use AcheckFormProps instead */

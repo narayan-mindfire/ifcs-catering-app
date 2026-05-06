@@ -16,7 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MicrosoftLogo } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
-import { log } from "../../utils/logger";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -46,7 +45,6 @@ const LoginScreen = () => {
   );
 
   React.useEffect(() => {
-    log.info("RESPONSE: ", response);
     if (response?.type === "success") {
       const { params } = response;
       if (params.id_token) {

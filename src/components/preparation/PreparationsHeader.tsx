@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -45,12 +44,16 @@ export interface ParsedQRData {
 }
 
 const TruckInfo: React.FC<{ truck: Truck }> = ({ truck }) => {
-  const driver = truck.dispatchAssignments?.[0]?.assignedStaff?.find(
-    (s) => s.role === "DRIVER",
-  );
-  if (!driver) return null;
+  const driver = truck.dispatchAssignments
+    ?.flatMap((da) => da.assignedStaff || [])
+    ?.find((s) => s.role === "DRIVER");
 
-  const initials = `${driver.firstName[0]}${driver.lastName[0]}`.toUpperCase();
+  const initials = driver
+    ? `${driver.firstName?.[0] || ""}${driver.lastName?.[0] || ""}`.toUpperCase()
+    : "";
+
+  const firstName = driver?.firstName || "";
+  const lastName = driver?.lastName || "";
 
   return (
     <View
@@ -85,63 +88,87 @@ const TruckInfo: React.FC<{ truck: Truck }> = ({ truck }) => {
           Truck ID
         </Text>
         <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
-          {truck.assetName.trim()}
+          {truck.assetName?.trim() || "N/A"}
         </Text>
       </View>
 
-      <View style={{ position: "relative" }}>
-        <View
-          style={{
-            height: 40,
-            width: 40,
-            borderRadius: 20,
-            backgroundColor: "#4F46E5",
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 2,
-            borderColor: "white",
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 5,
-          }}
-        >
-          <Text style={{ color: "white", fontSize: 14, fontWeight: "bold" }}>
-            {initials}
+      {driver ? (
+        <>
+          <View style={{ position: "relative" }}>
+            <View
+              style={{
+                height: 40,
+                width: 40,
+                borderRadius: 20,
+                backgroundColor: "#4F46E5",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 2,
+                borderColor: "white",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 5,
+              }}
+            >
+              <Text
+                style={{ color: "white", fontSize: 14, fontWeight: "bold" }}
+              >
+                {initials || "??"}
+              </Text>
+            </View>
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                height: 14,
+                width: 14,
+                backgroundColor: "#10B981",
+                borderRadius: 7,
+                borderWidth: 2,
+                borderColor: "white",
+              }}
+            />
+          </View>
+
+          <View style={{ marginLeft: 16 }}>
+            <Text
+              style={{
+                fontSize: 9,
+                fontWeight: "900",
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                color: "#6B7280",
+                marginBottom: 2,
+              }}
+            >
+              Assigned Driver
+            </Text>
+            <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
+              {firstName} {lastName}
+            </Text>
+          </View>
+        </>
+      ) : (
+        <View style={{ marginLeft: 8 }}>
+          <Text
+            style={{
+              fontSize: 9,
+              fontWeight: "900",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              color: "#6B7280",
+              marginBottom: 2,
+            }}
+          >
+            Status
+          </Text>
+          <Text style={{ fontSize: 11, fontWeight: "600", color: "#9CA3AF" }}>
+            No Driver Assigned
           </Text>
         </View>
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            right: 0,
-            height: 14,
-            width: 14,
-            backgroundColor: "#10B981",
-            borderRadius: 7,
-            borderWidth: 2,
-            borderColor: "white",
-          }}
-        />
-      </View>
-
-      <View style={{ marginLeft: 16 }}>
-        <Text
-          style={{
-            fontSize: 9,
-            fontWeight: "900",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-            color: "#6B7280",
-            marginBottom: 2,
-          }}
-        >
-          Assigned Driver
-        </Text>
-        <Text style={{ fontSize: 13, fontWeight: "800", color: "#111827" }}>
-          {driver.firstName} {driver.lastName}
-        </Text>
-      </View>
+      )}
     </View>
   );
 };
@@ -154,7 +181,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
   trucks,
 }) => {
   return (
-    <View className="flex-row mb-5 z-10">
+    <View className="flex-row mb-5 z-10" style={{ minHeight: 70 }}>
       <View className="flex-1 relative">
         <ScrollView
           horizontal
@@ -163,6 +190,7 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             flexDirection: "row",
             alignItems: "center",
             paddingRight: 32,
+            flexGrow: 1,
           }}
         >
           <View className="flex-row items-center">
@@ -205,20 +233,6 @@ export const PreparationsHeader: React.FC<PreparationsHeaderProps> = ({
             </View>
           )}
         </ScrollView>
-
-        <LinearGradient
-          colors={["transparent", "rgba(0,0,0,0.15)"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 28,
-          }}
-          pointerEvents="none"
-        />
       </View>
 
       <View className="flex-row ms-3 justify-end items-center">

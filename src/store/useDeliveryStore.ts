@@ -135,18 +135,15 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     } catch (err: any) {
       log.error("Add Signature Error:", err);
       if (err.response) {
-        log.info("Error Status:", err.response.status);
-        log.info("Error Data:", JSON.stringify(err.response.data, null, 2));
+        log.error("Response data:", err.response.data);
       }
     }
   },
 
   deleteDelivery: async (flightId: string, deliveryId: string) => {
-    log.info(`DELETING DELIVERY: ${deliveryId} for FLIGHT: ${flightId}`);
     set({ isLoading: true, error: null });
     try {
       await deliveryService.deleteDelivery(flightId, deliveryId);
-      log.info(`DELIVERY ${deliveryId} DELETED SUCCESSFULLY ON BACKEND`);
 
       set((state) => {
         const updatedDeliveries = state.deliveries.filter(
@@ -156,11 +153,6 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
           state.selectedDeliveryId === deliveryId
             ? updatedDeliveries[0]?.id || null
             : state.selectedDeliveryId;
-
-        log.info("PREVIOUS DELIVERIES COUNT:", state.deliveries.length);
-        log.info("NEW DELIVERIES COUNT:", updatedDeliveries.length);
-        log.info("NEW SELECTED ID:", newSelectedId);
-
         return {
           deliveries: updatedDeliveries,
           selectedDeliveryId: newSelectedId,

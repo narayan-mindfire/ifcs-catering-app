@@ -122,8 +122,6 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           isCreating: false,
         }));
 
-        log.info("Created Consumption Record:", newRecord);
-
         return { success: true, record: newRecord };
       } catch (error: any) {
         const errorMessage =

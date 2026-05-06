@@ -72,9 +72,9 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
   }, [
     searchQuery,
     searchDocuments,
+    fetchFolderContent,
     items.length,
     breadcrumbs,
-    fetchFolderContent,
   ]);
 
   const handleSelectItem = useCallback(

@@ -611,6 +611,7 @@ const TaskDetailPanel: React.FC<{
 
 export const MainContent: React.FC = () => {
   const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Handle selectedDate from navigation params
@@ -618,14 +619,15 @@ export const MainContent: React.FC = () => {
     const paramDate = route.params?.selectedDate;
     if (paramDate) {
       const parsedDate = new Date(paramDate);
-      if (
-        !isNaN(parsedDate.getTime()) &&
-        !isSameDay(selectedDate, parsedDate)
-      ) {
-        setSelectedDate(parsedDate);
+      if (!isNaN(parsedDate.getTime())) {
+        if (!isSameDay(selectedDate, parsedDate)) {
+          setSelectedDate(parsedDate);
+        }
+        // Clear the param after using it so it doesn't block future changes
+        navigation.setParams({ selectedDate: undefined });
       }
     }
-  }, [route.params?.selectedDate, selectedDate]);
+  }, [route.params?.selectedDate, selectedDate, navigation]);
   const { user } = useAuthStore();
   const fetchTasks = useTaskStore((state) => state.fetchTasks);
   const fetchStatus = useTimerStore((state) => state.fetchStatus);

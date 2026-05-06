@@ -1,6 +1,5 @@
 import apiClient from "../api/axiosClient";
 import { Memo, MemoTab } from "../types/memo";
-import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -27,7 +26,6 @@ export const memoService = {
       params,
       headers: { "x-user-id": userId },
     });
-    log.info("Memos Response Data:", response.data);
     return response.data.data.map((item: any) => {
       if (item.memo) {
         return {
@@ -46,7 +44,6 @@ export const memoService = {
     const response = await apiClient.get<ApiResponse<Memo>>(`/memos/${id}`, {
       headers: { "x-user-id": userId },
     });
-    log.info("MEMO: ", response.data.data);
     return response.data.data;
   },
 
@@ -59,7 +56,6 @@ export const memoService = {
   },
 
   markAsRead: async (userId: string, id: string): Promise<void> => {
-    log.info("marking the memo as read in service:");
     await apiClient.patch(
       `/memos/${id}/read`,
       { isRead: true },

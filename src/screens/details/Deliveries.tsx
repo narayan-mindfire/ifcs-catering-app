@@ -49,7 +49,6 @@ const DeliveriesScreen: React.FC = () => {
   const [hasInitialFetched, setHasInitialFetched] = useState(false);
   const lastHandledParamRef = React.useRef<string | null>(null);
 
-  // Reset fetch state on flight change
   useEffect(() => {
     setHasInitialFetched(false);
   }, [flightId]);
@@ -58,17 +57,8 @@ const DeliveriesScreen: React.FC = () => {
     const params = route.params as any;
     const openParam = params?.openDriverDeclaration;
 
-    log.info("Deliveries redirect check", {
-      openParam,
-      hasInitialFetched,
-      isLoading,
-      alreadyHandled: lastHandledParamRef.current,
-      flightId,
-    });
-
     if (!openParam) {
       if (lastHandledParamRef.current !== null) {
-        log.info("Resetting redirect ref because openParam is gone");
         lastHandledParamRef.current = null;
       }
       return;
@@ -83,9 +73,6 @@ const DeliveriesScreen: React.FC = () => {
       lastHandledParamRef.current !== paramKey
     ) {
       if (deliveries.length > 0) {
-        log.info("Executing redirect to delivery", {
-          targetId: params?.selectedDeliveryId || deliveries[0].id,
-        });
         lastHandledParamRef.current = paramKey;
         const targetId = params?.selectedDeliveryId || deliveries[0].id;
         setActiveTab("driver");
@@ -98,8 +85,6 @@ const DeliveriesScreen: React.FC = () => {
           openDriverDeclaration: undefined,
           selectedDeliveryId: undefined,
         } as any);
-      } else {
-        log.info("Redirect pending: Deliveries empty");
       }
     }
   }, [

@@ -1,4 +1,3 @@
-import "react-native-gesture-handler";
 import "./global.css";
 
 import { NavigationContainer } from "@react-navigation/native";
@@ -34,9 +33,16 @@ export default function App() {
   });
 
   useEffect(() => {
-    Notifications.setBadgeCountAsync(0);
-    restoreSession();
-  }, []);
+    const initializeApp = async () => {
+      try {
+        await Notifications.setBadgeCountAsync(0);
+        await restoreSession();
+      } catch (error) {
+        console.error("Failed to initialize app:", error);
+      }
+    };
+    initializeApp();
+  }, [restoreSession]);
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded && !isLoading) {

@@ -29,7 +29,6 @@ export const useSpotCheckStore = create<SpotCheckStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       await spotCheckService.submitPass(payload);
-      log.info("Store: Spot Check PASSED");
       set({ isLoading: false });
       return true;
     } catch (err: any) {
@@ -42,7 +41,6 @@ export const useSpotCheckStore = create<SpotCheckStore>((set) => ({
     set({ isLoading: true, error: null });
     try {
       await spotCheckService.submitFail(payload);
-      log.info("Store: Spot Check FAILED Submitted");
       set({ isLoading: false });
       return true;
     } catch (err: any) {

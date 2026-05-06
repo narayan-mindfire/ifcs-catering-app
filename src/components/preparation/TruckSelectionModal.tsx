@@ -83,12 +83,12 @@ export const TruckSelectionModal: React.FC<TruckSelectionModalProps> = ({
                       <View className="flex-row items-center mt-2">
                         <View className="h-5 w-5 rounded-full bg-indigo-100 items-center justify-center mr-2">
                           <Text className="text-indigo-600 text-[10px] font-bold">
-                            {driver.firstName[0]}
-                            {driver.lastName[0]}
+                            {driver.firstName?.[0] || ""}
+                            {driver.lastName?.[0] || ""}
                           </Text>
                         </View>
                         <Text className="text-xs text-text-secondary font-medium">
-                          {driver.firstName} {driver.lastName}
+                          {driver.firstName || ""} {driver.lastName || ""}
                         </Text>
                       </View>
                     )}
