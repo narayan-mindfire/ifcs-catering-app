@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 
-import { FilterIcon, UploadIcon } from "../../assets/icons";
+import { FilterIcon } from "../../assets/icons";
 import { useDocumentStore } from "../../store/useDocumentStore";
 import { DocumentFile, FileSystemItem } from "../../types/documents";
 import { FileSystemListItem } from "./FileSystemSystemDocuments";
@@ -86,9 +86,6 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(
             {isFilterActive && (
               <View className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-bg-tertiary" />
             )}
-          </TouchableOpacity>
-          <TouchableOpacity className="p-2">
-            <UploadIcon />
           </TouchableOpacity>
         </View>
 
