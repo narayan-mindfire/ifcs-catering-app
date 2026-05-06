@@ -69,13 +69,8 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
         clearTimeout(debouncedSearchTimer.current);
       }
     };
-  }, [
-    searchQuery,
-    searchDocuments,
-    fetchFolderContent,
-    items.length,
-    breadcrumbs,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, searchDocuments, fetchFolderContent]);
 
   const handleSelectItem = useCallback(
     (item: FileSystemItem) => {

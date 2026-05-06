@@ -82,8 +82,15 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
       const currentActive = get().activeMemo;
       if (currentActive && currentActive.id === id) {
+        const updatedRecipients = currentActive.recipients?.map((r: any) =>
+          r.userId === userId ? { ...r, isRead: true } : r,
+        );
         set({
-          activeMemo: { ...currentActive, isRead: true },
+          activeMemo: {
+            ...currentActive,
+            isRead: true,
+            recipients: updatedRecipients,
+          },
         });
       }
 
