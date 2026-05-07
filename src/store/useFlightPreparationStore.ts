@@ -6,24 +6,9 @@ import {
   PreparationFlagUpdatePayload,
   PreparationItem,
   Truck,
+  UserSignature,
 } from "../types/preparations";
 import { log } from "../utils/logger";
-
-export interface UserSignature {
-  id: string;
-  deliveryId: string;
-  userId: string;
-  userFirstName: string;
-  userLastName: string;
-  userEmail: string;
-  userType: string;
-  userOrganization: string;
-  userBadgeNumber: string | null;
-  signature: string;
-  createdAt: string;
-  updatedAt: string;
-  raic: string | null;
-}
 
 interface FlightPreparationState {
   preparations: PreparationItem[];

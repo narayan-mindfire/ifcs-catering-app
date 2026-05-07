@@ -9,6 +9,7 @@ import React, { useCallback, useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import { ErrorBoundary } from "./src/components/common/ErrorBoundary";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { useAuthStore } from "./src/store/useAuthStore";
 
@@ -85,9 +86,11 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <NavigationContainer linking={linking}>
-        <AppNavigator />
-      </NavigationContainer>
+      <ErrorBoundary>
+        <NavigationContainer linking={linking}>
+          <AppNavigator />
+        </NavigationContainer>
+      </ErrorBoundary>
     </GestureHandlerRootView>
   );
 }

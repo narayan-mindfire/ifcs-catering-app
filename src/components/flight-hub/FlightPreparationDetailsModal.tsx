@@ -1,5 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
 import { ImageIcon } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -22,12 +22,15 @@ import {
   PackingStandardItem,
 } from "../../types/preparations";
 import { ConfirmationModal } from "../common/ConfirmationModal";
+import { LoadingOverlay } from "../common/LoadingOverlay";
 import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
 import { LockNumberModal } from "../preparation/LockNumberModal";
 import { SealNumberModal } from "../preparation/SealNumberModal";
-import { CartVisualizer } from "./CartVisulaizer";
-import { ContainerVisualizer } from "./ContainerVisualizer";
-import { OvenVisualizer } from "./OvenVisualizer";
+import { DetailsPanel } from "./preparation/DetailsPanel";
+import { DispatchPanel } from "./preparation/DispatchPanel";
+import { ItemsList } from "./preparation/ItemsList";
+import { ValidationModal } from "./preparation/ValidationModal";
+import { VisualizerSection } from "./preparation/VisualizerSection";
 import { SignatureModal } from "./SharedComponents";
 import { StatusRow } from "./StatusRow";
 
@@ -45,38 +48,6 @@ interface FlightPreparationModalProps {
   onFinishConsumption?: () => void;
   labelData?: any;
 }
-
-const ValidationModal = ({
-  visible,
-  message,
-  onClose,
-}: {
-  visible: boolean;
-  message: string;
-  onClose: () => void;
-}) => (
-  <Modal transparent visible={visible} animationType="fade">
-    <View className="flex-1 bg-black/50 justify-center items-center">
-      <View className="bg-bg-surface w-[300px] p-5 rounded-xl shadow-lg border border-border-secondary items-center">
-        <View className="h-12 w-12 rounded-full bg-bg-button/10 items-center justify-center mb-3">
-          <Text className="text-2xl">ℹ️</Text>
-        </View>
-        <Text className="text-lg font-bold text-text-primary mb-2 text-center">
-          Action Required
-        </Text>
-        <Text className="text-base text-text-secondary text-center mb-5">
-          {message}
-        </Text>
-        <TouchableOpacity
-          onPress={onClose}
-          className="bg-bg-button w-full py-3 rounded-lg"
-        >
-          <Text className="text-white font-semibold text-center">OK</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </Modal>
-);
 
 export const FlightPreparationDetailsModal: React.FC<
   FlightPreparationModalProps
@@ -102,13 +73,36 @@ export const FlightPreparationDetailsModal: React.FC<
     isUpdating,
     checkUserSignature,
     addUserSignature,
-  } = useFlightPreparationStore();
+  } = useFlightPreparationStore(
+    useShallow((state) => ({
+      preparations: state.preparations,
+      preparationDetail: state.preparationDetail,
+      fetchPreparationById: state.fetchPreparationById,
+      isPrepLoading: state.isPrepLoading,
+      updatePreparationFlag: state.updatePreparationFlag,
+      isUpdating: state.isUpdating,
+      checkUserSignature: state.checkUserSignature,
+      addUserSignature: state.addUserSignature,
+    })),
+  );
 
   const { records: consumptionRecords, fetchConsumptionRecords } =
-    useConsumptionTrackingStore();
+    useConsumptionTrackingStore(
+      useShallow((state) => ({
+        records: state.records,
+        fetchConsumptionRecords: state.fetchConsumptionRecords,
+      })),
+    );
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
-    useDeliveryStore();
+    useDeliveryStore(
+      useShallow((state) => ({
+        deliveries: state.deliveries,
+        selectedDeliveryId: state.selectedDeliveryId,
+        fetchDeliveries: state.fetchDeliveries,
+        createDelivery: state.createDelivery,
+      })),
+    );
 
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
     PackingStandardItem[]
@@ -174,7 +168,15 @@ export const FlightPreparationDetailsModal: React.FC<
         });
       }
     }
-  }, [visible, flightId, preparationId, isConsumptionMode]);
+  }, [
+    visible,
+    flightId,
+    preparationId,
+    isConsumptionMode,
+    fetchPreparationById,
+    fetchDeliveries,
+    fetchConsumptionRecords,
+  ]);
 
   useEffect(() => {
     const checkSignature = async () => {
@@ -192,7 +194,14 @@ export const FlightPreparationDetailsModal: React.FC<
     if (deliveries.length > 0 && visible) {
       checkSignature();
     }
-  }, [deliveries, flightId, selectedDeliveryId, visible, user?.id]);
+  }, [
+    deliveries,
+    flightId,
+    selectedDeliveryId,
+    visible,
+    user?.id,
+    checkUserSignature,
+  ]);
 
   useEffect(() => {
     if (preparation) {
@@ -206,7 +215,7 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [preparation]);
 
-  const getDerivedEquipmentType = () => {
+  const derivedEquipmentType = useMemo(() => {
     if (!preparationDetail) return "";
     const packingStd = preparationDetail.packingStandard;
 
@@ -227,12 +236,18 @@ export const FlightPreparationDetailsModal: React.FC<
     }
 
     return "Bulk";
-  };
+  }, [preparationDetail]);
 
-  const derivedEquipmentType = getDerivedEquipmentType();
+  const packingStd = useMemo(
+    () => preparationDetail?.packingStandard,
+    [preparationDetail],
+  );
 
-  const packingStd = preparationDetail?.packingStandard;
-  const allContainers = packingStd?.containers || [];
+  const allContainers = useMemo(
+    () => packingStd?.containers || [],
+    [packingStd],
+  );
+
   const hasDirectionalDrawers = useMemo(
     () => allContainers.some((c) => c.isFront || c.isRear),
     [allContainers],
@@ -248,10 +263,10 @@ export const FlightPreparationDetailsModal: React.FC<
   useEffect(() => {
     if (!preparationDetail) return;
 
-    const packingStd = preparationDetail?.packingStandard;
-    const parentContents = packingStd?.items || [];
-    const equipmentName = packingStd?.equipmentItem?.name || "";
-    const parentName = packingStd?.name || "Equipment Contents";
+    const packingStdInternal = preparationDetail?.packingStandard;
+    const parentContents = packingStdInternal?.items || [];
+    const equipmentName = packingStdInternal?.equipmentItem?.name || "";
+    const parentName = packingStdInternal?.name || "Equipment Contents";
 
     const type = derivedEquipmentType;
 
@@ -288,57 +303,65 @@ export const FlightPreparationDetailsModal: React.FC<
     }
   }, [preparationDetail, derivedEquipmentType, viewMode, drawersToRender]);
 
-  const handleDrawerClick = (
-    drawerIndex: number | null,
-    drawerData: PackingStandardContainer | null,
-  ) => {
-    const packingStd = preparationDetail?.packingStandard;
-    const parentContents = packingStd?.items || [];
-    const parentName = packingStd?.name || "Equipment Contents";
-    const parentEquipmentName = packingStd?.equipmentItem?.name || "";
+  const handleDrawerClick = useCallback(
+    (
+      drawerIndex: number | null,
+      drawerData: PackingStandardContainer | null,
+    ) => {
+      const packingStdInternal = preparationDetail?.packingStandard;
+      const parentContents = packingStdInternal?.items || [];
+      const parentName = packingStdInternal?.name || "Equipment Contents";
+      const parentEquipmentName = packingStdInternal?.equipmentItem?.name || "";
 
-    setActiveDrawerIndex(drawerIndex);
+      setActiveDrawerIndex(drawerIndex);
 
-    if (drawerIndex !== null && drawerData) {
-      setSelectedDrawerContents(drawerData.items || []);
-      setActiveEquipmentName(drawerData.name || "N/A");
-      setActiveDrawerEquipmentItemName(drawerData.equipmentItem?.name || "N/A");
-    } else {
-      if (parentContents.length > 0) {
-        setSelectedDrawerContents(parentContents);
-        setActiveEquipmentName(parentName);
-        setActiveDrawerEquipmentItemName(parentEquipmentName);
+      if (drawerIndex !== null && drawerData) {
+        setSelectedDrawerContents(drawerData.items || []);
+        setActiveEquipmentName(drawerData.name || "N/A");
+        setActiveDrawerEquipmentItemName(
+          drawerData.equipmentItem?.name || "N/A",
+        );
       } else {
-        setSelectedDrawerContents([]);
-        setActiveEquipmentName("");
-        setActiveDrawerEquipmentItemName("");
+        if (parentContents.length > 0) {
+          setSelectedDrawerContents(parentContents);
+          setActiveEquipmentName(parentName);
+          setActiveDrawerEquipmentItemName(parentEquipmentName);
+        } else {
+          setSelectedDrawerContents([]);
+          setActiveEquipmentName("");
+          setActiveDrawerEquipmentItemName("");
+        }
       }
-    }
-  };
+    },
+    [preparationDetail],
+  );
 
-  const handleOpenConsumptionModal = (item: PackingStandardItem) => {
-    const existingRecord = consumptionRecords.find(
-      (r) => r.flightPrepPackingStandardItemId === item.id,
-    );
-    setSelectedConsumptionRecord(existingRecord || null);
-    setConsumptionItem(item);
-    setConsumptionModalVisible(true);
-  };
+  const handleOpenConsumptionModal = useCallback(
+    (item: PackingStandardItem) => {
+      const existingRecord = consumptionRecords.find(
+        (r) => r.flightPrepPackingStandardItemId === item.id,
+      );
+      setSelectedConsumptionRecord(existingRecord || null);
+      setConsumptionItem(item);
+      setConsumptionModalVisible(true);
+    },
+    [consumptionRecords],
+  );
 
-  const handleImagePress = (
-    url: string | null | undefined,
-    name: string | null | undefined,
-  ) => {
-    setPreviewImageUrl(url || null);
-    setPreviewItemName(name);
-    setIsPreviewVisible(true);
-  };
+  const handleImagePress = useCallback(
+    (url: string | null | undefined, name: string | null | undefined) => {
+      setPreviewImageUrl(url || null);
+      setPreviewItemName(name);
+      setIsPreviewVisible(true);
+    },
+    [],
+  );
 
-  const closeImagePreview = () => {
+  const closeImagePreview = useCallback(() => {
     setIsPreviewVisible(false);
     setPreviewImageUrl(null);
     setPreviewItemName("");
-  };
+  }, []);
 
   const handlePreparedAction = async () => {
     if (!flightId || !preparationDetail) return;
@@ -508,25 +531,21 @@ export const FlightPreparationDetailsModal: React.FC<
   const handleFinishConsumption = () => {
     if (!preparationDetail || !onFinishConsumption) return;
 
-    // Collect all items (top-level and inside containers)
-    const packingStd = preparationDetail?.packingStandard;
+    const packingStdInternal = preparationDetail?.packingStandard;
     const allItems: PackingStandardItem[] = [];
 
-    // Top level items
-    if (packingStd?.items) {
-      allItems.push(...packingStd.items);
+    if (packingStdInternal?.items) {
+      allItems.push(...packingStdInternal.items);
     }
 
-    // Items in containers
-    if (packingStd?.containers) {
-      packingStd.containers.forEach((container) => {
+    if (packingStdInternal?.containers) {
+      packingStdInternal.containers.forEach((container) => {
         if (container.items) {
           allItems.push(...container.items);
         }
       });
     }
 
-    // Find untracked items
     const untrackedItems = allItems.filter((item) => {
       const isTrackable =
         preparationDetail?.isTrackConsumption || item.isTrackConsumption;
@@ -578,9 +597,7 @@ export const FlightPreparationDetailsModal: React.FC<
       >
         <View className="flex-1 bg-black/60 justify-center items-center px-4">
           <View className="w-full max-w-[1000px] h-[80%] bg-bg-surface rounded-3xl overflow-hidden flex flex-col">
-            <View
-              className={`p-4 border-b border-border-muted flex-row justify-between items-cente z-10`}
-            >
+            <View className="p-4 border-b border-border-muted flex-row justify-between items-center z-10">
               <Text className="text-xl font-medium text-text-secondary">
                 Flight Preparation Plan Details
               </Text>
@@ -613,338 +630,42 @@ export const FlightPreparationDetailsModal: React.FC<
                   isUpdating={isUpdating}
                 />
 
-                <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted flex-row gap-4">
-                  <View className="flex-1 gap-y-3">
-                    <View>
-                      <Text className="text-text-secondary text-xs">
-                        Galley
-                      </Text>
-                      <Text className="text-text-primary font-bold">
-                        {preparationDetail?.aircraftConfigGalleyPosition
-                          ?.galleyPosition || "N/A"}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text className="text-text-secondary text-xs">Door</Text>
-                      <Text className="text-text-primary font-bold">
-                        {preparationDetail?.door || "N/A"}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text className="text-text-secondary text-xs">
-                        Position
-                      </Text>
-                      <Text className="text-text-primary font-bold">
-                        {preparationDetail?.position || "N/A"}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="flex-1">
-                    <View>
-                      <Text className="text-text-secondary text-xs">
-                        Equipment
-                      </Text>
-                      <Text className="text-text-primary font-bold">
-                        {preparationDetail?.equipment || "N/A"}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="flex-1">
-                    <View>
-                      <Text className="text-text-secondary text-xs">Name</Text>
-                      <Text className="text-text-primary font-bold">
-                        {activeDrawerEquipmentItemName || "N/A"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+                <DetailsPanel
+                  galleyPosition={
+                    preparationDetail?.aircraftConfigGalleyPosition
+                      ?.galleyPosition
+                  }
+                  door={preparationDetail?.door}
+                  position={preparationDetail?.position}
+                  equipment={preparationDetail?.equipment}
+                  activeDrawerEquipmentItemName={activeDrawerEquipmentItemName}
+                />
 
-                {preparationDetail?.trucks &&
-                  preparationDetail.trucks.length > 0 && (
-                    <View className="bg-bg-surface rounded-xl p-4 mt-4 border border-border-muted">
-                      <Text className="text-text-secondary text-sm font-bold mb-3 uppercase tracking-wider">
-                        Dispatch Assignments
-                      </Text>
-                      <View className="flex-row flex-wrap gap-4">
-                        {preparationDetail.trucks.map((truck) => (
-                          <View
-                            key={truck.id}
-                            className="flex-1 min-w-[250px] bg-bg-quaternary p-4 rounded-xl border border-border-muted"
-                          >
-                            <View className="flex-row justify-between items-start mb-3">
-                              <View>
-                                <Text className="text-text-primary font-bold text-base">
-                                  {truck.assetName}
-                                </Text>
-                                <View className="flex-row items-center gap-2 mt-1">
-                                  <View className="bg-bg-tertiary px-2 py-0.5 rounded-full border border-border-muted">
-                                    <Text className="text-text-secondary text-[10px] font-bold">
-                                      {truck.vehicleNumber}
-                                    </Text>
-                                  </View>
-                                  <Text className="text-text-tertiary text-[10px]">
-                                    {truck.assetCategory}
-                                  </Text>
-                                </View>
-                              </View>
-                            </View>
-                            {truck.dispatchAssignments?.map((assignment) => (
-                              <View
-                                key={assignment.id}
-                                className="mt-2 pt-3 border-t border-border-muted"
-                              >
-                                <View className="flex-row justify-between items-center mb-2">
-                                  <Text className="text-text-secondary text-[10px] font-bold uppercase">
-                                    Assigned Staff
-                                  </Text>
-                                  <View className="bg-green-100 px-1.5 py-0.5 rounded">
-                                    <Text className="text-green-700 text-[10px] font-bold">
-                                      {assignment.status}
-                                    </Text>
-                                  </View>
-                                </View>
-                                <View className="gap-y-2">
-                                  {assignment.assignedStaff?.map((staff) => (
-                                    <View
-                                      key={staff.userId}
-                                      className="flex-row justify-between items-center bg-bg-surface p-2 rounded-lg border border-border-muted"
-                                    >
-                                      <View>
-                                        <Text className="text-text-primary text-xs font-medium">
-                                          {staff.firstName} {staff.lastName}
-                                        </Text>
-                                      </View>
-                                      <View className="bg-bg-tertiary px-2 py-0.5 rounded border border-border-muted">
-                                        <Text className="text-text-tertiary text-[10px] font-bold">
-                                          {staff.role}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  ))}
-                                </View>
-                              </View>
-                            ))}
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
+                <DispatchPanel trucks={preparationDetail?.trucks} />
 
                 <View className="flex-row gap-4 mt-6 h-[500px]">
-                  <View className="flex-[2] gap-4">
-                    <View className="flex-1 bg-bg-surface rounded-2xl p-4 flex-row gap-4 border border-border-muted">
-                      <View className="flex-1 items-center justify-center">
-                        {positionImage ? (
-                          <Image
-                            source={{ uri: positionImage }}
-                            className="w-full h-full"
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <Text className="text-text-tertiary">
-                            No Position Image
-                          </Text>
-                        )}
-                      </View>
-                      <View className="flex-1 items-center justify-center">
-                        {derivedEquipmentType === "Atlas" ||
-                        derivedEquipmentType === "Container" ? (
-                          <ContainerVisualizer
-                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                            numberOfDrawers={drawersToRender.length}
-                            drawersData={drawersToRender}
-                            defaultOpenDrawer={activeDrawerIndex}
-                            onDrawerClick={(idx: any) =>
-                              idx !== null && drawersToRender[idx]
-                                ? handleDrawerClick(idx, drawersToRender[idx])
-                                : handleDrawerClick(null, null)
-                            }
-                          />
-                        ) : derivedEquipmentType === "Cart" ? (
-                          <CartVisualizer
-                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                            numberOfDrawers={drawersToRender.length}
-                            drawers={drawersToRender}
-                            defaultOpenDrawer={activeDrawerIndex}
-                            onDrawerClick={handleDrawerClick}
-                          />
-                        ) : derivedEquipmentType === "Oven" ? (
-                          <OvenVisualizer
-                            cabinetFrameImg={packingStd?.equipmentItem?.picture}
-                            numberOfDrawers={drawersToRender.length}
-                            drawers={drawersToRender}
-                            defaultOpenDrawer={activeDrawerIndex}
-                            onDrawerClick={handleDrawerClick}
-                          />
-                        ) : (
-                          <Image
-                            source={{
-                              uri: packingStd?.equipmentItem?.picture || "",
-                            }}
-                            className="w-full h-full"
-                            resizeMode="contain"
-                          />
-                        )}
-                      </View>
-                    </View>
+                  <VisualizerSection
+                    positionImage={positionImage}
+                    derivedEquipmentType={derivedEquipmentType}
+                    packingStd={packingStd}
+                    drawersToRender={drawersToRender}
+                    activeDrawerIndex={activeDrawerIndex}
+                    handleDrawerClick={handleDrawerClick}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                    setActiveDrawerIndex={setActiveDrawerIndex}
+                    hasDirectionalDrawers={hasDirectionalDrawers}
+                  />
 
-                    {hasDirectionalDrawers && (
-                      <View className="flex-row justify-center gap-4">
-                        <TouchableOpacity
-                          onPress={() => {
-                            setViewMode("front");
-                            setActiveDrawerIndex(null);
-                          }}
-                          className={`px-8 py-2 rounded-full border ${
-                            viewMode === "front"
-                              ? "bg-bg-button border-bg-button"
-                              : "bg-white border-border-muted"
-                          }`}
-                        >
-                          <Text
-                            className={`font-bold ${
-                              viewMode === "front"
-                                ? "text-white"
-                                : "text-text-tertiary"
-                            }`}
-                          >
-                            FRONT
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => {
-                            setViewMode("rear");
-                            setActiveDrawerIndex(null);
-                          }}
-                          className={`px-8 py-2 rounded-full border ${
-                            viewMode === "rear"
-                              ? "bg-bg-button border-bg-button"
-                              : "bg-white border-border-muted"
-                          }`}
-                        >
-                          <Text
-                            className={`font-bold ${
-                              viewMode === "rear"
-                                ? "text-white"
-                                : "text-text-tertiary"
-                            }`}
-                          >
-                            REAR
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-
-                  <View className="flex-1 bg-bg-surface rounded-2xl border border-border-muted overflow-hidden">
-                    <View className="p-3 border-b border-border-muted bg-bg-secondary">
-                      <View className="mb-2">
-                        <Text className="text-xs text-text-secondary">
-                          Selected
-                        </Text>
-                        <Text className="text-sm font-bold text-text-primary">
-                          {activeEquipmentName}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View className="flex-row p-2 border-b border-border-muted bg-bg-tertiary">
-                      <Text className="flex-1 text-xs font-bold text-text-secondary text-center">
-                        Qty
-                      </Text>
-                      <Text className="flex-[3] text-xs font-bold text-text-secondary pl-2">
-                        Item
-                      </Text>
-                      <Text className="flex-1 text-xs font-bold text-text-secondary text-center">
-                        Img
-                      </Text>
-                    </View>
-
-                    <ScrollView>
-                      {selectedDrawerContents.length > 0 ? (
-                        selectedDrawerContents.map((item, index) => {
-                          let isTrackable =
-                            preparationDetail.isTrackConsumption ||
-                            item.isTrackConsumption;
-
-                          const isTracked = consumptionRecords.some((r) => {
-                            if (item.isDynamic) {
-                              return (
-                                r.flightPreparationDynamicItemId ===
-                                (item.flightPreparationDynamicItemId || item.id)
-                              );
-                            }
-                            return (
-                              r.flightPrepPackingStandardItemId === item.id
-                            );
-                          });
-                          let rowStyle =
-                            "bg-bg-surface border-b border-border-muted";
-
-                          if (isConsumptionMode && isTrackable) {
-                            if (isTracked) {
-                              rowStyle =
-                                "bg-blue-50 border-b border-blue-200 border-l-[4px] border-l-blue-500";
-                            } else {
-                              rowStyle =
-                                "bg-red-50 border-b border-red-200 border-l-[4px] border-l-red-500";
-                            }
-                          }
-
-                          return (
-                            <TouchableOpacity
-                              key={item.id || index}
-                              className={`flex-row p-3 items-center ${rowStyle}`}
-                              onPress={() => {
-                                if (isConsumptionMode && isTrackable) {
-                                  handleOpenConsumptionModal(item);
-                                } else {
-                                  handleImagePress(item.picture, item.name);
-                                }
-                              }}
-                            >
-                              <Text className="flex-1 text-sm text-text-primary text-center">
-                                {item.quantity}
-                              </Text>
-
-                              <Text className="flex-[3] text-sm text-text-primary pl-2">
-                                {item.name}
-                              </Text>
-
-                              <View className="flex-1 items-center">
-                                <TouchableOpacity
-                                  onPress={(e) => {
-                                    e.stopPropagation();
-                                    handleImagePress(item.picture, item.name);
-                                  }}
-                                >
-                                  {item.picture ? (
-                                    <Image
-                                      source={{ uri: item.picture }}
-                                      className="w-8 h-8 rounded"
-                                      resizeMode="cover"
-                                    />
-                                  ) : (
-                                    <ImageIcon
-                                      width={25}
-                                      height={25}
-                                      color="#9CA3AF"
-                                    />
-                                  )}
-                                </TouchableOpacity>
-                              </View>
-                            </TouchableOpacity>
-                          );
-                        })
-                      ) : (
-                        <View className="p-4 items-center">
-                          <Text className="text-text-muted text-sm">
-                            No items in this selection.
-                          </Text>
-                        </View>
-                      )}
-                    </ScrollView>
-                  </View>
+                  <ItemsList
+                    activeEquipmentName={activeEquipmentName}
+                    selectedDrawerContents={selectedDrawerContents}
+                    isConsumptionMode={isConsumptionMode}
+                    preparationDetail={preparationDetail}
+                    consumptionRecords={consumptionRecords}
+                    handleOpenConsumptionModal={handleOpenConsumptionModal}
+                    handleImagePress={handleImagePress}
+                  />
                 </View>
               </ScrollView>
             )}
@@ -1067,6 +788,7 @@ export const FlightPreparationDetailsModal: React.FC<
           </View>
         </Modal>
       </Modal>
+      <LoadingOverlay visible={isUpdating} />
     </>
   );
 };

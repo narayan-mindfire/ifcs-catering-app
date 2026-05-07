@@ -14,10 +14,16 @@ jest.mock("../../../src/store/useAuthStore");
 
 // Mock icons
 jest.mock("../../../src/assets/icons", () => ({
-  ImageIcon: () => null,
+  ImageIcon: "View",
+  InfoIcon: "View",
+  BoxIcon: "View",
+  LockIcon: "View",
+  StringIcon: "View",
+  SparkleIcon: "View",
+  DocsIconDark: "View",
 }));
 
-// Mock sub-components as null or simple views
+// Mock sub-components
 jest.mock("../../../src/components/flight-hub/StatusRow", () => ({ StatusRow: () => null }));
 jest.mock("../../../src/components/flight-hub/CartVisulaizer", () => ({ CartVisualizer: () => null }));
 jest.mock("../../../src/components/flight-hub/ContainerVisualizer", () => ({ ContainerVisualizer: () => null }));
@@ -28,34 +34,62 @@ jest.mock("../../../src/components/preparation/SealNumberModal", () => ({ SealNu
 jest.mock("../../../src/components/common/ConfirmationModal", () => ({ ConfirmationModal: () => null }));
 jest.mock("../../../src/components/flight-hub/SharedComponents", () => ({ SignatureModal: () => null }));
 
+// Mock new sub-components
+jest.mock("../../../src/components/flight-hub/preparation/DetailsPanel", () => ({ DetailsPanel: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/DispatchPanel", () => ({ DispatchPanel: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/ItemsList", () => ({ ItemsList: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/ValidationModal", () => ({ ValidationModal: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/VisualizerSection", () => ({ VisualizerSection: () => null }));
+
 describe("FlightPreparationDetailsModal", () => {
   const mockFetchPreparationById = jest.fn();
   const mockFetchConsumptionRecords = jest.fn();
   const mockFetchDeliveries = jest.fn();
 
   beforeEach(() => {
-    (useFlightPreparationStore as unknown as jest.Mock).mockReturnValue({
+    const mockFlightPrepStore = {
       preparations: [],
       preparationDetail: {
         id: "p1",
         name: "Test Prep",
         equipment: "Atlas Tray",
         aircraftConfigGalleyPosition: { galleyPosition: "G1" },
-        packingStandard: { items: [], containers: [] }
+        packingStandard: { items: [], containers: [] },
       },
       fetchPreparationById: mockFetchPreparationById,
       isPrepLoading: false,
       isUpdating: false,
-    });
-    (useConsumptionTrackingStore as unknown as jest.Mock).mockReturnValue({
+      updatePreparationFlag: jest.fn(),
+      checkUserSignature: jest.fn(),
+      addUserSignature: jest.fn(),
+    };
+    (useFlightPreparationStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockFlightPrepStore) : mockFlightPrepStore),
+    );
+
+    const mockConsumptionStore = {
       records: [],
       fetchConsumptionRecords: mockFetchConsumptionRecords,
-    });
-    (useDeliveryStore as unknown as jest.Mock).mockReturnValue({
+    };
+    (useConsumptionTrackingStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockConsumptionStore) : mockConsumptionStore),
+    );
+
+    const mockDeliveryStore = {
       deliveries: [],
+      selectedDeliveryId: null,
       fetchDeliveries: mockFetchDeliveries,
-    });
-    (useAuthStore as unknown as jest.Mock).mockReturnValue({ userId: "u1" });
+      createDelivery: jest.fn(),
+    };
+    (useDeliveryStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockDeliveryStore) : mockDeliveryStore),
+    );
+
+    const mockAuthStore = { user: { id: "u1" } };
+    (useAuthStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector ? selector(mockAuthStore) : mockAuthStore,
+    );
+
     jest.clearAllMocks();
   });
 

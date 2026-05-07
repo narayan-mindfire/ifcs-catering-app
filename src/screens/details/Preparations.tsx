@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
 
+import { LoadingOverlay } from "../../components/common/LoadingOverlay";
 import { PreparationsModals } from "../../components/preparation/PreparationModal";
 import {
   ParsedQRData,
@@ -546,6 +547,7 @@ export const PreparationsScreen: React.FC = () => {
           }
         }}
       />
+      <LoadingOverlay visible={isUpdating} />
     </View>
   );
 };
