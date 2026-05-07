@@ -62,4 +62,9 @@ export const documentService = {
     const response = await apiClient.get(`/documents/files/${fileId}/download`);
     return response.data.data.url;
   },
+
+  getDepartments: async (): Promise<string[]> => {
+    const response = await apiClient.get("/users/departments");
+    return response.data.data || [];
+  },
 };

@@ -8,9 +8,17 @@ interface MemoState {
   memos: Memo[];
   activeMemo: Memo | null;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  offset: number;
+  hasMore: boolean;
 
-  fetchMemos: (userId: string, tab: MemoTab, search?: string) => Promise<void>;
+  fetchMemos: (
+    userId: string,
+    tab: MemoTab,
+    search?: string,
+    loadMore?: boolean,
+  ) => Promise<void>;
   fetchMemoById: (userId: string, id: string) => Promise<void>;
   acknowledgeMemo: (userId: string, id: string) => Promise<void>;
   markAsRead: (userId: string, id: string) => Promise<void>;
@@ -20,22 +28,56 @@ export const useMemoStore = create<MemoState>((set, get) => ({
   memos: [],
   activeMemo: null,
   isLoading: false,
+  isLoadingMore: false,
   error: null,
+  offset: 0,
+  hasMore: true,
 
-  fetchMemos: async (userId: string, tab: MemoTab, search?: string) => {
-    set({ isLoading: true, error: null });
-    try {
-      const flattenedMemos = await memoService.getMemos(userId, tab, search);
+  fetchMemos: async (
+    userId: string,
+    tab: MemoTab,
+    search?: string,
+    loadMore = false,
+  ) => {
+    const limit = 50;
+    const currentOffset = loadMore ? get().offset : 0;
+
+    if (loadMore) {
+      set({ isLoadingMore: true });
+    } else {
       set({
-        memos: flattenedMemos,
-        isLoading: false,
+        isLoading: true,
+        error: null,
+        offset: 0,
+        hasMore: true,
+        memos: [], // Clear existing memos on fresh fetch
       });
+    }
+
+    try {
+      const flattenedMemos = await memoService.getMemos(
+        userId,
+        tab,
+        search,
+        limit,
+        currentOffset,
+      );
+
+      set((state) => ({
+        memos: loadMore ? [...state.memos, ...flattenedMemos] : flattenedMemos,
+        isLoading: false,
+        isLoadingMore: false,
+        offset: currentOffset + limit,
+        hasMore: flattenedMemos.length === limit,
+      }));
     } catch (err: any) {
       log.error("Fetch Memos Error:", err);
       set({
         error: "Failed to fetch memos",
         isLoading: false,
-        memos: [],
+        isLoadingMore: false,
+        memos: loadMore ? get().memos : [],
+        hasMore: false,
       });
     }
   },
@@ -82,8 +124,15 @@ export const useMemoStore = create<MemoState>((set, get) => ({
 
       const currentActive = get().activeMemo;
       if (currentActive && currentActive.id === id) {
+        const updatedRecipients = currentActive.recipients?.map((r: any) =>
+          r.userId === userId ? { ...r, isRead: true } : r,
+        );
         set({
-          activeMemo: { ...currentActive, isRead: true },
+          activeMemo: {
+            ...currentActive,
+            isRead: true,
+            recipients: updatedRecipients,
+          },
         });
       }
 

@@ -8,7 +8,8 @@ import {
   View,
 } from "react-native";
 
-import { FilterIcon, UploadIcon } from "../../assets/icons";
+import { FilterIcon } from "../../assets/icons";
+import { useDocumentStore } from "../../store/useDocumentStore";
 import { DocumentFile, FileSystemItem } from "../../types/documents";
 import { FileSystemListItem } from "./FileSystemSystemDocuments";
 
@@ -21,6 +22,7 @@ interface DocumentListProps {
   currentFolderId: string | null;
   searchQuery: string;
   onSearchChange: (text: string) => void;
+  onFilterPress: () => void;
 }
 
 // eslint-disable-next-line react/display-name
@@ -34,7 +36,14 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(
     currentFolderId,
     searchQuery,
     onSearchChange,
+    onFilterPress,
   }) => {
+    const { tagFilter, fileTypeFilter, departmentFilter } = useDocumentStore();
+    const isFilterActive =
+      tagFilter.trim().length > 0 ||
+      fileTypeFilter !== "all" ||
+      departmentFilter !== "all";
+
     const { folders, files } = useMemo(() => {
       return {
         folders: items.filter((item) => item.type === "folder"),
@@ -72,11 +81,11 @@ export const DocumentList: React.FC<DocumentListProps> = React.memo(
             value={searchQuery}
             onChangeText={onSearchChange}
           />
-          <TouchableOpacity className="p-2">
+          <TouchableOpacity onPress={onFilterPress} className="p-2 relative">
             <FilterIcon width={15} height={15} />
-          </TouchableOpacity>
-          <TouchableOpacity className="p-2">
-            <UploadIcon />
+            {isFilterActive && (
+              <View className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-bg-tertiary" />
+            )}
           </TouchableOpacity>
         </View>
 

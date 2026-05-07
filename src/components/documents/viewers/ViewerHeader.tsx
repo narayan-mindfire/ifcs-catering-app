@@ -10,10 +10,12 @@ import {
 } from "react-native";
 
 import { DownloadIcon, PrintIcon } from "../../../assets/icons";
+import { Tag } from "../../../types/documents";
 import { log } from "../../../utils/logger";
 
 interface ViewerHeaderProps {
   title: string;
+  tags?: Tag[];
   onDownload: () => void;
   isDownloading: boolean;
   fileUrl?: string;
@@ -23,6 +25,7 @@ interface ViewerHeaderProps {
 
 export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
   title,
+  tags,
   onDownload,
   isDownloading,
   fileUrl,
@@ -59,6 +62,20 @@ export const ViewerHeader: React.FC<ViewerHeaderProps> = ({
   return (
     <View className="flex-row justify-between items-center px-5 py-3 border-b border-border-muted bg-bg-quaternary">
       <View className="flex-1 mr-4">
+        {tags && tags.length > 0 && (
+          <View className="flex-row flex-wrap mb-1">
+            {tags.map((tag) => (
+              <View
+                key={tag.id}
+                className="bg-bg-accent/70 rounded-md px-1.5 py-0.5 mr-1 mb-1 border border-bg-accent/20"
+              >
+                <Text className="text-[9px] text-text-muted font-bold uppercase">
+                  {tag.name}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
         <Text
           className="text-xl font-semibold text-text-primary"
           numberOfLines={1}
