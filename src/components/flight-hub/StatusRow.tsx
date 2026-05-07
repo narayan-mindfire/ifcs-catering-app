@@ -1,7 +1,12 @@
 import React from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
-import { BoxIcon, LockIcon, StringIcon } from "../../assets/icons";
+import {
+  BoxIcon,
+  CheckIconSuccess,
+  LockIcon,
+  StringIcon,
+} from "../../assets/icons";
 
 interface StatusRowProps {
   isLocked: boolean;
@@ -95,14 +100,14 @@ export const StatusRow: React.FC<StatusRowProps> = ({
             <ActivityIndicator size="small" color="#602AF3" />
           ) : (
             <View
-              className={`h-4 w-4 rounded-full justify-center items-center ${
+              className={`h-5 w-5 rounded-full justify-center items-center ${
                 status.isActive
-                  ? "bg-green-500"
+                  ? "bg-green-500 border-green-500"
                   : "bg-bg-surface border border-text-muted"
               }`}
             >
               {status.isActive && (
-                <Text className="text-white text-[10px] font-bold">✓</Text>
+                <CheckIconSuccess width={10} height={10} color="white" />
               )}
             </View>
           )}

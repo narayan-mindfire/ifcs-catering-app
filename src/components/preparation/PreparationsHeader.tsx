@@ -2,6 +2,7 @@ import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
 import { ScanIcon } from "../../assets/icons";
+import { Flight } from "../../types/flight";
 import { Truck } from "../../types/preparations";
 import { AppButton } from "../common/AppButton";
 import { MultiSelectFilter } from "./MultiSelectFilter";
@@ -20,7 +21,7 @@ export interface PreparationsHeaderProps {
   filterOptions: { label: string; icon: any }[];
   selectedFilters: string[];
   onToggleFilter: (option: string) => void;
-  selectedFlight: any;
+  selectedFlight: Flight | null;
   onScanPress: (actionType: ScanActionType) => void;
   trucks?: Truck[];
 }

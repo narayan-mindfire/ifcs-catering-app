@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
+import { View } from "react-native";
 
-import { PreparationItem } from "../types/preparations";
+import { ConfirmModalData, PreparationItem } from "../types/preparations";
 
 interface PrepStatus {
   isLocked: boolean;
@@ -8,18 +9,14 @@ interface PrepStatus {
   isCompleted: boolean;
 }
 
-interface ConfirmModalData {
-  title: string;
-  message: string;
-  actionType: "disable" | "enable";
-  onConfirm: () => void;
-}
-
 export const usePreparationModals = () => {
   const [paxModalVisible, setPaxModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [pdfVisible, setPdfVisible] = useState(false);
-  const [pdfSource, setPdfSource] = useState<any>(null);
+  const [pdfSource, setPdfSource] = useState<{
+    uri: string;
+    cache?: boolean;
+  } | null>(null);
   const [validationMsg, setValidationMsg] = useState("");
   const [showValidation, setShowValidation] = useState(false);
   const [selectedItem, setSelectedItem] = useState<PreparationItem | null>(
@@ -45,7 +42,7 @@ export const usePreparationModals = () => {
     isCompleted: false,
   });
 
-  const buttonRef = useRef<any>(null);
+  const buttonRef = useRef<View>(null);
 
   const openPaxModal = useCallback(() => {
     buttonRef.current?.measure(
