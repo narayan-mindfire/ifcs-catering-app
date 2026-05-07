@@ -14,10 +14,16 @@ jest.mock("../../../src/store/useAuthStore");
 
 // Mock icons
 jest.mock("../../../src/assets/icons", () => ({
-  ImageIcon: () => null,
+  ImageIcon: "View",
+  InfoIcon: "View",
+  BoxIcon: "View",
+  LockIcon: "View",
+  StringIcon: "View",
+  SparkleIcon: "View",
+  DocsIconDark: "View",
 }));
 
-// Mock sub-components as null or simple views
+// Mock sub-components
 jest.mock("../../../src/components/flight-hub/StatusRow", () => ({ StatusRow: () => null }));
 jest.mock("../../../src/components/flight-hub/CartVisulaizer", () => ({ CartVisualizer: () => null }));
 jest.mock("../../../src/components/flight-hub/ContainerVisualizer", () => ({ ContainerVisualizer: () => null }));
@@ -27,6 +33,13 @@ jest.mock("../../../src/components/preparation/LockNumberModal", () => ({ LockNu
 jest.mock("../../../src/components/preparation/SealNumberModal", () => ({ SealNumberModal: () => null }));
 jest.mock("../../../src/components/common/ConfirmationModal", () => ({ ConfirmationModal: () => null }));
 jest.mock("../../../src/components/flight-hub/SharedComponents", () => ({ SignatureModal: () => null }));
+
+// Mock new sub-components
+jest.mock("../../../src/components/flight-hub/preparation/DetailsPanel", () => ({ DetailsPanel: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/DispatchPanel", () => ({ DispatchPanel: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/ItemsList", () => ({ ItemsList: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/ValidationModal", () => ({ ValidationModal: () => null }));
+jest.mock("../../../src/components/flight-hub/preparation/VisualizerSection", () => ({ VisualizerSection: () => null }));
 
 describe("FlightPreparationDetailsModal", () => {
   const mockFetchPreparationById = jest.fn();
