@@ -48,14 +48,22 @@ describe("MemosScreen", () => {
   const mockFetchMemos = jest.fn();
 
   beforeEach(() => {
-    (useAuthStore as unknown as jest.Mock).mockReturnValue({
-      user: { id: "user123" },
-    });
-    (useMemoStore as unknown as jest.Mock).mockReturnValue({
+    const mockAuthStore = { user: { id: "user123" } };
+    (useAuthStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector ? selector(mockAuthStore) : mockAuthStore,
+    );
+
+    const mockMemoStore = {
       memos: [],
       fetchMemos: mockFetchMemos,
       isLoading: false,
-    });
+      isLoadingMore: false,
+      hasMore: false,
+    };
+    (useMemoStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector ? selector(mockMemoStore) : mockMemoStore,
+    );
+
     jest.clearAllMocks();
   });
 

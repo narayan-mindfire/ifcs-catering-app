@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 
+import { useShallow } from "zustand/react/shallow";
+
 import { ImageIcon } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
@@ -71,13 +73,36 @@ export const FlightPreparationDetailsModal: React.FC<
     isUpdating,
     checkUserSignature,
     addUserSignature,
-  } = useFlightPreparationStore();
+  } = useFlightPreparationStore(
+    useShallow((state) => ({
+      preparations: state.preparations,
+      preparationDetail: state.preparationDetail,
+      fetchPreparationById: state.fetchPreparationById,
+      isPrepLoading: state.isPrepLoading,
+      updatePreparationFlag: state.updatePreparationFlag,
+      isUpdating: state.isUpdating,
+      checkUserSignature: state.checkUserSignature,
+      addUserSignature: state.addUserSignature,
+    })),
+  );
 
   const { records: consumptionRecords, fetchConsumptionRecords } =
-    useConsumptionTrackingStore();
+    useConsumptionTrackingStore(
+      useShallow((state) => ({
+        records: state.records,
+        fetchConsumptionRecords: state.fetchConsumptionRecords,
+      })),
+    );
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
-    useDeliveryStore();
+    useDeliveryStore(
+      useShallow((state) => ({
+        deliveries: state.deliveries,
+        selectedDeliveryId: state.selectedDeliveryId,
+        fetchDeliveries: state.fetchDeliveries,
+        createDelivery: state.createDelivery,
+      })),
+    );
 
   const [selectedDrawerContents, setSelectedDrawerContents] = useState<
     PackingStandardItem[]

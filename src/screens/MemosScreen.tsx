@@ -17,6 +17,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
 import {
   CheckIcon,
@@ -56,9 +57,16 @@ const TABS: MemoTab[] = ["Inbox", "Acknowledged"];
 type ViewMode = "grid" | "list";
 
 const MemosScreen: React.FC<Props> = ({ navigation }) => {
-  const { memos, fetchMemos, isLoading, isLoadingMore, hasMore } =
-    useMemoStore();
-  const { user } = useAuthStore();
+  const { memos, fetchMemos, isLoading, isLoadingMore, hasMore } = useMemoStore(
+    useShallow((state) => ({
+      memos: state.memos,
+      fetchMemos: state.fetchMemos,
+      isLoading: state.isLoading,
+      isLoadingMore: state.isLoadingMore,
+      hasMore: state.hasMore,
+    })),
+  );
+  const user = useAuthStore((state) => state.user);
   const { width } = useWindowDimensions();
 
   const [activeTab, setActiveTab] = useState<MemoTab>("Inbox");

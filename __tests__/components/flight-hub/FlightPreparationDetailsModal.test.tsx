@@ -47,28 +47,49 @@ describe("FlightPreparationDetailsModal", () => {
   const mockFetchDeliveries = jest.fn();
 
   beforeEach(() => {
-    (useFlightPreparationStore as unknown as jest.Mock).mockReturnValue({
+    const mockFlightPrepStore = {
       preparations: [],
       preparationDetail: {
         id: "p1",
         name: "Test Prep",
         equipment: "Atlas Tray",
         aircraftConfigGalleyPosition: { galleyPosition: "G1" },
-        packingStandard: { items: [], containers: [] }
+        packingStandard: { items: [], containers: [] },
       },
       fetchPreparationById: mockFetchPreparationById,
       isPrepLoading: false,
       isUpdating: false,
-    });
-    (useConsumptionTrackingStore as unknown as jest.Mock).mockReturnValue({
+      updatePreparationFlag: jest.fn(),
+      checkUserSignature: jest.fn(),
+      addUserSignature: jest.fn(),
+    };
+    (useFlightPreparationStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockFlightPrepStore) : mockFlightPrepStore),
+    );
+
+    const mockConsumptionStore = {
       records: [],
       fetchConsumptionRecords: mockFetchConsumptionRecords,
-    });
-    (useDeliveryStore as unknown as jest.Mock).mockReturnValue({
+    };
+    (useConsumptionTrackingStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockConsumptionStore) : mockConsumptionStore),
+    );
+
+    const mockDeliveryStore = {
       deliveries: [],
+      selectedDeliveryId: null,
       fetchDeliveries: mockFetchDeliveries,
-    });
-    (useAuthStore as unknown as jest.Mock).mockReturnValue({ userId: "u1" });
+      createDelivery: jest.fn(),
+    };
+    (useDeliveryStore as unknown as jest.Mock).mockImplementation(
+      (selector) => (selector ? selector(mockDeliveryStore) : mockDeliveryStore),
+    );
+
+    const mockAuthStore = { user: { id: "u1" } };
+    (useAuthStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector ? selector(mockAuthStore) : mockAuthStore,
+    );
+
     jest.clearAllMocks();
   });
 
