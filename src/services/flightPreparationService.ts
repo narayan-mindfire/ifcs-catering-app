@@ -7,6 +7,8 @@ import {
   PreparationItem,
   PrintData,
   Truck,
+  UserSignature,
+  UserSignatureResponse,
 } from "../types/preparations";
 import { log } from "../utils/logger";
 
@@ -111,9 +113,9 @@ export const flightPreparationService = {
   getUserSignatures: async (
     flightId: string,
     userId?: string,
-  ): Promise<any[]> => {
+  ): Promise<UserSignature[]> => {
     const params = userId ? { byUser: true } : {};
-    const response = await apiClient.get<any>(
+    const response = await apiClient.get<UserSignatureResponse>(
       `/flights/${flightId}/users/signatures`,
       {
         params,
@@ -167,10 +169,17 @@ export const flightPreparationService = {
         );
       }
 
-      const preparation = currentDetailsResponse.data.data.preparation;
-      const currentData = Array.isArray(preparation)
-        ? preparation.find((p) => p.id === currentPrepId) || preparation[0]
-        : preparation;
+      const data = currentDetailsResponse.data.data;
+      let currentData: PreparationDetailData;
+
+      if ("preparation" in data) {
+        const preparation = data.preparation;
+        currentData = Array.isArray(preparation)
+          ? preparation.find((p) => p.id === currentPrepId) || preparation[0]
+          : preparation;
+      } else {
+        currentData = data as PreparationDetailData;
+      }
 
       // 2. Prepare Payload: Merge existing data with new link
       const payload = {
@@ -188,13 +197,11 @@ export const flightPreparationService = {
           response.data.message || "Failed to update preparation link",
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error("Link Prior Prep API Error:", error);
-      throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to link preparations",
-      );
+      const message =
+        error instanceof Error ? error.message : "Failed to link preparations";
+      throw new Error(message);
     }
   },
 

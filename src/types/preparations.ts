@@ -433,6 +433,30 @@ export interface QRCodeModalProps {
   title?: string;
 }
 
+export interface ConfirmModalData {
+  title: string;
+  message: string;
+  actionType: "disable" | "enable";
+  onConfirm: () => Promise<void> | void;
+}
+
+export interface PreparationModals {
+  openPdf: (params: { uri: string; cache: boolean }) => void;
+  showValidationMessage: (message: string) => void;
+  openConfirm: (params: ConfirmModalData) => void;
+  closeConfirm: () => void;
+  openSignature: (item: PreparationItem) => void;
+  openSeal: (item?: PreparationItem) => void;
+  openLock: (item?: PreparationItem) => void;
+  openTruckSelection: (item?: PreparationItem) => void;
+  openDetailModal: (item: PreparationItem) => void;
+  closeDetailModal: () => void;
+  clearCurrentAction: () => void;
+  currentActionItem: PreparationItem | null;
+  truckModalVisible: boolean;
+  closeTruckSelection: () => void;
+}
+
 export interface SealNumberModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -461,11 +485,18 @@ export type SelectedItemData = Meal | ProvisionItem;
 
 export interface UserSignature {
   id: string;
-  userId: string;
   deliveryId: string;
+  userId: string;
+  userFirstName: string;
+  userLastName: string;
+  userEmail: string;
+  userType: string;
+  userOrganization: string;
+  userBadgeNumber: string | null;
   signature: string;
   createdAt: string;
   updatedAt: string;
+  raic: string | null;
 }
 
 export interface UserSignatureResponse {

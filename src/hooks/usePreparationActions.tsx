@@ -1,16 +1,27 @@
 import { useCallback } from "react";
 import { Alert } from "react-native";
 
-import { PreparationItem } from "../types/preparations";
+import { Flight } from "../types/flight";
+import {
+  PreparationFlagUpdatePayload,
+  PreparationItem,
+  PreparationModals,
+  Truck,
+} from "../types/preparations";
+import { User } from "../types/user";
 import { log } from "../utils/logger";
 
 interface UsePreparationActionsParams {
-  selectedFlight: any;
-  updatePreparationFlag: any;
+  selectedFlight: Flight | null;
+  updatePreparationFlag: (
+    flightId: string,
+    preparationId: string,
+    payload: PreparationFlagUpdatePayload,
+  ) => Promise<void>;
   hasUserSignature: boolean;
-  modals: any;
-  trucks: any[];
-  currentUser?: any;
+  modals: PreparationModals;
+  trucks: Truck[];
+  currentUser?: User | null;
 }
 
 export const usePreparationActions = ({

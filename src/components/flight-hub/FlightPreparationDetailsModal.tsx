@@ -22,6 +22,7 @@ import {
   PackingStandardItem,
 } from "../../types/preparations";
 import { ConfirmationModal } from "../common/ConfirmationModal";
+import { LoadingOverlay } from "../common/LoadingOverlay";
 import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
 import { LockNumberModal } from "../preparation/LockNumberModal";
 import { SealNumberModal } from "../preparation/SealNumberModal";
@@ -787,6 +788,7 @@ export const FlightPreparationDetailsModal: React.FC<
           </View>
         </Modal>
       </Modal>
+      <LoadingOverlay visible={isUpdating} />
     </>
   );
 };
