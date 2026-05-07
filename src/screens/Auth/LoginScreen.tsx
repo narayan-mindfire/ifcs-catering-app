@@ -1,4 +1,5 @@
 import * as AuthSession from "expo-auth-session";
+import * as Crypto from "expo-crypto";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
@@ -19,10 +20,30 @@ import { useAuthStore } from "../../store/useAuthStore";
 
 WebBrowser.maybeCompleteAuthSession();
 
+const decodeJWT = (token: string) => {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+
+    const decoded = atob(base64);
+
+    const jsonPayload = decodeURIComponent(
+      decoded
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+    return JSON.parse(jsonPayload);
+  } catch (_e) {
+    return null;
+  }
+};
+
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login, loginWithSSO, isLoading: authLoading } = useAuthStore();
+  const [nonce] = useState(() => Crypto.randomUUID());
 
   const discovery = AuthSession.useAutoDiscovery(
     `https://login.microsoftonline.com/${process.env.EXPO_PUBLIC_AZURE_TENANT_ID || "common"}/v2.0`,
@@ -34,7 +55,7 @@ const LoginScreen = () => {
       scopes: ["openid", "profile", "email", "offline_access"],
       responseType: AuthSession.ResponseType.IdToken,
       extraParams: {
-        nonce: "custom_nonce_value", // In a real app, generate a unique nonce
+        nonce: nonce,
       },
       redirectUri: AuthSession.makeRedirectUri({
         scheme: "msauth.com.ifcs-catering.app",
@@ -48,6 +69,15 @@ const LoginScreen = () => {
     if (response?.type === "success") {
       const { params } = response;
       if (params.id_token) {
+        const decoded = decodeJWT(params.id_token);
+        if (decoded && decoded.nonce !== nonce) {
+          Alert.alert(
+            "Security Error",
+            "Authentication failed: Nonce mismatch. This could indicate a replay attack.",
+          );
+          return;
+        }
+
         loginWithSSO(params.id_token).catch((err) => {
           Alert.alert(
             "SSO Login Failed",
@@ -64,7 +94,7 @@ const LoginScreen = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [response]);
+  }, [response, nonce]);
 
   const handleLogin = async () => {
     if (!username || !password) {

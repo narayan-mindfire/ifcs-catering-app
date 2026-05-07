@@ -11,13 +11,16 @@ describe("deliveryService", () => {
     jest.clearAllMocks();
   });
 
-  it("getDeliveries should return data from api", async () => {
-    (apiClient.get as jest.Mock).mockResolvedValue({ data: { success: true, data: [{ id: "d1" }] } });
+  it("getDeliveries should use the exact flightId in the request URL", async () => {
+    (apiClient.get as jest.Mock).mockResolvedValue({ data: { success: true, data: [] } });
+    const specificFlightId = "test-flight-id-456";
+    
+    await deliveryService.getDeliveries(specificFlightId);
 
-    const result = await deliveryService.getDeliveries(flightId);
-
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe("d1");
+    expect(apiClient.get).toHaveBeenCalledWith(
+      expect.stringContaining(`/flights/${specificFlightId}/deliveries`),
+      expect.any(Object)
+    );
   });
 
   it("addSignature should clean signature and post data", async () => {
