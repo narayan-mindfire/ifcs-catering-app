@@ -73,8 +73,15 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
             </Text>
           </View>
           <View className="flex-[4] flex-row justify-end items-center gap-5">
-            <TouchableOpacity onPress={() => onOpenPdf(item)}>
-              <QrIcon height={30} width={30} />
+            <TouchableOpacity
+              onPress={() => onOpenPdf(item)}
+              disabled={isUpdating}
+            >
+              <QrIcon
+                height={30}
+                width={30}
+                color={isUpdating ? "#9CA3AF" : undefined}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -112,7 +119,7 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
 
             <TouchableOpacity
               onPress={() => onLockAction(item)}
-              disabled={isUpdating && !item.isLockRequired}
+              disabled={isUpdating || !item.isLockRequired}
             >
               <View style={{ position: "relative" }}>
                 <LockIcon
@@ -150,8 +157,15 @@ export const PreparationListItem: React.FC<PreparationListItemProps> =
               <LoadIcon height={30} width={30} />
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => onOpenDetailModal(item)}>
-              <InfoIcon height={30} width={30} />
+            <TouchableOpacity
+              onPress={() => onOpenDetailModal(item)}
+              disabled={isUpdating}
+            >
+              <InfoIcon
+                height={30}
+                width={30}
+                color={isUpdating ? "#9CA3AF" : undefined}
+              />
             </TouchableOpacity>
           </View>
         </View>
