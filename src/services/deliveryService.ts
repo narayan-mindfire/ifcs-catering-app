@@ -12,20 +12,13 @@ interface ApiResponse<T> {
   };
 }
 
-const resolveFlightId = (flightId: string) => {
-  return flightId === "a990a562-e77e-4461-82ad-bbcd003ae4b1"
-    ? "eaedd455-3e21-4c74-8a78-24989b0e82a8"
-    : flightId;
-};
-
 export const deliveryService = {
   getDeliveries: async (
     flightId: string,
     dispatchAssignmentId?: string,
   ): Promise<Delivery[]> => {
-    const callFlight = resolveFlightId(flightId);
     const response = await apiClient.get<ApiResponse<Delivery[]>>(
-      `/flights/${callFlight}/deliveries`,
+      `/flights/${flightId}/deliveries`,
       {
         params: dispatchAssignmentId ? { dispatchAssignmentId } : {},
       },
@@ -37,9 +30,8 @@ export const deliveryService = {
     flightId: string,
     deliveryName: string,
   ): Promise<Delivery> => {
-    const callFlight = resolveFlightId(flightId);
     const response = await apiClient.post<ApiResponse<Delivery>>(
-      `/flights/${callFlight}/deliveries`,
+      `/flights/${flightId}/deliveries`,
       { deliveryName },
     );
     return response.data.data;
@@ -50,9 +42,8 @@ export const deliveryService = {
     deliveryId: string,
     payload: Partial<Delivery>,
   ): Promise<Delivery> => {
-    const callFlight = resolveFlightId(flightId);
     const response = await apiClient.put<ApiResponse<Delivery>>(
-      `/flights/${callFlight}/deliveries/${deliveryId}`,
+      `/flights/${flightId}/deliveries/${deliveryId}`,
       payload,
     );
     return response.data.data;
@@ -72,8 +63,7 @@ export const deliveryService = {
       comment: comment || "",
     };
 
-    const callFlight = resolveFlightId(flightId);
-    const url = `/flights/${callFlight}/deliveries/${deliveryId}/signatures?type=${type}`;
+    const url = `/flights/${flightId}/deliveries/${deliveryId}/signatures?type=${type}`;
 
     const response = await apiClient.post<ApiResponse<Delivery>>(
       url,
@@ -86,17 +76,15 @@ export const deliveryService = {
     flightId: string,
     deliveryId: string,
   ): Promise<void> => {
-    const callFlight = resolveFlightId(flightId);
-    await apiClient.delete(`/flights/${callFlight}/deliveries/${deliveryId}`);
+    await apiClient.delete(`/flights/${flightId}/deliveries/${deliveryId}`);
   },
 
   printDeliverySecurityDeclaration: async (
     flightId: string,
     deliveryId: string,
   ): Promise<string> => {
-    const callFlight = resolveFlightId(flightId);
     const response = await apiClient.get(
-      `/flights/${callFlight}/deliveries/${deliveryId}/print`,
+      `/flights/${flightId}/deliveries/${deliveryId}/print`,
     );
 
     if (response.data.success && response.data.data?.url) {
