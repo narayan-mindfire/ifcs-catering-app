@@ -4,9 +4,9 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   Modal,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -399,7 +399,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       <BreadCrumb items={breadcrumbItems} />
       <FlightInfoHeader flightInfo={flightInfo} />
 
-      <ScrollView contentContainerStyle={{ padding: 24 }}>
+      <View className="flex-1 p-6">
         <View className="flex-row gap-6 h-[500px]">
           <View className="flex-[2] bg-white rounded-2xl p-4 flex-row gap-4 border border-gray-200">
             <View className="flex-1 items-center justify-center border-r border-gray-100 pr-4">
@@ -443,45 +443,47 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 Img
               </Text>
             </View>
-            <ScrollView>
-              {selectedDrawerContents.length > 0 ? (
-                selectedDrawerContents.map((item, index) => (
-                  <View
-                    key={item.id || index}
-                    className="flex-row p-3 items-center border-b border-gray-100"
-                  >
-                    <Text className="flex-1 text-sm text-gray-800 text-center">
-                      {item.quantity}
-                    </Text>
-                    <Text className="flex-[3] text-sm text-gray-800 pl-2">
-                      {item.name}
-                    </Text>
-                    <View className="flex-1 items-center">
-                      <TouchableOpacity
-                        onPress={() =>
-                          handleImagePress(item.picture, item.name)
-                        }
-                        disabled={!item.picture}
-                      >
-                        {item.picture ? (
-                          <Image
-                            source={{ uri: item.picture }}
-                            className="w-8 h-8 rounded"
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <ImageIcon width={25} height={25} />
-                        )}
-                      </TouchableOpacity>
-                    </View>
+            <FlatList
+              data={selectedDrawerContents}
+              keyExtractor={(item, index) =>
+                item.id?.toString() || index.toString()
+              }
+              renderItem={({ item, index }) => (
+                <View
+                  key={item.id || index}
+                  className="flex-row p-3 items-center border-b border-gray-100"
+                >
+                  <Text className="flex-1 text-sm text-gray-800 text-center">
+                    {item.quantity}
+                  </Text>
+                  <Text className="flex-[3] text-sm text-gray-800 pl-2">
+                    {item.name}
+                  </Text>
+                  <View className="flex-1 items-center">
+                    <TouchableOpacity
+                      onPress={() => handleImagePress(item.picture, item.name)}
+                      disabled={!item.picture}
+                    >
+                      {item.picture ? (
+                        <Image
+                          source={{ uri: item.picture }}
+                          className="w-8 h-8 rounded"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <ImageIcon width={25} height={25} />
+                      )}
+                    </TouchableOpacity>
                   </View>
-                ))
-              ) : (
+                </View>
+              )}
+              ListEmptyComponent={
                 <View className="p-8 items-center">
                   <Text className="text-gray-400 text-sm">Empty</Text>
                 </View>
-              )}
-            </ScrollView>
+              }
+              showsVerticalScrollIndicator={false}
+            />
           </View>
         </View>
 
@@ -503,7 +505,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             type="primary"
           />
         </View>
-      </ScrollView>
+      </View>
 
       <FailReasonModal
         isVisible={isFailModalVisible}

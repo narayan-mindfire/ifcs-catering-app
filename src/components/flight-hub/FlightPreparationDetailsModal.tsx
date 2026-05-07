@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { useShallow } from "zustand/react/shallow";
 
 import { ImageIcon } from "../../assets/icons";
@@ -238,8 +237,16 @@ export const FlightPreparationDetailsModal: React.FC<
     return "Bulk";
   }, [preparationDetail]);
 
-  const packingStd = preparationDetail?.packingStandard;
-  const allContainers = packingStd?.containers || [];
+  const packingStd = useMemo(
+    () => preparationDetail?.packingStandard,
+    [preparationDetail],
+  );
+
+  const allContainers = useMemo(
+    () => packingStd?.containers || [],
+    [packingStd],
+  );
+
   const hasDirectionalDrawers = useMemo(
     () => allContainers.some((c) => c.isFront || c.isRear),
     [allContainers],

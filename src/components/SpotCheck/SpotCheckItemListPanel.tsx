@@ -73,6 +73,11 @@ export const SpotCheckItemListPanel: React.FC<SpotCheckItemListPanelProps> =
             renderItem={renderItem}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ flexGrow: 1 }}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            windowSize={5}
           />
         </View>
 
