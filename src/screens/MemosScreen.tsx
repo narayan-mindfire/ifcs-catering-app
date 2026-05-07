@@ -231,7 +231,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 style={{
                   flex: 1,
                   marginHorizontal: 4,
-                  paddingVertical: 0,
+                  paddingVertical: 4,
                   borderRadius: 999,
                 }}
                 textStyle={{
