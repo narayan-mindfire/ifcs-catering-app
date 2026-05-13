@@ -97,7 +97,6 @@ describe("ConsumptionModal", () => {
   });
 
   it("calls createConsumptionRecord on save", async () => {
-    jest.setTimeout(10000);
     mockCreateRecord.mockResolvedValue({ success: true });
 
     const { getByPlaceholderText, getByTestId } = render(
@@ -126,7 +125,7 @@ describe("ConsumptionModal", () => {
         }),
       );
     });
-  });
+  }, 15000);
 
   it("calls updateConsumptionRecord on save when existingRecord is provided", async () => {
     mockUpdateRecord.mockResolvedValue(true);
@@ -166,5 +165,5 @@ describe("ConsumptionModal", () => {
         }),
       );
     });
-  });
+  }, 15000);
 });

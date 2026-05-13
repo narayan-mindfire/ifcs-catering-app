@@ -67,7 +67,7 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
           flightId,
           filters,
         );
-        log.error("Fetched Consumption Records:", data);
+        log.info("Fetched Consumption Records:", data);
         set({
           records: data,
           total: total,
@@ -76,8 +76,9 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
         return true;
       } catch (error: any) {
         const errorMessage =
+          error.response?.data?.message ||
           error.message ||
-          (error.response?.data?.message && "Unknown error occurred");
+          "Unknown error occurred";
         set({ error: errorMessage, isLoading: false, records: [] });
         log.error("Error fetching consumption records:", error);
         return false;
@@ -101,8 +102,9 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
         return true;
       } catch (error: any) {
         const errorMessage =
+          error.response?.data?.message ||
           error.message ||
-          (error.response?.data?.message && "Unknown error occurred");
+          "Unknown error occurred";
         set({ error: errorMessage, isLoading: false, selectedRecord: null });
         log.error("Error fetching consumption record:", error);
         return false;
@@ -125,8 +127,9 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
         return { success: true, record: newRecord };
       } catch (error: any) {
         const errorMessage =
+          error.response?.data?.message ||
           error.message ||
-          (error.response?.data?.message && "Unknown error occurred");
+          "Unknown error occurred";
         set({ error: errorMessage, isCreating: false });
         log.error("Error creating consumption record:", error);
         return { success: false };
@@ -158,8 +161,9 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
         return true;
       } catch (error: any) {
         const errorMessage =
+          error.response?.data?.message ||
           error.message ||
-          (error.response?.data?.message && "Unknown error occurred");
+          "Unknown error occurred";
         set({ error: errorMessage, isUpdating: false });
         log.error("Error updating consumption record:", error);
         return false;
@@ -184,8 +188,9 @@ export const useConsumptionTrackingStore = create<ConsumptionTrackingStore>(
         return true;
       } catch (error: any) {
         const errorMessage =
+          error.response?.data?.message ||
           error.message ||
-          (error.response?.data?.message && "Unknown error occurred");
+          "Unknown error occurred";
         set({ error: errorMessage, isDeleting: false });
         log.error("Error deleting consumption record:", error);
         return false;
