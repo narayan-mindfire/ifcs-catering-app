@@ -63,6 +63,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
   const taskTimerState = useTaskStore((state) => state.taskTimerState);
   const setTaskTimer = useTaskStore((state) => state.setTaskTimer);
   const syncTaskCompletion = useTaskStore((state) => state.syncTaskCompletion);
+  const isLoading = useTaskStore((state) => state.isLoading);
   const checkedSteps = useMemo(
     () => taskStepsStatus[task.id] || {},
     [taskStepsStatus, task.id],
@@ -532,6 +533,7 @@ export const DispatcherTaskDetails: React.FC<DispatcherTaskDetailsProps> = ({
               onPress={handleMarkComplete}
               type={allStepsChecked ? "primary" : "accent"}
               disabled={task.status === "COMPLETE"}
+              loading={isLoading}
               IconComponent={
                 <CheckIconSuccess
                   width={16}

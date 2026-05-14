@@ -151,6 +151,7 @@ const ShiftControlCard: React.FC<{
   const currentBreakSessionDuration = useTimerStore(
     (state) => state.currentBreakSessionDuration,
   );
+  const isLoading = useTimerStore((state) => state.isLoading);
 
   const [showEndShiftModal, setShowEndShiftModal] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -344,6 +345,7 @@ const ShiftControlCard: React.FC<{
                 onPress={handleStartShift}
                 style={{ flex: 1 }}
                 disabled={!isToday}
+                loading={isLoading}
               />
             ) : (
               <>
@@ -360,6 +362,7 @@ const ShiftControlCard: React.FC<{
                   }
                   style={{ flex: 3, marginRight: 10 }}
                   disabled={!isToday}
+                  loading={isLoading}
                 />
 
                 <AppButton
@@ -371,6 +374,7 @@ const ShiftControlCard: React.FC<{
                   }
                   style={{ flex: 1, marginLeft: 10 }}
                   disabled={!isToday}
+                  loading={isLoading}
                 />
               </>
             )}
