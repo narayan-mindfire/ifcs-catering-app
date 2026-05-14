@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 
+import { useAuthStore } from "@/store/useAuthStore";
+import { log } from "@/utils/logger";
+
 import { UserDropdown } from "../components/common/UserDropdown";
 import { MainContent } from "../components/dashboard/MainContent";
 import { Sidebar } from "../components/dashboard/Sidebar";
-import { useAuthStore } from "../store/useAuthStore";
-import { log } from "../utils/logger";
 
 const useAuth = () => ({
   signOut: () => log.info("MOCK: Logout action fired"),

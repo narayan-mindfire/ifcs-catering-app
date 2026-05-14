@@ -1,15 +1,15 @@
 import { useCallback } from "react";
 import { Alert } from "react-native";
 
-import { Flight } from "../types/flight";
+import { Flight } from "@/types/flight";
 import {
   PreparationFlagUpdatePayload,
   PreparationItem,
   PreparationModals,
   Truck,
-} from "../types/preparations";
-import { User } from "../types/user";
-import { log } from "../utils/logger";
+} from "@/types/preparations";
+import { User } from "@/types/user";
+import { log } from "@/utils/logger";
 
 interface UsePreparationActionsParams {
   selectedFlight: Flight | null;

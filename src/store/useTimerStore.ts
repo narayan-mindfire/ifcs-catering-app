@@ -2,9 +2,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { attendanceService } from "../services/attendanceService";
-import { getISOStringWithOffset } from "../utils/dateFormatter";
-import { log } from "../utils/logger";
+import { attendanceService } from "@/services/attendanceService";
+import { getISOStringWithOffset } from "@/utils/dateFormatter";
+import { log } from "@/utils/logger";
 
 type ShiftState = "OFF" | "ON" | "BREAK";
 

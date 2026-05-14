@@ -10,14 +10,9 @@ import {
   View,
 } from "react-native";
 
-import {
-  AirplaneIcon,
-  DocsIcon,
-  MemosIcon,
-  SpotIcon,
-} from "../../assets/icons";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { NavigationCard } from "../common/NavigationCard";
+import { AirplaneIcon, DocsIcon, MemosIcon, SpotIcon } from "@/assets/icons";
+import { NavigationCard } from "@/components/common/NavigationCard";
+import { RootStackParamList } from "@/navigation/AppNavigator";
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 

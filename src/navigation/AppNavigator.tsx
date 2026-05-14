@@ -2,6 +2,9 @@ import { createStackNavigator } from "@react-navigation/stack";
 import React, { useCallback, useState } from "react";
 import { View } from "react-native";
 
+import { useAuthStore } from "@/store/useAuthStore";
+import { RootStackParamList } from "@/types/navigation";
+
 import { UserDropdown } from "../components/common/UserDropdown";
 import { Header } from "../components/dashboard/Header";
 import LoginScreen from "../screens/Auth/LoginScreen";
@@ -15,8 +18,6 @@ import QRCodeScannerScreen from "../screens/QRCodeScannerScreen";
 import SpotCheckDetailsScreen from "../screens/spotCheck/SpotCheckDetailsScreen";
 import SpotCheckScreen from "../screens/spotCheck/SpotCheckScreen";
 import SpotCheckSelectionScreen from "../screens/spotCheck/SpotCheckSelectionScreen";
-import { useAuthStore } from "../store/useAuthStore";
-import { RootStackParamList } from "../types/navigation";
 
 export type { RootStackParamList };
 

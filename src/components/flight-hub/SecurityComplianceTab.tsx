@@ -3,13 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ScrollView, Text, View } from "react-native";
 
+import { AppButton } from "@/components/common/AppButton";
+import { FormInput } from "@/components/common/FormInput";
+import { SecurityCompliance } from "@/types/deliveries";
+
 import {
   SecurityComplianceSchema,
   securityComplianceSchema,
 } from "../../schemas/deliverySchemas";
-import { SecurityCompliance } from "../../types/deliveries";
-import { AppButton } from "../common/AppButton";
-import { FormInput } from "../common/FormInput";
 import { ComplianceSignatureCard } from "./ComplianceSignatureCard";
 import { SignatureModal } from "./SharedComponents";
 

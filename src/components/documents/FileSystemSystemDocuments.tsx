@@ -6,8 +6,8 @@ import {
   ImageThinIcon,
   PdfIcon,
   VideoThinIcon,
-} from "../../assets/icons";
-import { DocumentFile, FileSystemItem } from "../../types/documents";
+} from "@/assets/icons";
+import { DocumentFile, FileSystemItem } from "@/types/documents";
 
 interface FileSystemListItemProps {
   item: FileSystemItem;

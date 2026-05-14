@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-import { memoService } from "../services/memoService";
-import { Memo, MemoTab } from "../types/memo";
-import { log } from "../utils/logger";
+import { memoService } from "@/services/memoService";
+import { Memo, MemoTab } from "@/types/memo";
+import { log } from "@/utils/logger";
 
 interface MemoState {
   memos: Memo[];

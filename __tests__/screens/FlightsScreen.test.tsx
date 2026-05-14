@@ -1,8 +1,9 @@
-import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
 import { render } from "@testing-library/react-native";
+import React from "react";
+
 import FlightsScreen from "../../src/screens/FlightsScreen";
 import { useFlightStore } from "../../src/store/useFlightStore";
-import { NavigationContainer } from "@react-navigation/native";
 
 // Mock useFlightStore
 jest.mock("../../src/store/useFlightStore");
@@ -69,7 +70,7 @@ describe("FlightsScreen", () => {
     render(
       <NavigationContainer>
         <FlightsScreen navigation={mockNavigation} route={mockRoute} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     expect(mockFetchFlights).toHaveBeenCalled();
@@ -79,7 +80,7 @@ describe("FlightsScreen", () => {
     const { getByPlaceholderText } = render(
       <NavigationContainer>
         <FlightsScreen navigation={mockNavigation} route={mockRoute} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     expect(getByPlaceholderText("Flight #")).toBeTruthy();
@@ -97,7 +98,7 @@ describe("FlightsScreen", () => {
     const { getByTestId } = render(
       <NavigationContainer>
         <FlightsScreen navigation={mockNavigation} route={mockRoute} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     // ActivityIndicator usually can be found by accessibility role or testID

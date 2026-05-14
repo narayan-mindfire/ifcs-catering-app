@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 
-import { FlightsIcon, NoFlightsIcon } from "../../assets/icons";
-import { formatDateDetail } from "../../utils/dateFormatter";
+import { FlightsIcon, NoFlightsIcon } from "@/assets/icons";
+import { formatDateDetail } from "@/utils/dateFormatter";
 
 interface Props {
   visible: boolean;

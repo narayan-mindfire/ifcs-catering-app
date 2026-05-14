@@ -1,5 +1,6 @@
+import { TaskResponse, UnifiedTask } from "@/types/task";
+
 import apiClient from "../api/axiosClient";
-import { TaskResponse, UnifiedTask } from "../types/task";
 
 export const taskService = {
   getTasks: async (userId: string, date?: string): Promise<UnifiedTask[]> => {

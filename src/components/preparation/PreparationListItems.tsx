@@ -14,8 +14,8 @@ import {
   QrIcon,
   StringIcon,
   StringIconTrue,
-} from "../../assets/icons";
-import { PreparationItem } from "../../types/preparations";
+} from "@/assets/icons";
+import { PreparationItem } from "@/types/preparations";
 
 interface PreparationListItemProps {
   item: PreparationItem;

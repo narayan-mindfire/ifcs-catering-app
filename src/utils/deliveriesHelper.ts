@@ -3,7 +3,7 @@ import {
   Delivery,
   DriversDeclaration,
   SecurityCompliance,
-} from "../types/deliveries";
+} from "@/types/deliveries";
 
 export const getDriversDeclaration = (d: Delivery): DriversDeclaration => ({
   driverName: d.driverName || "",

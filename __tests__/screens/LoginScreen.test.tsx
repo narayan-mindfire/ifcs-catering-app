@@ -65,7 +65,10 @@ describe("LoginScreen Nonce Verification", () => {
     await waitFor(() => {
       expect(mockLoginWithSSO).toHaveBeenCalledWith(idToken);
     });
-    expect(Alert.alert).not.toHaveBeenCalledWith("Security Error", expect.anything());
+    expect(Alert.alert).not.toHaveBeenCalledWith(
+      "Security Error",
+      expect.anything(),
+    );
   });
 
   it("shows error alert and does not call loginWithSSO when nonces mismatch", async () => {

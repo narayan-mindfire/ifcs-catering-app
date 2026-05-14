@@ -1,10 +1,11 @@
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
+
 import { FlightPreparationDetailsModal } from "../../../src/components/flight-hub/FlightPreparationDetailsModal";
-import { useFlightPreparationStore } from "../../../src/store/useFlightPreparationStore";
+import { useAuthStore } from "../../../src/store/useAuthStore";
 import { useConsumptionTrackingStore } from "../../../src/store/useConsumptionStore";
 import { useDeliveryStore } from "../../../src/store/useDeliveryStore";
-import { useAuthStore } from "../../../src/store/useAuthStore";
+import { useFlightPreparationStore } from "../../../src/store/useFlightPreparationStore";
 
 // Mock stores
 jest.mock("../../../src/store/useFlightPreparationStore");
@@ -24,22 +25,55 @@ jest.mock("../../../src/assets/icons", () => ({
 }));
 
 // Mock sub-components
-jest.mock("../../../src/components/flight-hub/StatusRow", () => ({ StatusRow: () => null }));
-jest.mock("../../../src/components/flight-hub/CartVisulaizer", () => ({ CartVisualizer: () => null }));
-jest.mock("../../../src/components/flight-hub/ContainerVisualizer", () => ({ ContainerVisualizer: () => null }));
-jest.mock("../../../src/components/flight-hub/OvenVisualizer", () => ({ OvenVisualizer: () => null }));
-jest.mock("../../../src/components/preparation/ConsumptionTrackingModal", () => ({ ConsumptionModal: () => null }));
-jest.mock("../../../src/components/preparation/LockNumberModal", () => ({ LockNumberModal: () => null }));
-jest.mock("../../../src/components/preparation/SealNumberModal", () => ({ SealNumberModal: () => null }));
-jest.mock("../../../src/components/common/ConfirmationModal", () => ({ ConfirmationModal: () => null }));
-jest.mock("../../../src/components/flight-hub/SharedComponents", () => ({ SignatureModal: () => null }));
+jest.mock("../../../src/components/flight-hub/StatusRow", () => ({
+  StatusRow: () => null,
+}));
+jest.mock("../../../src/components/flight-hub/CartVisulaizer", () => ({
+  CartVisualizer: () => null,
+}));
+jest.mock("../../../src/components/flight-hub/ContainerVisualizer", () => ({
+  ContainerVisualizer: () => null,
+}));
+jest.mock("../../../src/components/flight-hub/OvenVisualizer", () => ({
+  OvenVisualizer: () => null,
+}));
+jest.mock(
+  "../../../src/components/preparation/ConsumptionTrackingModal",
+  () => ({ ConsumptionModal: () => null }),
+);
+jest.mock("../../../src/components/preparation/LockNumberModal", () => ({
+  LockNumberModal: () => null,
+}));
+jest.mock("../../../src/components/preparation/SealNumberModal", () => ({
+  SealNumberModal: () => null,
+}));
+jest.mock("../../../src/components/common/ConfirmationModal", () => ({
+  ConfirmationModal: () => null,
+}));
+jest.mock("../../../src/components/flight-hub/SharedComponents", () => ({
+  SignatureModal: () => null,
+}));
 
 // Mock new sub-components
-jest.mock("../../../src/components/flight-hub/preparation/DetailsPanel", () => ({ DetailsPanel: () => null }));
-jest.mock("../../../src/components/flight-hub/preparation/DispatchPanel", () => ({ DispatchPanel: () => null }));
-jest.mock("../../../src/components/flight-hub/preparation/ItemsList", () => ({ ItemsList: () => null }));
-jest.mock("../../../src/components/flight-hub/preparation/ValidationModal", () => ({ ValidationModal: () => null }));
-jest.mock("../../../src/components/flight-hub/preparation/VisualizerSection", () => ({ VisualizerSection: () => null }));
+jest.mock(
+  "../../../src/components/flight-hub/preparation/DetailsPanel",
+  () => ({ DetailsPanel: () => null }),
+);
+jest.mock(
+  "../../../src/components/flight-hub/preparation/DispatchPanel",
+  () => ({ DispatchPanel: () => null }),
+);
+jest.mock("../../../src/components/flight-hub/preparation/ItemsList", () => ({
+  ItemsList: () => null,
+}));
+jest.mock(
+  "../../../src/components/flight-hub/preparation/ValidationModal",
+  () => ({ ValidationModal: () => null }),
+);
+jest.mock(
+  "../../../src/components/flight-hub/preparation/VisualizerSection",
+  () => ({ VisualizerSection: () => null }),
+);
 
 describe("FlightPreparationDetailsModal", () => {
   const mockFetchPreparationById = jest.fn();
@@ -64,7 +98,8 @@ describe("FlightPreparationDetailsModal", () => {
       addUserSignature: jest.fn(),
     };
     (useFlightPreparationStore as unknown as jest.Mock).mockImplementation(
-      (selector) => (selector ? selector(mockFlightPrepStore) : mockFlightPrepStore),
+      (selector) =>
+        selector ? selector(mockFlightPrepStore) : mockFlightPrepStore,
     );
 
     const mockConsumptionStore = {
@@ -72,7 +107,8 @@ describe("FlightPreparationDetailsModal", () => {
       fetchConsumptionRecords: mockFetchConsumptionRecords,
     };
     (useConsumptionTrackingStore as unknown as jest.Mock).mockImplementation(
-      (selector) => (selector ? selector(mockConsumptionStore) : mockConsumptionStore),
+      (selector) =>
+        selector ? selector(mockConsumptionStore) : mockConsumptionStore,
     );
 
     const mockDeliveryStore = {
@@ -81,8 +117,8 @@ describe("FlightPreparationDetailsModal", () => {
       fetchDeliveries: mockFetchDeliveries,
       createDelivery: jest.fn(),
     };
-    (useDeliveryStore as unknown as jest.Mock).mockImplementation(
-      (selector) => (selector ? selector(mockDeliveryStore) : mockDeliveryStore),
+    (useDeliveryStore as unknown as jest.Mock).mockImplementation((selector) =>
+      selector ? selector(mockDeliveryStore) : mockDeliveryStore,
     );
 
     const mockAuthStore = { user: { id: "u1" } };
@@ -105,7 +141,7 @@ describe("FlightPreparationDetailsModal", () => {
         isPrepared={false}
         lockRequired={false}
         sealRequired={false}
-      />
+      />,
     );
 
     expect(mockFetchPreparationById).toHaveBeenCalledWith("f1", "p1");
@@ -126,7 +162,7 @@ describe("FlightPreparationDetailsModal", () => {
         isPrepared={false}
         lockRequired={false}
         sealRequired={false}
-      />
+      />,
     );
 
     fireEvent.press(getByText("✕"));

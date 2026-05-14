@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-import { deliveryService } from "../services/deliveryService";
-import { Delivery } from "../types/deliveries";
-import { log } from "../utils/logger";
+import { deliveryService } from "@/services/deliveryService";
+import { Delivery } from "@/types/deliveries";
+import { log } from "@/utils/logger";
 
 interface DeliveryStore {
   deliveries: Delivery[];

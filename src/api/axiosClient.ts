@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-import { log } from "../utils/logger";
+import { log } from "@/utils/logger";
 const apiClient = axios.create({
   baseURL: process.env.EXPO_PUBLIC_BASE_URL,
 

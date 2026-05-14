@@ -1,4 +1,5 @@
 import * as SecureStore from "expo-secure-store";
+
 import apiClient from "../../src/api/axiosClient";
 import { useAuthStore } from "../../src/store/useAuthStore";
 
@@ -42,7 +43,10 @@ describe("useAuthStore", () => {
     const state = useAuthStore.getState();
     expect(state.user).toEqual(mockUser);
     expect(state.token).toBe(mockToken);
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("userToken", mockToken);
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "userToken",
+      mockToken,
+    );
     expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
       "userData",
       JSON.stringify(mockUser),

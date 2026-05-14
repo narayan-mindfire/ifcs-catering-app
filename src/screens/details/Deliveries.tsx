@@ -2,28 +2,25 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Text, View } from "react-native";
 
-import { DeliveryContent } from "../../components/deliveries/DeliveryContent";
-import { DeliverySidebar } from "../../components/deliveries/DeliverySidebar";
-import {
-  DeliveryTabs,
-  TabType,
-} from "../../components/deliveries/DeliveryTabs";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { useFlightStore } from "../../store/useFlightStore";
-import { useTaskStore } from "../../store/useTaskStore";
+import { DeliveryContent } from "@/components/deliveries/DeliveryContent";
+import { DeliverySidebar } from "@/components/deliveries/DeliverySidebar";
+import { DeliveryTabs, TabType } from "@/components/deliveries/DeliveryTabs";
+import { useDeliveryStore } from "@/store/useDeliveryStore";
+import { useFlightPreparationStore } from "@/store/useFlightPreparationStore";
+import { useFlightStore } from "@/store/useFlightStore";
+import { useTaskStore } from "@/store/useTaskStore";
 import {
   CrewCompliance,
   Delivery,
   DriversDeclaration,
   SecurityCompliance,
-} from "../../types/deliveries";
+} from "@/types/deliveries";
 import {
   getCrewCompliance,
   getDriversDeclaration,
   getSecurityCompliance,
-} from "../../utils/deliveriesHelper";
-import { log } from "../../utils/logger";
+} from "@/utils/deliveriesHelper";
+import { log } from "@/utils/logger";
 
 const DeliveriesScreen: React.FC = () => {
   const route = useRoute<any>();

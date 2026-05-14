@@ -10,12 +10,12 @@ import {
   View,
 } from "react-native";
 
-import { ImageIcon } from "../../assets/icons";
-import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
-import { ConsumptionTrackingRecord } from "../../types/consumption";
-import { PackingStandardItem } from "../../types/preparations";
-import { log } from "../../utils/logger";
-import { AppButton } from "../common/AppButton";
+import { ImageIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { useConsumptionTrackingStore } from "@/store/useConsumptionStore";
+import { ConsumptionTrackingRecord } from "@/types/consumption";
+import { PackingStandardItem } from "@/types/preparations";
+import { log } from "@/utils/logger";
 
 interface ConsumptionModalProps {
   visible: boolean;

@@ -1,11 +1,12 @@
-import apiClient from "../api/axiosClient";
 import {
   Flight,
   FlightApiResponse,
   FlightFilters,
   FlightServiceResponse,
   SingleFlightResponse,
-} from "../types/flight";
+} from "@/types/flight";
+
+import apiClient from "../api/axiosClient";
 
 export const flightService = {
   getFlights: async (

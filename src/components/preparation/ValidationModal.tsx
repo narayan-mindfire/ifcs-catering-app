@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
-import { InfoIcon } from "../../assets/icons";
+import { InfoIcon } from "@/assets/icons";
 
 interface ValidationModalProps {
   visible: boolean;

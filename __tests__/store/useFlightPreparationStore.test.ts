@@ -56,7 +56,9 @@ describe("useFlightPreparationStore", () => {
   });
 
   it("handles fetch preparations error", async () => {
-    (flightPreparationService.getPreparations as jest.Mock).mockRejectedValue(new Error("Network error"));
+    (flightPreparationService.getPreparations as jest.Mock).mockRejectedValue(
+      new Error("Network error"),
+    );
 
     await useFlightPreparationStore.getState().fetchPreparations("flight-456");
 
@@ -67,14 +69,16 @@ describe("useFlightPreparationStore", () => {
 
   it("successfully updates preparation flag", async () => {
     const updatedItem = { id: "prep-123", status: "completed" };
-    (flightPreparationService.updatePreparationFlag as jest.Mock).mockResolvedValue(updatedItem);
+    (
+      flightPreparationService.updatePreparationFlag as jest.Mock
+    ).mockResolvedValue(updatedItem);
     useFlightPreparationStore.setState({ preparations: [mockPreparation] });
 
-    const success = await useFlightPreparationStore.getState().updatePreparationFlag(
-      "flight-456",
-      "prep-123",
-      { status: "completed" } as any
-    );
+    const success = await useFlightPreparationStore
+      .getState()
+      .updatePreparationFlag("flight-456", "prep-123", {
+        status: "completed",
+      } as any);
 
     const state = useFlightPreparationStore.getState();
     expect(success).toBe(true);
@@ -83,19 +87,31 @@ describe("useFlightPreparationStore", () => {
 
   it("successfully checks user signature", async () => {
     const mockSignatures = [{ id: "sig-1", signature: "data" }];
-    (flightPreparationService.getUserSignatures as jest.Mock).mockResolvedValue(mockSignatures);
+    (flightPreparationService.getUserSignatures as jest.Mock).mockResolvedValue(
+      mockSignatures,
+    );
 
-    const hasSignature = await useFlightPreparationStore.getState().checkUserSignature("flight-456", "del-123");
+    const hasSignature = await useFlightPreparationStore
+      .getState()
+      .checkUserSignature("flight-456", "del-123");
 
     expect(hasSignature).toBe(true);
-    expect(useFlightPreparationStore.getState().userSignatures).toEqual(mockSignatures);
+    expect(useFlightPreparationStore.getState().userSignatures).toEqual(
+      mockSignatures,
+    );
   });
 
   it("successfully deletes user signature", async () => {
-    useFlightPreparationStore.setState({ userSignatures: [{ id: "sig-1" } as any] });
-    (flightPreparationService.deleteUserSignature as jest.Mock).mockResolvedValue(undefined);
+    useFlightPreparationStore.setState({
+      userSignatures: [{ id: "sig-1" } as any],
+    });
+    (
+      flightPreparationService.deleteUserSignature as jest.Mock
+    ).mockResolvedValue(undefined);
 
-    const success = await useFlightPreparationStore.getState().deleteUserSignature("flight-456", "sig-1");
+    const success = await useFlightPreparationStore
+      .getState()
+      .deleteUserSignature("flight-456", "sig-1");
 
     expect(success).toBe(true);
     expect(useFlightPreparationStore.getState().userSignatures).toEqual([]);

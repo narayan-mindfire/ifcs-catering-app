@@ -16,10 +16,10 @@ describe("flightService", () => {
           pagination: {
             hasNextPage: true,
             page: 1,
-            total: 100
-          }
-        }
-      }
+            total: 100,
+          },
+        },
+      },
     };
     (apiClient.get as jest.Mock).mockResolvedValue(mockResponse);
 
@@ -32,7 +32,7 @@ describe("flightService", () => {
 
   it("getFlightById should return data on success", async () => {
     (apiClient.get as jest.Mock).mockResolvedValue({
-      data: { success: true, data: [{ id: "f1" }] }
+      data: { success: true, data: [{ id: "f1" }] },
     });
 
     const result = await flightService.getFlightById("f1");

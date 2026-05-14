@@ -9,11 +9,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { ArrowIcon, DropdownIcon, IFCSLogoIcon } from "../../assets/icons";
-// import { EmairatesIcon } from "../../assets/logos";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { Flight } from "../../types/flight";
-import { formatDate, formatTimeWithOffset } from "../../utils/dateFormatter";
+import { ArrowIcon, DropdownIcon, IFCSLogoIcon } from "@/assets/icons";
+// import { EmairatesIcon } from "@/assets/logos";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { Flight } from "@/types/flight";
+import { formatDate, formatTimeWithOffset } from "@/utils/dateFormatter";
 
 interface Props {
   flight: Flight;

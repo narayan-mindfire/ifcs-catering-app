@@ -8,9 +8,10 @@ import {
   View,
 } from "react-native";
 
-import { FilterIcon } from "../../assets/icons";
-import { useDocumentStore } from "../../store/useDocumentStore";
-import { DocumentFile, FileSystemItem } from "../../types/documents";
+import { FilterIcon } from "@/assets/icons";
+import { useDocumentStore } from "@/store/useDocumentStore";
+import { DocumentFile, FileSystemItem } from "@/types/documents";
+
 import { FileSystemListItem } from "./FileSystemSystemDocuments";
 
 interface DocumentListProps {

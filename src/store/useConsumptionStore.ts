@@ -1,13 +1,13 @@
 import { create } from "zustand";
 
-import { consumptionService } from "../services/consumptionService";
+import { consumptionService } from "@/services/consumptionService";
 import {
   ConsumptionTrackingFilters,
   ConsumptionTrackingRecord,
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
-} from "../types/consumption";
-import { log } from "../utils/logger";
+} from "@/types/consumption";
+import { log } from "@/utils/logger";
 
 interface ConsumptionTrackingStore {
   records: ConsumptionTrackingRecord[];

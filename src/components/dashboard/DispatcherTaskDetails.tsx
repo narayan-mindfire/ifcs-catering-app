@@ -9,22 +9,23 @@ import {
   DeliveryIconTrue,
   DocsIcon,
   StringIconTrue,
-} from "../../assets/icons";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { acheckService } from "../../services/acheckService";
-import { deliveryService } from "../../services/deliveryService";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useTaskStore } from "../../store/useTaskStore";
+} from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { acheckService } from "@/services/acheckService";
+import { deliveryService } from "@/services/deliveryService";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useDeliveryStore } from "@/store/useDeliveryStore";
+import { useTaskStore } from "@/store/useTaskStore";
 import {
   AcheckModalMode,
   CreateACheckPayload,
   TruckACheck,
   UpdateACheckPayload,
-} from "../../types/acheck";
-import { UnifiedTask } from "../../types/task";
-import { log } from "../../utils/logger";
-import { AppButton } from "../common/AppButton";
+} from "@/types/acheck";
+import { UnifiedTask } from "@/types/task";
+import { log } from "@/utils/logger";
+
 import { AcheckForm } from "../deliveries/AcheckForm";
 
 interface TaskStep {

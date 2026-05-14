@@ -10,26 +10,27 @@ import React, {
 import { ActivityIndicator, Alert, View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
-import { LoadingOverlay } from "../../components/common/LoadingOverlay";
-import { PreparationsModals } from "../../components/preparation/PreparationModal";
+import { LoadingOverlay } from "@/components/common/LoadingOverlay";
+import { PreparationsModals } from "@/components/preparation/PreparationModal";
 import {
   ParsedQRData,
   PreparationsHeader,
   ScanActionType,
-} from "../../components/preparation/PreparationsHeader";
-import { PreparationsList } from "../../components/preparation/PreparationsList";
-import { TruckSelectionModal } from "../../components/preparation/TruckSelectionModal";
+} from "@/components/preparation/PreparationsHeader";
+import { PreparationsList } from "@/components/preparation/PreparationsList";
+import { TruckSelectionModal } from "@/components/preparation/TruckSelectionModal";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useDeliveryStore } from "@/store/useDeliveryStore";
+import { useFlightPreparationStore } from "@/store/useFlightPreparationStore";
+import { useFlightStore } from "@/store/useFlightStore";
+import { useScannerStore } from "@/store/useScannerStore";
+import { PreparationItem } from "@/types/preparations";
+import { log } from "@/utils/logger";
+
 import { usePreparationActions } from "../../hooks/usePreparationActions";
 import { usePreparationData } from "../../hooks/usePreparationData";
 import { usePreparationModals } from "../../hooks/usePreparationModals";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { useFlightStore } from "../../store/useFlightStore";
-import { useScannerStore } from "../../store/useScannerStore";
-import { PreparationItem } from "../../types/preparations";
-import { log } from "../../utils/logger";
 
 export const PreparationsScreen: React.FC = () => {
   const selectedFlight = useFlightStore((state) => state.selectedFlight);

@@ -1,12 +1,12 @@
 import { create } from "zustand";
 
-import { spotCheckService } from "../services/spotcheckService";
+import { spotCheckService } from "@/services/spotcheckService";
 import {
   SpotCheckFailPayload,
   SpotCheckLog,
   SpotCheckPassPayload,
-} from "../types/spotcheck";
-import { log } from "../utils/logger";
+} from "@/types/spotcheck";
+import { log } from "@/utils/logger";
 
 interface SpotCheckStore {
   isLoading: boolean;

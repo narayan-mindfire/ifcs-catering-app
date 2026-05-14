@@ -1,4 +1,3 @@
-import apiClient from "../api/axiosClient";
 import {
   AddUserSignatureResponse,
   PreparationDetailData,
@@ -9,8 +8,10 @@ import {
   Truck,
   UserSignature,
   UserSignatureResponse,
-} from "../types/preparations";
-import { log } from "../utils/logger";
+} from "@/types/preparations";
+import { log } from "@/utils/logger";
+
+import apiClient from "../api/axiosClient";
 
 interface ApiResponse<T> {
   success: boolean;

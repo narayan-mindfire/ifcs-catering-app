@@ -5,9 +5,10 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { create } from "zustand";
 
+import { User } from "@/types/user";
+import { log } from "@/utils/logger";
+
 import apiClient from "../api/axiosClient";
-import { User } from "../types/user";
-import { log } from "../utils/logger";
 
 interface AuthState {
   user: User | null;

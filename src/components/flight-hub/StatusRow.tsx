@@ -6,7 +6,7 @@ import {
   CheckIconSuccess,
   LockIcon,
   StringIcon,
-} from "../../assets/icons";
+} from "@/assets/icons";
 
 interface StatusRowProps {
   isLocked: boolean;

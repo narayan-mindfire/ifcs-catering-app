@@ -3,10 +3,10 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-import { NoFlightsIcon, QrIcon } from "../../assets/icons";
-import { AppButton } from "../../components/common/AppButton";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
-import { RootStackParamList } from "../../navigation/AppNavigator";
+import { NoFlightsIcon, QrIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { BreadCrumb } from "@/components/common/BreadCrumbs";
+import { RootStackParamList } from "@/navigation/AppNavigator";
 
 type SpotCheckSelectionScreenRouteProp = RouteProp<
   RootStackParamList,

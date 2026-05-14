@@ -20,12 +20,12 @@ import {
   LIGHTING_ITEMS,
   OPERATION_ITEMS,
   TIRES_ITEMS,
-} from "../../const/Acheck";
+} from "@/constants/Acheck";
 import {
   AcheckFormProps,
   CreateACheckPayload,
   TruckACheck,
-} from "../../types/acheck";
+} from "@/types/acheck";
 
 const acheckSchema = z.object({
   name: z.string().min(1, "Name is required"),

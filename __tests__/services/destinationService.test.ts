@@ -14,8 +14,8 @@ describe("destinationService", () => {
       params: expect.objectContaining({
         search: "MCT",
         page: 1,
-        limit: 10
-      })
+        limit: 10,
+      }),
     });
     expect(result).toBe(mockData);
   });

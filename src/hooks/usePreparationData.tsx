@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 
+import { PreparationItem } from "@/types/preparations";
+
 import { getIconForPreparationType } from "../components/preparation/PreparationUtils";
-import { PreparationItem } from "../types/preparations";
 
 export const usePreparationData = (
   preparations: PreparationItem[],

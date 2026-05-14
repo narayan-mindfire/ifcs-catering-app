@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
-import { destinationService } from "../services/destinationService"; // Import new service
-import { flightService } from "../services/flightService";
-import { Destination } from "../types/destination"; // Import new type
-import { Flight, FlightFilters } from "../types/flight";
-import { log } from "../utils/logger";
+import { destinationService } from "@/services/destinationService"; // Import new service
+import { flightService } from "@/services/flightService";
+import { Destination } from "@/types/destination"; // Import new type
+import { Flight, FlightFilters } from "@/types/flight";
+import { log } from "@/utils/logger";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
 

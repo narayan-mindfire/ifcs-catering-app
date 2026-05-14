@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 
-import { useDocumentStore } from "../../store/useDocumentStore";
-import { AppButton } from "../common/AppButton";
+import { AppButton } from "@/components/common/AppButton";
+import { useDocumentStore } from "@/store/useDocumentStore";
 
 interface FilterModalProps {
   isOpen: boolean;

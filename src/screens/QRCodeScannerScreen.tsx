@@ -2,10 +2,11 @@ import { StackScreenProps } from "@react-navigation/stack";
 import React, { useCallback, useState } from "react";
 import { Alert, Text, View } from "react-native";
 
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useScannerStore } from "@/store/useScannerStore";
+import { log } from "@/utils/logger";
+
 import { QRScanner } from "../components/common/QRScanner";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { useScannerStore } from "../store/useScannerStore";
-import { log } from "../utils/logger";
 
 type Props = StackScreenProps<RootStackParamList, "QRCodeScanner">;
 

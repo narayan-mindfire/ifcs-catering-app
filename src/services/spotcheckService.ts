@@ -1,14 +1,15 @@
 import ImageResizer from "react-native-image-resizer";
 
-import apiClient from "../api/axiosClient";
 import {
   SpotCheckFailPayload,
   SpotCheckLog,
   SpotCheckLogsResponse,
   SpotCheckPassPayload,
   SpotCheckResponse,
-} from "../types/spotcheck";
-import { log } from "../utils/logger";
+} from "@/types/spotcheck";
+import { log } from "@/utils/logger";
+
+import apiClient from "../api/axiosClient";
 
 export const spotCheckService = {
   submitPass: async (

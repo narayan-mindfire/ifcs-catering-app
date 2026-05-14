@@ -12,27 +12,27 @@ import {
   View,
 } from "react-native";
 
-import { ImageIcon, PlaneIcon } from "../../assets/icons";
-import { AppButton } from "../../components/common/AppButton";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
-import { CartVisualizer } from "../../components/flight-hub/CartVisulaizer";
-import { ContainerVisualizer } from "../../components/flight-hub/ContainerVisualizer";
-import { OvenVisualizer } from "../../components/flight-hub/OvenVisualizer";
-import { FailReasonModal } from "../../components/SpotCheck/FailedReasonModal";
-import { FlightInfoHeader } from "../../components/SpotCheck/FlightDetailsHeader";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { useFlightStore } from "../../store/useFlightStore";
-import { useSpotCheckStore } from "../../store/useSpotcheckStore";
-import { Colors } from "../../theme/colors";
+import { ImageIcon, PlaneIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { BreadCrumb } from "@/components/common/BreadCrumbs";
+import { CartVisualizer } from "@/components/flight-hub/CartVisulaizer";
+import { ContainerVisualizer } from "@/components/flight-hub/ContainerVisualizer";
+import { OvenVisualizer } from "@/components/flight-hub/OvenVisualizer";
+import { FailReasonModal } from "@/components/SpotCheck/FailedReasonModal";
+import { FlightInfoHeader } from "@/components/SpotCheck/FlightDetailsHeader";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useFlightPreparationStore } from "@/store/useFlightPreparationStore";
+import { useFlightStore } from "@/store/useFlightStore";
+import { useSpotCheckStore } from "@/store/useSpotcheckStore";
+import { Colors } from "@/theme/colors";
 import {
   PackingStandardContainer,
   PackingStandardItem,
-} from "../../types/preparations";
-import { SpotCheckFailPayload } from "../../types/spotcheck";
-import { formatDate } from "../../utils/dateFormatter";
-import { log } from "../../utils/logger";
+} from "@/types/preparations";
+import { SpotCheckFailPayload } from "@/types/spotcheck";
+import { formatDate } from "@/utils/dateFormatter";
+import { log } from "@/utils/logger";
 
 type SpotCheckDetailsScreenRouteProp = RouteProp<
   RootStackParamList,

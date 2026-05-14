@@ -9,12 +9,13 @@ import {
   View,
 } from "react-native";
 
-import { PrintIcon } from "../../assets/icons";
-import { PdfViewerModal } from "../../components/flight-hub/PDFViewerModal";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useFlightStore } from "../../store/useFlightStore";
-import { formatDate } from "../../utils/dateFormatter";
-import { AppButton } from "../common/AppButton";
+import { PrintIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { PdfViewerModal } from "@/components/flight-hub/PDFViewerModal";
+import { useDeliveryStore } from "@/store/useDeliveryStore";
+import { useFlightStore } from "@/store/useFlightStore";
+import { formatDate } from "@/utils/dateFormatter";
+
 import { Checkbox } from "./SharedComponents";
 
 interface ComplianceSignatureCardProps {

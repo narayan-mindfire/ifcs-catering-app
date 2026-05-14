@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { Truck } from "../../types/preparations";
+import { Truck } from "@/types/preparations";
 
 interface TruckSelectionModalProps {
   isOpen: boolean;

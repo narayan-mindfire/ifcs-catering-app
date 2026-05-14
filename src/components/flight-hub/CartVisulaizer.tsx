@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { PackingStandardContainer } from "../../types/preparations";
+import { PackingStandardContainer } from "@/types/preparations";
 
 interface DrawerItemProps {
   isOpen: boolean;

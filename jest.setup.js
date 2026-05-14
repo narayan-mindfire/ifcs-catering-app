@@ -2,7 +2,9 @@
 process.env.EXPO_OS = "ios";
 
 // Mock react-native-reanimated
-jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock"));
+jest.mock("react-native-reanimated", () =>
+  require("react-native-reanimated/mock"),
+);
 
 // Silence the warning: Animated: `useNativeDriver` is not supported
 // jest.mock("react-native/Libraries/Animated/NativeAnimatedHelper");

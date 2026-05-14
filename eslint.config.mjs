@@ -30,5 +30,13 @@ export default defineConfig([
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
     },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+          project: "./tsconfig.json",
+        },
+      },
+    },
   },
 ]);

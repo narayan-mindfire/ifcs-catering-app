@@ -2,8 +2,8 @@ import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
-import { DropdownIcon, UserIcon } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
+import { DropdownIcon, UserIcon } from "@/assets/icons";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const Header: React.FC<{ onUserPress: () => void }> = ({
   onUserPress,

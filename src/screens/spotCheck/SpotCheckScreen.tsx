@@ -10,18 +10,19 @@ import {
   View,
 } from "react-native";
 
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
+import { BreadCrumb } from "@/components/common/BreadCrumbs";
 import {
   CompletedCheckItem,
   CompletedCheckListItem,
-} from "../../components/SpotCheck/CompletedCheckListItem";
-import { SpotCheckHeader } from "../../components/SpotCheck/SpotCheckHeader";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useFlightStore } from "../../store/useFlightStore";
-import { useSpotCheckStore } from "../../store/useSpotcheckStore";
-import { Colors } from "../../theme/colors";
-import { formatDate, formatDateDetail } from "../../utils/dateFormatter";
+} from "@/components/SpotCheck/CompletedCheckListItem";
+import { SpotCheckHeader } from "@/components/SpotCheck/SpotCheckHeader";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useFlightStore } from "@/store/useFlightStore";
+import { useSpotCheckStore } from "@/store/useSpotcheckStore";
+import { Colors } from "@/theme/colors";
+import { formatDate, formatDateDetail } from "@/utils/dateFormatter";
+
 import { SpotCheckDetailsModal } from "./SpotCheckFailedDetailsModal";
 
 type SpotCheckScreenRouteProp = RouteProp<RootStackParamList, "SpotCheck">;

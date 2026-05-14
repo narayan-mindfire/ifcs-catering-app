@@ -11,18 +11,19 @@ import {
 } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
-import { ImageIcon } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useConsumptionTrackingStore } from "../../store/useConsumptionStore";
-import { useDeliveryStore } from "../../store/useDeliveryStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { ConsumptionTrackingRecord } from "../../types/consumption";
+import { ImageIcon } from "@/assets/icons";
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
+import { LoadingOverlay } from "@/components/common/LoadingOverlay";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useConsumptionTrackingStore } from "@/store/useConsumptionStore";
+import { useDeliveryStore } from "@/store/useDeliveryStore";
+import { useFlightPreparationStore } from "@/store/useFlightPreparationStore";
+import { ConsumptionTrackingRecord } from "@/types/consumption";
 import {
   PackingStandardContainer,
   PackingStandardItem,
-} from "../../types/preparations";
-import { ConfirmationModal } from "../common/ConfirmationModal";
-import { LoadingOverlay } from "../common/LoadingOverlay";
+} from "@/types/preparations";
+
 import { ConsumptionModal } from "../preparation/ConsumptionTrackingModal";
 import { LockNumberModal } from "../preparation/LockNumberModal";
 import { SealNumberModal } from "../preparation/SealNumberModal";

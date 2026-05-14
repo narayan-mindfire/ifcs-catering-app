@@ -4,7 +4,8 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import {
   PackingStandard,
   PackingStandardContainer,
-} from "../../../types/preparations";
+} from "@/types/preparations";
+
 import { CartVisualizer } from "../CartVisulaizer";
 import { ContainerVisualizer } from "../ContainerVisualizer";
 import { OvenVisualizer } from "../OvenVisualizer";

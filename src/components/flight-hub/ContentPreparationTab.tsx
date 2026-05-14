@@ -8,10 +8,11 @@ import {
   View,
 } from "react-native";
 
-import { DeleteIcon } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
-import { formatDate } from "../../utils/dateFormatter";
+import { DeleteIcon } from "@/assets/icons";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useFlightPreparationStore } from "@/store/useFlightPreparationStore";
+import { formatDate } from "@/utils/dateFormatter";
+
 import { SignatureModal } from "./SharedComponents";
 
 interface ContentPreparersTabProps {

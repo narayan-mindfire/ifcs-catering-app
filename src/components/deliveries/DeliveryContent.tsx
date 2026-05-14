@@ -6,7 +6,8 @@ import {
   Delivery,
   DriversDeclaration,
   SecurityCompliance,
-} from "../../types/deliveries";
+} from "@/types/deliveries";
+
 import ContentPreparersTab from "../flight-hub/ContentPreparationTab";
 import CrewComplianceTab from "../flight-hub/CrewComplianceTab";
 import DriversDeclarationTab from "../flight-hub/DriversDeclarationTab";

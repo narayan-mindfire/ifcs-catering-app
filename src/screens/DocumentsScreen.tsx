@@ -9,13 +9,14 @@ import React, {
 } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useDocumentStore } from "@/store/useDocumentStore";
+import { DocumentFile, FileSystemItem } from "@/types/documents";
+
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { DocumentList } from "../components/documents/DocumentList";
 import { FilterModal } from "../components/documents/FilterModal";
 import { MediaViewer } from "../components/documents/viewers/MediaViewer";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { useDocumentStore } from "../store/useDocumentStore";
-import { DocumentFile, FileSystemItem } from "../types/documents";
 
 type DocumentsScreenRouteProp = RouteProp<RootStackParamList, "Documents">;
 type DocumentsScreenNavigationProp = StackNavigationProp<

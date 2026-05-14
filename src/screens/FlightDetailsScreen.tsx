@@ -7,12 +7,13 @@ import { StackScreenProps } from "@react-navigation/stack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useFlightStore } from "@/store/useFlightStore";
+import { Colors } from "@/theme/colors";
+import { formatDate } from "@/utils/dateFormatter";
+
 import { AppButton } from "../components/common/AppButton";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { useFlightStore } from "../store/useFlightStore";
-import { Colors } from "../theme/colors";
-import { formatDate } from "../utils/dateFormatter";
 import DeliveriesScreen from "./details/Deliveries";
 import { PreparationsScreen } from "./details/Preparations";
 

@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 
-import { ImageIcon, InfoIcon } from "../../assets/icons";
-import { AppButton } from "../common/AppButton";
+import { ImageIcon, InfoIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
 
 interface ItemData {
   id: number;

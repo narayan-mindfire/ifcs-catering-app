@@ -1,7 +1,7 @@
 import React, { lazy } from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
 
-import { ConfirmationModal } from "../common/ConfirmationModal";
+import { ConfirmationModal } from "@/components/common/ConfirmationModal";
 
 const FlightPreparationDetailsModal = lazy(() =>
   import("../flight-hub/FlightPreparationDetailsModal").then((m) => ({

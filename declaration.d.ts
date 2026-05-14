@@ -1,8 +1,14 @@
+declare module "*.css";
+
 declare module "*.svg" {
-  import * as React from "react";
-  import { SvgProps } from "react-native-svg";
-  const content: React.FC<SvgProps>;
-  export default content;
+    import React from "react";
+    import { SvgProps } from "react-native-svg";
+    const content: React.FC<SvgProps>;
+    export default content;
 }
 
-declare module "*.pdf";
+declare module "*.png";
+declare module "*.jpg";
+declare module "*.jpeg";
+declare module "*.gif";
+declare module "*.ttf";

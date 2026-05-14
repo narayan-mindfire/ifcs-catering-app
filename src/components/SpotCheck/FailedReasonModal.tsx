@@ -13,8 +13,8 @@ import {
   View,
 } from "react-native";
 
-import { ImageIcon } from "../../assets/icons";
-import { AppButton } from "../common/AppButton";
+import { ImageIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
 
 interface FailReasonModalProps {
   isVisible: boolean;

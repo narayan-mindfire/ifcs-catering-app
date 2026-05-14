@@ -1,5 +1,6 @@
+import { User, UserApiResponse } from "@/types/user";
+
 import apiClient from "../api/axiosClient";
-import { User, UserApiResponse } from "../types/user";
 
 export const userService = {
   getUserById: async (id: string): Promise<User> => {

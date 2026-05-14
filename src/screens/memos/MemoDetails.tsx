@@ -14,14 +14,14 @@ import {
   View,
 } from "react-native";
 
-import { DocsIconDark, SparkleIcon, UserIcon } from "../../assets/icons";
-import { BreadCrumb } from "../../components/common/BreadCrumbs";
-import { RootStackParamList } from "../../navigation/AppNavigator";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useMemoStore } from "../../store/useMemosStore";
-import { MemoVersion } from "../../types/memo";
-import { formatDateDetail } from "../../utils/dateFormatter";
-import { log } from "../../utils/logger";
+import { DocsIconDark, SparkleIcon, UserIcon } from "@/assets/icons";
+import { BreadCrumb } from "@/components/common/BreadCrumbs";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useMemoStore } from "@/store/useMemosStore";
+import { MemoVersion } from "@/types/memo";
+import { formatDateDetail } from "@/utils/dateFormatter";
+import { log } from "@/utils/logger";
 
 type MemoDetailScreenRouteProp = RouteProp<RootStackParamList, "MemoDetail">;
 type MemoDetailScreenNavigationProp = StackNavigationProp<

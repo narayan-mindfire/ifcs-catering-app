@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { CheckIconActive, TimerIcon } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useTaskStore } from "../../store/useTaskStore";
-import { UnifiedTask } from "../../types/task";
-import { formatDurationSeconds } from "../../utils/dateFormatter";
-import { log } from "../../utils/logger";
-import { AppButton } from "../common/AppButton";
+import { CheckIconActive, TimerIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useTaskStore } from "@/store/useTaskStore";
+import { UnifiedTask } from "@/types/task";
+import { formatDurationSeconds } from "@/utils/dateFormatter";
+import { log } from "@/utils/logger";
 
 interface ProductionTaskDetailsProps {
   task: UnifiedTask;

@@ -35,7 +35,9 @@ describe("useDeliveryStore", () => {
 
   it("successfully fetches deliveries", async () => {
     const mockDeliveries = [mockDelivery];
-    (deliveryService.getDeliveries as jest.Mock).mockResolvedValue(mockDeliveries);
+    (deliveryService.getDeliveries as jest.Mock).mockResolvedValue(
+      mockDeliveries,
+    );
 
     await useDeliveryStore.getState().fetchDeliveries("flight-456");
 
@@ -43,11 +45,16 @@ describe("useDeliveryStore", () => {
     expect(state.deliveries).toEqual(mockDeliveries);
     expect(state.selectedDeliveryId).toBe(mockDelivery.id);
     expect(state.isLoading).toBe(false);
-    expect(deliveryService.getDeliveries).toHaveBeenCalledWith("flight-456", undefined);
+    expect(deliveryService.getDeliveries).toHaveBeenCalledWith(
+      "flight-456",
+      undefined,
+    );
   });
 
   it("handles fetch error", async () => {
-    (deliveryService.getDeliveries as jest.Mock).mockRejectedValue(new Error("API Error"));
+    (deliveryService.getDeliveries as jest.Mock).mockRejectedValue(
+      new Error("API Error"),
+    );
 
     await useDeliveryStore.getState().fetchDeliveries("flight-456");
 
@@ -58,33 +65,41 @@ describe("useDeliveryStore", () => {
   });
 
   it("successfully creates a delivery", async () => {
-    (deliveryService.createDelivery as jest.Mock).mockResolvedValue(mockDelivery);
+    (deliveryService.createDelivery as jest.Mock).mockResolvedValue(
+      mockDelivery,
+    );
 
-    await useDeliveryStore.getState().createDelivery("flight-456", "New Delivery");
+    await useDeliveryStore
+      .getState()
+      .createDelivery("flight-456", "New Delivery");
 
     const state = useDeliveryStore.getState();
     expect(state.deliveries).toContainEqual(mockDelivery);
     expect(state.selectedDeliveryId).toBe(mockDelivery.id);
-    expect(deliveryService.createDelivery).toHaveBeenCalledWith("flight-456", "New Delivery");
+    expect(deliveryService.createDelivery).toHaveBeenCalledWith(
+      "flight-456",
+      "New Delivery",
+    );
   });
 
   it("selects a delivery", () => {
     useDeliveryStore.setState({ deliveries: [mockDelivery] });
     useDeliveryStore.getState().selectDelivery(mockDelivery.id);
-    expect(useDeliveryStore.getState().selectedDeliveryId).toBe(mockDelivery.id);
+    expect(useDeliveryStore.getState().selectedDeliveryId).toBe(
+      mockDelivery.id,
+    );
   });
 
   it("successfully adds a signature", async () => {
     const updatedDelivery = { ...mockDelivery, status: "signed" };
-    (deliveryService.addSignature as jest.Mock).mockResolvedValue(updatedDelivery);
+    (deliveryService.addSignature as jest.Mock).mockResolvedValue(
+      updatedDelivery,
+    );
     useDeliveryStore.setState({ deliveries: [mockDelivery] });
 
-    await useDeliveryStore.getState().addSignature(
-      "flight-456",
-      "del-123",
-      "driver",
-      "sig-data"
-    );
+    await useDeliveryStore
+      .getState()
+      .addSignature("flight-456", "del-123", "driver", "sig-data");
 
     const state = useDeliveryStore.getState();
     expect(state.deliveries[0].status).toBe("signed");
@@ -93,12 +108,15 @@ describe("useDeliveryStore", () => {
       "del-123",
       "driver",
       "sig-data",
-      undefined
+      undefined,
     );
   });
 
   it("successfully deletes a delivery", async () => {
-    useDeliveryStore.setState({ deliveries: [mockDelivery], selectedDeliveryId: mockDelivery.id });
+    useDeliveryStore.setState({
+      deliveries: [mockDelivery],
+      selectedDeliveryId: mockDelivery.id,
+    });
     (deliveryService.deleteDelivery as jest.Mock).mockResolvedValue(undefined);
 
     await useDeliveryStore.getState().deleteDelivery("flight-456", "del-123");
@@ -106,6 +124,9 @@ describe("useDeliveryStore", () => {
     const state = useDeliveryStore.getState();
     expect(state.deliveries).toEqual([]);
     expect(state.selectedDeliveryId).toBeNull();
-    expect(deliveryService.deleteDelivery).toHaveBeenCalledWith("flight-456", "del-123");
+    expect(deliveryService.deleteDelivery).toHaveBeenCalledWith(
+      "flight-456",
+      "del-123",
+    );
   });
 });

@@ -9,9 +9,9 @@ import {
   View,
 } from "react-native";
 
-import { DownloadIcon, PrintIcon } from "../../../assets/icons";
-import { Tag } from "../../../types/documents";
-import { log } from "../../../utils/logger";
+import { DownloadIcon, PrintIcon } from "@/assets/icons";
+import { Tag } from "@/types/documents";
+import { log } from "@/utils/logger";
 
 interface ViewerHeaderProps {
   title: string;

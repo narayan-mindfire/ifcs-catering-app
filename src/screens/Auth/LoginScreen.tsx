@@ -18,9 +18,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { z } from "zod";
 
-import { MicrosoftLogo } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
-import { Colors } from "../../theme/colors";
+import { MicrosoftLogo } from "@/assets/icons";
+import { useAuthStore } from "@/store/useAuthStore";
+import { Colors } from "@/theme/colors";
 
 WebBrowser.maybeCompleteAuthSession();
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-import { RedirectDarkIcon } from "../../assets/icons";
+import { RedirectDarkIcon } from "@/assets/icons";
 
 interface CheckItem {
   id: string;

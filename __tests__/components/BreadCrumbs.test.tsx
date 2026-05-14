@@ -1,7 +1,8 @@
-import React from "react";
-import { fireEvent, render } from "@testing-library/react-native";
-import { BreadCrumb } from "../../src/components/common/BreadCrumbs";
 import { NavigationContainer } from "@react-navigation/native";
+import { fireEvent, render } from "@testing-library/react-native";
+import React from "react";
+
+import { BreadCrumb } from "../../src/components/common/BreadCrumbs";
 
 // Mock useNavigation
 const mockGoBack = jest.fn();
@@ -19,16 +20,13 @@ jest.mock("@react-navigation/native", () => {
 });
 
 describe("BreadCrumb", () => {
-  const items = [
-    { label: "Home", onPress: jest.fn() },
-    { label: "Settings" },
-  ];
+  const items = [{ label: "Home", onPress: jest.fn() }, { label: "Settings" }];
 
   it("renders all labels correctly", () => {
     const { getByText } = render(
       <NavigationContainer>
         <BreadCrumb items={items} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     expect(getByText("Home")).toBeTruthy();
@@ -40,7 +38,7 @@ describe("BreadCrumb", () => {
     const { getByText } = render(
       <NavigationContainer>
         <BreadCrumb items={items} onBackPress={onBackPress} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     fireEvent.press(getByText("←"));
@@ -52,7 +50,7 @@ describe("BreadCrumb", () => {
     const { getByText } = render(
       <NavigationContainer>
         <BreadCrumb items={items} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     fireEvent.press(getByText("←"));
@@ -63,7 +61,7 @@ describe("BreadCrumb", () => {
     const { getByText } = render(
       <NavigationContainer>
         <BreadCrumb items={items} />
-      </NavigationContainer>
+      </NavigationContainer>,
     );
 
     fireEvent.press(getByText("Home"));

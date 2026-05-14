@@ -1,5 +1,6 @@
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
-import { render, fireEvent, waitFor } from "@testing-library/react-native";
+
 import { AcheckForm } from "../../../src/components/deliveries/AcheckForm";
 import { TruckACheck } from "../../../src/types/acheck";
 
@@ -100,7 +101,7 @@ describe("AcheckForm", () => {
         onClose={mockOnClose}
         mode="view"
         initialData={mockInitialData}
-      />
+      />,
     );
 
     expect(getByText("Vehicle Defect Report")).toBeTruthy();
@@ -116,7 +117,7 @@ describe("AcheckForm", () => {
         onClose={mockOnClose}
         mode="view"
         initialData={mockInitialData}
-      />
+      />,
     );
 
     expect(getByDisplayValue("John Doe")).toBeTruthy();
@@ -131,12 +132,12 @@ describe("AcheckForm", () => {
         onClose={mockOnClose}
         mode="edit"
         initialData={mockInitialData}
-      />
+      />,
     );
 
     // In edit mode, "Update" should be visible
     expect(getByText("Update")).toBeTruthy();
-    
+
     // Check if we can find a checkbox item
     const checkbox = getByText("Cabin");
     fireEvent.press(checkbox);
@@ -150,7 +151,7 @@ describe("AcheckForm", () => {
         mode="edit"
         initialData={mockInitialData}
         onUpdate={mockOnUpdate}
-      />
+      />,
     );
 
     fireEvent.press(getByText("Update"));
@@ -171,13 +172,13 @@ describe("AcheckForm", () => {
         onClose={mockOnClose}
         mode="edit"
         initialData={{ ...mockInitialData, hasAccidentHazard: false }}
-      />
+      />,
     );
 
     // Initial state should be 'no'
     const yesOption = getByText("Yes");
     fireEvent.press(yesOption);
-    
+
     // Now it should be 'yes'
   });
 });

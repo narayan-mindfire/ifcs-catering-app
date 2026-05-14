@@ -1,5 +1,6 @@
-import React from "react";
 import { fireEvent, render } from "@testing-library/react-native";
+import React from "react";
+
 import { AppButton } from "../../src/components/common/AppButton";
 
 describe("AppButton", () => {
@@ -22,8 +23,8 @@ describe("AppButton", () => {
     const { getByTestId, queryByText } = render(
       <AppButton title="Loading" onPress={onPress} loading={true} />,
     );
-    // Since AppButton doesn't have a testID on the TouchableOpacity, 
-    // we can check if ActivityIndicator is present and title is not? 
+    // Since AppButton doesn't have a testID on the TouchableOpacity,
+    // we can check if ActivityIndicator is present and title is not?
     // Looking at the implementation, Text is inside a Fragment when not loading.
     expect(queryByText("Loading")).toBeNull();
   });

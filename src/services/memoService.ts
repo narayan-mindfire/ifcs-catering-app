@@ -1,5 +1,6 @@
+import { Memo, MemoTab } from "@/types/memo";
+
 import apiClient from "../api/axiosClient";
-import { Memo, MemoTab } from "../types/memo";
 
 interface ApiResponse<T> {
   success: boolean;

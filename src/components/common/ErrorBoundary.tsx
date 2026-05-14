@@ -1,8 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { InfoIcon } from "../../assets/icons";
-import { log } from "../../utils/logger";
+import { InfoIcon } from "@/assets/icons";
+import { log } from "@/utils/logger";
 
 interface Props {
   children: ReactNode;

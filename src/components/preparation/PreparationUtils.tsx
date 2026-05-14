@@ -6,7 +6,7 @@ import {
   DresserIcon,
   TrayIcon,
   WashingMachineIcon,
-} from "../../assets/icons";
+} from "@/assets/icons";
 
 export const getIconForPreparationType = (type: string) => {
   const lowerType = type?.toLowerCase() || "";

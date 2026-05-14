@@ -2,7 +2,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { Alert } from "react-native";
 
-import { log } from "../../utils/logger";
+import { log } from "@/utils/logger";
 
 export const downloadFileHelper = async (
   url: string,

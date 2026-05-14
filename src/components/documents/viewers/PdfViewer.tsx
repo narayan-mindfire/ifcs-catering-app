@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import Pdf from "react-native-pdf";
 
-import { RotateRightIcon } from "../../../assets/icons";
-import { DocumentFile } from "../../../types/documents";
-import { log } from "../../../utils/logger";
+import { RotateRightIcon } from "@/assets/icons";
+import { DocumentFile } from "@/types/documents";
+import { log } from "@/utils/logger";
+
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {

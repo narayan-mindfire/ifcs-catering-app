@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 
-import { ConfirmModalData, PreparationItem } from "../types/preparations";
+import { ConfirmModalData, PreparationItem } from "@/types/preparations";
 
 interface PrepStatus {
   isLocked: boolean;

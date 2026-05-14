@@ -1,5 +1,6 @@
+import { AttendanceResponse } from "@/types/attendance";
+
 import apiClient from "../api/axiosClient";
-import { AttendanceResponse } from "../types/attendance";
 
 export const attendanceService = {
   startShift: async (startTime?: string): Promise<AttendanceResponse> => {

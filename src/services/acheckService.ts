@@ -1,9 +1,10 @@
-import apiClient from "../api/axiosClient";
 import {
   CreateACheckPayload,
   TruckACheck,
   UpdateACheckPayload,
-} from "../types/acheck";
+} from "@/types/acheck";
+
+import apiClient from "../api/axiosClient";
 
 interface ApiResponse<T> {
   success: boolean;

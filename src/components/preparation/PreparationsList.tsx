@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from "react";
 import { ActivityIndicator, SectionList, Text, View } from "react-native";
 
-import { PreparationItem } from "../../types/preparations";
+import { PreparationItem } from "@/types/preparations";
+
 import { PreparationListItem } from "./PreparationListItems";
 
 interface PreparationsListProps {

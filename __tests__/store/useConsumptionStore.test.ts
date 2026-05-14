@@ -35,7 +35,9 @@ describe("useConsumptionTrackingStore", () => {
       total: 1,
     });
 
-    const success = await useConsumptionTrackingStore.getState().fetchConsumptionRecords("flight-456");
+    const success = await useConsumptionTrackingStore
+      .getState()
+      .fetchConsumptionRecords("flight-456");
 
     const state = useConsumptionTrackingStore.getState();
     expect(success).toBe(true);
@@ -45,9 +47,13 @@ describe("useConsumptionTrackingStore", () => {
   });
 
   it("handles fetch records error", async () => {
-    (consumptionService.getRecords as jest.Mock).mockRejectedValue(new Error("API Error"));
+    (consumptionService.getRecords as jest.Mock).mockRejectedValue(
+      new Error("API Error"),
+    );
 
-    const success = await useConsumptionTrackingStore.getState().fetchConsumptionRecords("flight-456");
+    const success = await useConsumptionTrackingStore
+      .getState()
+      .fetchConsumptionRecords("flight-456");
 
     const state = useConsumptionTrackingStore.getState();
     expect(success).toBe(false);
@@ -56,12 +62,16 @@ describe("useConsumptionTrackingStore", () => {
   });
 
   it("successfully creates a record", async () => {
-    (consumptionService.createRecord as jest.Mock).mockResolvedValue(mockRecord);
+    (consumptionService.createRecord as jest.Mock).mockResolvedValue(
+      mockRecord,
+    );
 
-    const result = await useConsumptionTrackingStore.getState().createConsumptionRecord("flight-456", {
-      itemCode: "ITEM-01",
-      quantity: 10,
-    } as any);
+    const result = await useConsumptionTrackingStore
+      .getState()
+      .createConsumptionRecord("flight-456", {
+        itemCode: "ITEM-01",
+        quantity: 10,
+      } as any);
 
     const state = useConsumptionTrackingStore.getState();
     expect(result.success).toBe(true);
@@ -72,14 +82,16 @@ describe("useConsumptionTrackingStore", () => {
 
   it("successfully updates a record", async () => {
     const updatedRecord = { ...mockRecord, quantity: 20 };
-    (consumptionService.updateRecord as jest.Mock).mockResolvedValue(updatedRecord);
+    (consumptionService.updateRecord as jest.Mock).mockResolvedValue(
+      updatedRecord,
+    );
     useConsumptionTrackingStore.setState({ records: [mockRecord] });
 
-    const success = await useConsumptionTrackingStore.getState().updateConsumptionRecord(
-      "flight-456",
-      "rec-123",
-      { quantity: 20 } as any
-    );
+    const success = await useConsumptionTrackingStore
+      .getState()
+      .updateConsumptionRecord("flight-456", "rec-123", {
+        quantity: 20,
+      } as any);
 
     const state = useConsumptionTrackingStore.getState();
     expect(success).toBe(true);
@@ -90,7 +102,9 @@ describe("useConsumptionTrackingStore", () => {
     useConsumptionTrackingStore.setState({ records: [mockRecord], total: 1 });
     (consumptionService.deleteRecord as jest.Mock).mockResolvedValue(true);
 
-    const success = await useConsumptionTrackingStore.getState().deleteConsumptionRecord("flight-456", "rec-123");
+    const success = await useConsumptionTrackingStore
+      .getState()
+      .deleteConsumptionRecord("flight-456", "rec-123");
 
     const state = useConsumptionTrackingStore.getState();
     expect(success).toBe(true);

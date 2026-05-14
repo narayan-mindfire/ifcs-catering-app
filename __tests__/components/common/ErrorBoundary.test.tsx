@@ -1,4 +1,4 @@
-import { render, fireEvent } from "@testing-library/react-native";
+import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 import { Text, View } from "react-native";
 
@@ -26,7 +26,7 @@ describe("ErrorBoundary", () => {
     const { getByText } = render(
       <ErrorBoundary>
         <Text>Normal Content</Text>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(getByText("Normal Content")).toBeTruthy();
@@ -36,7 +36,7 @@ describe("ErrorBoundary", () => {
     const { getByText } = render(
       <ErrorBoundary>
         <CrashingComponent />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(getByText("Oops! Something went wrong.")).toBeTruthy();
@@ -47,7 +47,7 @@ describe("ErrorBoundary", () => {
     const { getByText, queryByText, rerender } = render(
       <ErrorBoundary>
         <CrashingComponent />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(getByText("Oops! Something went wrong.")).toBeTruthy();
@@ -56,7 +56,7 @@ describe("ErrorBoundary", () => {
     rerender(
       <ErrorBoundary>
         <Text>Recovered Content</Text>
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     // Now press Try Again to reset the error state
@@ -71,7 +71,7 @@ describe("ErrorBoundary", () => {
     const { getByText } = render(
       <ErrorBoundary fallback={CustomFallback}>
         <CrashingComponent />
-      </ErrorBoundary>
+      </ErrorBoundary>,
     );
 
     expect(getByText("Custom Error UI")).toBeTruthy();

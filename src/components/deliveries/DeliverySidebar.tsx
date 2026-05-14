@@ -7,9 +7,9 @@ import {
   View,
 } from "react-native";
 
-import { AddIcon } from "../../assets/icons";
-import { Delivery } from "../../types/deliveries";
-import { AppButton } from "../common/AppButton";
+import { AddIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { Delivery } from "@/types/deliveries";
 
 interface DeliverySidebarProps {
   deliveries: Delivery[];

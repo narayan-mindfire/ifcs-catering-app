@@ -8,8 +8,8 @@ import {
   View,
 } from "react-native";
 
-import { DropdownIcon } from "../../assets/icons";
-import { useFlightStore } from "../../store/useFlightStore";
+import { DropdownIcon } from "@/assets/icons";
+import { useFlightStore } from "@/store/useFlightStore";
 
 interface Props {
   currentStation: string;

@@ -1,10 +1,11 @@
-import React from "react";
+import { useRoute } from "@react-navigation/native";
 import { fireEvent, render } from "@testing-library/react-native";
+import React from "react";
+
 import { MainContent } from "../../src/components/dashboard/MainContent";
-import { useTimerStore } from "../../src/store/useTimerStore";
 import { useAuthStore } from "../../src/store/useAuthStore";
 import { useTaskStore } from "../../src/store/useTaskStore";
-import { useRoute } from "@react-navigation/native";
+import { useTimerStore } from "../../src/store/useTimerStore";
 
 // Mock useTimerStore
 jest.mock("../../src/store/useTimerStore");
@@ -138,7 +139,7 @@ describe("MainContent", () => {
 
     const { getByText, queryByText } = render(<MainContent />);
     fireEvent.press(getByText("End Shift"));
-    
+
     expect(getByText("End Shift?")).toBeTruthy();
     expect(getByText("Yes, End My Shift!")).toBeTruthy();
   });

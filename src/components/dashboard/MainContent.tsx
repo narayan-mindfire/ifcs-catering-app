@@ -13,17 +13,18 @@ import {
   View,
 } from "react-native";
 
-import { RedirectDarkIcon } from "../../assets/icons";
-import { useAuthStore } from "../../store/useAuthStore";
-import { useTaskStore } from "../../store/useTaskStore";
-import { useTimerStore } from "../../store/useTimerStore";
-import { UnifiedTask } from "../../types/task";
+import { RedirectDarkIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useTaskStore } from "@/store/useTaskStore";
+import { useTimerStore } from "@/store/useTimerStore";
+import { UnifiedTask } from "@/types/task";
 import {
   formatDurationSeconds,
   formatTo24Hour,
   getShiftTimeRange,
-} from "../../utils/dateFormatter";
-import { AppButton } from "../common/AppButton";
+} from "@/utils/dateFormatter";
+
 import { DispatcherTaskDetails } from "./DispatcherTaskDetails";
 import { ProductionTaskDetails } from "./ProductionTaskDetails";
 

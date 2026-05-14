@@ -1,5 +1,6 @@
+import { fireEvent, render } from "@testing-library/react-native";
 import React from "react";
-import { render, fireEvent } from "@testing-library/react-native";
+
 import { ValidationModal } from "../../../src/components/preparation/ValidationModal";
 
 jest.mock("../../../src/assets/icons", () => ({
@@ -13,7 +14,7 @@ describe("ValidationModal", () => {
         visible={true}
         message="Please seal first"
         onClose={jest.fn()}
-      />
+      />,
     );
 
     expect(getByText("Please seal first")).toBeTruthy();
@@ -23,11 +24,7 @@ describe("ValidationModal", () => {
   it("calls onClose when OK is pressed", () => {
     const mockOnClose = jest.fn();
     const { getByText } = render(
-      <ValidationModal
-        visible={true}
-        message="Test"
-        onClose={mockOnClose}
-      />
+      <ValidationModal visible={true} message="Test" onClose={mockOnClose} />,
     );
 
     fireEvent.press(getByText("OK"));

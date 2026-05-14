@@ -1,4 +1,3 @@
-import apiClient from "../api/axiosClient";
 import {
   ConsumptionTrackingFilters,
   ConsumptionTrackingListResponse,
@@ -6,7 +5,9 @@ import {
   ConsumptionTrackingResponse,
   CreateConsumptionTrackingInput,
   UpdateConsumptionTrackingInput,
-} from "../types/consumption";
+} from "@/types/consumption";
+
+import apiClient from "../api/axiosClient";
 
 export const consumptionService = {
   getRecords: async (

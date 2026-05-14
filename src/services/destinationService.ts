@@ -1,5 +1,6 @@
+import { DestinationApiResponse } from "@/types/destination";
+
 import apiClient from "../api/axiosClient";
-import { DestinationApiResponse } from "../types/destination";
 
 export const destinationService = {
   getDestinations: async (

@@ -1,13 +1,14 @@
 import { create } from "zustand";
 
-import { downloadFileHelper } from "../components/documents/downloadHelper";
-import { documentService } from "../services/documentService";
+import { documentService } from "@/services/documentService";
 import {
   DocumentFile,
   DocumentFolder,
   FileSystemItem,
-} from "../types/documents";
-import { log } from "../utils/logger";
+} from "@/types/documents";
+import { log } from "@/utils/logger";
+
+import { downloadFileHelper } from "../components/documents/downloadHelper";
 
 interface DocumentState {
   currentFolderId: string | null;

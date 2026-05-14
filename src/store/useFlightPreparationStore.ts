@@ -1,14 +1,14 @@
 import { create } from "zustand";
 
-import { flightPreparationService } from "../services/flightPreparationService";
+import { flightPreparationService } from "@/services/flightPreparationService";
 import {
   PreparationDetailData,
   PreparationFlagUpdatePayload,
   PreparationItem,
   Truck,
   UserSignature,
-} from "../types/preparations";
-import { log } from "../utils/logger";
+} from "@/types/preparations";
+import { log } from "@/utils/logger";
 
 interface FlightPreparationState {
   preparations: PreparationItem[];

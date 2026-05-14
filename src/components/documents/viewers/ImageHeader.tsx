@@ -8,8 +8,9 @@ import {
   View,
 } from "react-native";
 
-import { RotateRightIcon } from "../../../assets/icons";
-import { DocumentFile } from "../../../types/documents";
+import { RotateRightIcon } from "@/assets/icons";
+import { DocumentFile } from "@/types/documents";
+
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {

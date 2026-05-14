@@ -29,14 +29,15 @@ import {
   SquaresIcon,
   TrayIcon,
   TrayIconActive,
-} from "../assets/icons";
+} from "@/assets/icons";
+import { RootStackParamList } from "@/navigation/AppNavigator";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useMemoStore } from "@/store/useMemosStore";
+import { Colors } from "@/theme/colors";
+import { MemoTab } from "@/types/memo";
+
 import { AppButton } from "../components/common/AppButton";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
-import { RootStackParamList } from "../navigation/AppNavigator";
-import { useAuthStore } from "../store/useAuthStore";
-import { useMemoStore } from "../store/useMemosStore";
-import { Colors } from "../theme/colors";
-import { MemoTab } from "../types/memo";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
 

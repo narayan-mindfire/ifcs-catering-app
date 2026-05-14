@@ -1,10 +1,11 @@
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
-import { ScanIcon } from "../../assets/icons";
-import { Flight } from "../../types/flight";
-import { Truck } from "../../types/preparations";
-import { AppButton } from "../common/AppButton";
+import { ScanIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
+import { Flight } from "@/types/flight";
+import { Truck } from "@/types/preparations";
+
 import { MultiSelectFilter } from "./MultiSelectFilter";
 
 export type ScanActionType = "prep" | "seal" | "lock" | "assemble" | "load";

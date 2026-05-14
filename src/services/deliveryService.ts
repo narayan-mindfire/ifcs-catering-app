@@ -1,6 +1,7 @@
+import { Delivery } from "@/types/deliveries";
+import { log } from "@/utils/logger";
+
 import apiClient from "../api/axiosClient";
-import { Delivery } from "../types/deliveries";
-import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;

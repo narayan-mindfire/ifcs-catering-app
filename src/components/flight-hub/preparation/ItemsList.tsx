@@ -1,12 +1,12 @@
 import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
-import { ImageIcon } from "../../../assets/icons";
-import { ConsumptionTrackingRecord } from "../../../types/consumption";
+import { ImageIcon } from "@/assets/icons";
+import { ConsumptionTrackingRecord } from "@/types/consumption";
 import {
   PackingStandardItem,
   PreparationDetailData,
-} from "../../../types/preparations";
+} from "@/types/preparations";
 
 interface ItemsListProps {
   activeEquipmentName: string;

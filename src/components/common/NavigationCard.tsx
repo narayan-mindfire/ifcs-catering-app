@@ -3,7 +3,7 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SvgProps } from "react-native-svg";
 
-import { RedirectIcon } from "../../assets/icons";
+import { RedirectIcon } from "@/assets/icons";
 
 interface NavigationCardProps {
   title: string;

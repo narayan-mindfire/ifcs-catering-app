@@ -5,7 +5,8 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 
-import { Flight } from "../../types/flight";
+import { Flight } from "@/types/flight";
+
 import { FlightRow } from "./FlightRow";
 
 interface Props {

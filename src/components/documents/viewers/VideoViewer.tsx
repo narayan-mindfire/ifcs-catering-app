@@ -4,8 +4,9 @@ import { useVideoPlayer, VideoView } from "expo-video";
 import React, { useEffect } from "react";
 import { Dimensions, StyleSheet, View } from "react-native";
 
-import { DocumentFile } from "../../../types/documents";
-import { log } from "../../../utils/logger";
+import { DocumentFile } from "@/types/documents";
+import { log } from "@/utils/logger";
+
 import { ViewerHeader } from "./ViewerHeader";
 
 interface ViewerProps {

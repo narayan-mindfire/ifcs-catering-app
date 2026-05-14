@@ -1,8 +1,8 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-import { QrIcon } from "../../assets/icons";
-import { AppButton } from "../common/AppButton";
+import { QrIcon } from "@/assets/icons";
+import { AppButton } from "@/components/common/AppButton";
 
 interface FlightInfo {
   flight: string;
