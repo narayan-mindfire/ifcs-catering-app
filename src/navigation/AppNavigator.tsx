@@ -45,7 +45,7 @@ export const AppNavigator = () => {
   );
 
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1">
       <Stack.Navigator
         initialRouteName={token ? "Dashboard" : "Login"}
         screenOptions={{

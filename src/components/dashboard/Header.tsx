@@ -31,7 +31,7 @@ export const Header: React.FC<{ onUserPress: () => void }> = ({
             {user && user.picture ? (
               <Image
                 source={{ uri: user.picture }}
-                style={{ width: 30, height: 30 }}
+                className="w-[30px] h-[30px]"
                 resizeMode="contain"
               />
             ) : (
@@ -51,7 +51,7 @@ export const Header: React.FC<{ onUserPress: () => void }> = ({
           <View className="h-[80px] md:h-[85px] rounded-lg justify-center items-center">
             <Image
               source={require("../../assets/images/TRANSOM.png")}
-              style={{ width: 75, height: 70 }}
+              className="w-[75px] h-[70px]"
               resizeMode="contain"
             />
           </View>
