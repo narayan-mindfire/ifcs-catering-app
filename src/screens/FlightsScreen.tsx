@@ -22,6 +22,7 @@ import { FlightListHeader } from "../components/flight-list/FlightListHeader";
 import { StationSelector } from "../components/flight-list/StationSelector";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
+import { Colors } from "../theme/colors";
 import { Flight } from "../types/flight";
 import { formatDate, formatDateToLocalISO } from "../utils/dateFormatter";
 import { log } from "../utils/logger";
@@ -180,7 +181,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     if (!isLoadingMore) return null;
     return (
       <View className="py-4">
-        <ActivityIndicator size="small" color="#00529b" />
+        <ActivityIndicator size="small" color={Colors.brand.blue} />
       </View>
     );
   }, [isLoadingMore]);
@@ -246,7 +247,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 className="flex-1 text-base text-text-primary h-full"
                 placeholder="Flight #"
-                placeholderTextColor="#999"
+                placeholderTextColor={Colors.text.muted}
                 value={localFlightNum}
                 onChangeText={setLocalFlightNum}
                 autoCapitalize="characters"
@@ -272,8 +273,8 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
               mode="date"
               display={Platform.OS === "ios" ? "inline" : "default"}
               onChange={onDateChange}
-              accentColor="#602AF3"
-              textColor="#602AF3"
+              accentColor={Colors.brand.purple}
+              textColor={Colors.brand.purple}
               style={{ height: Platform.OS === "ios" ? 300 : "auto" }}
             />
 
@@ -306,7 +307,7 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
           <ActivityIndicator
             testID="loading-indicator"
             size="large"
-            color="#00529b"
+            color={Colors.brand.blue}
           />
         </View>
       ) : error ? (

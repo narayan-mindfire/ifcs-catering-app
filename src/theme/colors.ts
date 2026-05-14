@@ -1,0 +1,61 @@
+export const Colors = {
+  // Brand Colors
+  brand: {
+    purple: "#602AF3",
+    blue: "#00529b",
+    indigo: "#5046e5",
+  },
+  primary: "#B79EFA",
+  accent: "#E2D8FD",
+  button: "#602AF3",
+
+  // Backgrounds
+  bg: {
+    primary: "#B79EFA",
+    secondary: "#dfdddd",
+    tertiary: "#F5F5F5",
+    quaternary: "#faf9f9",
+    surface: "#FFFFFF",
+    accent: "#E2D8FD",
+    button: "#602AF3",
+  },
+
+  // Text
+  text: {
+    primary: "#27262C",
+    secondary: "#4F4B58",
+    tertiary: "#A09CAB",
+    muted: "#7A7A7A",
+    surface: "#FFFFFF",
+    placeholder: "#94a3b8",
+    dark: "#333",
+  },
+
+  // Borders
+  border: {
+    accent: "#B79EFA",
+    secondary: "#c1c2c3",
+    muted: "#EAE9EC",
+  },
+
+  // UI States
+  ui: {
+    success: "#22c55e",
+    warning: "#f59e0b",
+    error: "#ef4444",
+    info: "#3b82f6",
+  },
+
+  // Specific UI Elements
+  memoHighlight: "#FFDD99",
+  inactive: "#8e8e93",
+  placeholder: "#9CA3AF",
+  plane: "#D1D5DB",
+
+  // Base
+  white: "#FFFFFF",
+  black: "#000000",
+  transparent: "transparent",
+};
+
+export default Colors;

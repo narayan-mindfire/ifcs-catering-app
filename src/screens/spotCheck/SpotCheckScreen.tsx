@@ -20,6 +20,7 @@ import { RootStackParamList } from "../../navigation/AppNavigator";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useSpotCheckStore } from "../../store/useSpotcheckStore";
+import { Colors } from "../../theme/colors";
 import { formatDate, formatDateDetail } from "../../utils/dateFormatter";
 import { SpotCheckDetailsModal } from "./SpotCheckFailedDetailsModal";
 
@@ -190,7 +191,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
       <View className="flex-1 bg-bg-surface p-4">
         {showLoading ? (
           <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#602AF3" />
+            <ActivityIndicator size="large" color={Colors.brand.purple} />
             <Text className="mt-4 text-text-secondary">Loading Data...</Text>
           </View>
         ) : (
@@ -205,7 +206,7 @@ const SpotCheckScreen: React.FC<Props> = ({ route, navigation }) => {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                tintColor="#602AF3"
+                tintColor={Colors.brand.purple}
               />
             }
             ListEmptyComponent={

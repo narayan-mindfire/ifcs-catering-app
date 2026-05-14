@@ -20,6 +20,7 @@ import { z } from "zod";
 
 import { MicrosoftLogo } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
+import { Colors } from "../../theme/colors";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -154,7 +155,7 @@ const LoginScreen = () => {
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     placeholder="Username"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={Colors.text.placeholder}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -179,7 +180,7 @@ const LoginScreen = () => {
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
                     placeholder="Password"
-                    placeholderTextColor="#94a3b8"
+                    placeholderTextColor={Colors.text.placeholder}
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}

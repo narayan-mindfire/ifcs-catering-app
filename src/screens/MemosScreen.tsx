@@ -35,6 +35,7 @@ import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useAuthStore } from "../store/useAuthStore";
 import { useMemoStore } from "../store/useMemosStore";
+import { Colors } from "../theme/colors";
 import { MemoTab } from "../types/memo";
 
 type Props = StackScreenProps<RootStackParamList, "Memos">;
@@ -158,7 +159,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               value={searchQuery}
               onChangeText={setSearchQuery}
               className="flex-1 text-text-primary text-lg"
-              placeholderTextColor="#A09CAB"
+              placeholderTextColor={Colors.text.tertiary}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={handleClearSearch} className="ml-2">
@@ -177,7 +178,9 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               <SquaresIcon
                 width={22}
                 height={22}
-                color={viewMode === "grid" ? "#ffffff" : "#A09CAB"}
+                color={
+                  viewMode === "grid" ? Colors.white : Colors.text.tertiary
+                }
               />
             </TouchableOpacity>
             <TouchableOpacity
@@ -189,7 +192,9 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
               <ListChecksIcon
                 width={22}
                 height={22}
-                color={viewMode === "list" ? "#ffffff" : "#A09CAB"}
+                color={
+                  viewMode === "list" ? Colors.white : Colors.text.tertiary
+                }
               />
             </TouchableOpacity>
           </View>
@@ -197,7 +202,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
 
         {searchQuery !== debouncedSearch && (
           <View className="absolute right-8 top-7">
-            <ActivityIndicator size="small" color="#602AF3" />
+            <ActivityIndicator size="small" color={Colors.brand.purple} />
           </View>
         )}
       </View>
@@ -236,7 +241,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 textStyle={{
                   fontSize: 14,
                   fontWeight: "600",
-                  color: isActive ? "#fff" : undefined,
+                  color: isActive ? Colors.white : undefined,
                 }}
               />
             );
@@ -255,7 +260,8 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
       {/* Content */}
       {isLoading && memos.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#602AF3" />
+          <ActivityIndicator size="large" color={Colors.brand.purple} />
+          <Text className="mt-4 text-text-secondary">Loading Data...</Text>
         </View>
       ) : (
         <FlatList
@@ -281,8 +287,8 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                   <View
                     className={`rounded-xl p-4 ${
                       isPriority
-                        ? "bg-[#FFDD99]/40 border-2 border-[#FFDD99]"
-                        : "bg-white border border-gray-200"
+                        ? "bg-memoHighlight/40 border-2 border-memoHighlight"
+                        : "bg-bg-surface border border-border-muted"
                     }`}
                   >
                     <View className="flex-row items-start justify-between mb-3">
@@ -351,8 +357,8 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
                 <View
                   className={`rounded-xl px-4 py-3 flex-row items-center gap-3 ${
                     isPriority
-                      ? "bg-[#FFDD99]/40 border-2 border-[#FFDD99]"
-                      : "bg-white border border-gray-200"
+                      ? "bg-memoHighlight/40 border-2 border-memoHighlight"
+                      : "bg-bg-surface border border-border-muted"
                   }`}
                 >
                   <View className="shrink-0">
@@ -428,7 +434,7 @@ const MemosScreen: React.FC<Props> = ({ navigation }) => {
           ListFooterComponent={
             isLoadingMore ? (
               <View className="py-5 items-center w-full">
-                <ActivityIndicator size="small" color="#602AF3" />
+                <ActivityIndicator size="small" color={Colors.brand.purple} />
               </View>
             ) : null
           }

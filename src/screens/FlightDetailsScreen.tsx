@@ -11,6 +11,7 @@ import { AppButton } from "../components/common/AppButton";
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import { useFlightStore } from "../store/useFlightStore";
+import { Colors } from "../theme/colors";
 import { formatDate } from "../utils/dateFormatter";
 import DeliveriesScreen from "./details/Deliveries";
 import { PreparationsScreen } from "./details/Preparations";
@@ -30,7 +31,7 @@ const CustomTabBar = ({
   descriptors,
   navigation,
 }: MaterialTopTabBarProps) => {
-  const inactiveColor = "#8e8e93";
+  const inactiveColor = Colors.inactive;
 
   return (
     <View className="flex-row px-3 pt-2.5 bg-bg-surface gap-2">
@@ -64,7 +65,7 @@ const CustomTabBar = ({
             textStyle={{
               fontSize: 20,
               fontWeight: "500",
-              color: isFocused ? "#fff" : inactiveColor,
+              color: isFocused ? Colors.white : inactiveColor,
             }}
           />
         );
