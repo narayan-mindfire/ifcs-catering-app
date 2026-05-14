@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ErrorBoundary } from "./src/components/common/ErrorBoundary";
 import { AppNavigator } from "./src/navigation/AppNavigator";
 import { useAuthStore } from "./src/store/useAuthStore";
+import { log } from "./src/utils/logger";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -39,7 +40,7 @@ export default function App() {
         await Notifications.setBadgeCountAsync(0);
         await restoreSession();
       } catch (error) {
-        console.error("Failed to initialize app:", error);
+        log.error("Failed to initialize app:", error);
       }
     };
     initializeApp();

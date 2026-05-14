@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { InfoIcon } from "../../assets/icons";
+import { log } from "../../utils/logger";
 
 interface Props {
   children: ReactNode;
@@ -20,13 +21,11 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    // Update state so the next render will show the fallback UI.
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-    // Here you would typically log to Sentry or Crashlytics
+    log.error("Uncaught error:", error, errorInfo);
   }
 
   private handleReset = () => {
