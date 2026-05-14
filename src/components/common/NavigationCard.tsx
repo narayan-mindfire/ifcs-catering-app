@@ -20,26 +20,30 @@ export const NavigationCard: React.FC<NavigationCardProps> = ({
 }) => {
   return (
     <TouchableOpacity
-      className="rounded-xl p-[15px] w-[48%] aspect-[1.5] overflow-hidden justify-start border border-[#ffffff7c] bg-[#0000000d]"
+      className="relative rounded-xl p-[15px] w-[48%] aspect-[1.5] overflow-hidden justify-start border border-white/20 bg-black/5"
       onPress={onPress}
+      activeOpacity={0.7}
     >
       <BlurView
         intensity={20}
         tint="dark"
         className="absolute inset-0 rounded-xl"
       />
-      <RedirectIcon
-        className="absolute top-[10px] right-[15px]"
-        fill="rgba(255, 255, 255, 0.7)"
-        width={24}
-        height={24}
-      />
-      <View className="items-start">
-        <IconComponent width={40} height={40} className="mb-1" />
+
+      <View className="absolute top-2.5 right-3">
+        <RedirectIcon fill="white" fillOpacity={0.7} width={20} height={20} />
+      </View>
+
+      <View className="items-start relative z-10">
+        <IconComponent width={36} height={36} fill="white" className="mb-1" />
         <View className="flex-row items-baseline mt-2">
-          <Text className="text-[22px] text-white">{title}</Text>
+          <Text className="text-xl md:text-2xl text-white font-medium">
+            {title}
+          </Text>
           {count && (
-            <Text className="text-[22px] text-white ml-[6px]">({count})</Text>
+            <Text className="text-xl md:text-2xl text-white/80 ml-2">
+              ({count})
+            </Text>
           )}
         </View>
       </View>

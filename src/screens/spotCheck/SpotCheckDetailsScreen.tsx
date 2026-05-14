@@ -25,6 +25,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { useFlightPreparationStore } from "../../store/useFlightPreparationStore";
 import { useFlightStore } from "../../store/useFlightStore";
 import { useSpotCheckStore } from "../../store/useSpotcheckStore";
+import { Colors } from "../../theme/colors";
 import {
   PackingStandardContainer,
   PackingStandardItem,
@@ -314,7 +315,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   if (isPrepLoading || !preparationDetail || isFlightLoading || isSubmitting) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center">
-        <ActivityIndicator size="large" color="#602AF3" />
+        <ActivityIndicator size="large" color={Colors.brand.purple} />
         <Text className="mt-4 text-gray-500">
           {isSubmitting
             ? "Submitting Spot Check..."
@@ -388,7 +389,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     }
     return (
       <View className="items-center justify-center">
-        <ImageIcon width={60} height={60} color="#9CA3AF" />
+        <ImageIcon width={60} height={60} color={Colors.placeholder} />
         <Text className="text-gray-400 mt-2">No Item Image</Text>
       </View>
     );
@@ -411,7 +412,7 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 />
               ) : (
                 <View className="items-center">
-                  <PlaneIcon width={40} height={40} color="#D1D5DB" />
+                  <PlaneIcon width={40} height={40} color={Colors.plane} />
                   <Text className="text-gray-400 mt-2 text-center">
                     No Position{"\n"}Image
                   </Text>
@@ -499,8 +500,8 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={handlePass}
             style={{
               flex: 1,
-              backgroundColor: "#22c55e",
-              borderColor: "#22c55e",
+              backgroundColor: Colors.ui.success,
+              borderColor: Colors.ui.success,
             }}
             type="primary"
           />
@@ -542,7 +543,11 @@ const SpotCheckDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 />
               ) : (
                 <View className="items-center justify-center">
-                  <ImageIcon width={60} height={60} color="#9CA3AF" />
+                  <ImageIcon
+                    width={60}
+                    height={60}
+                    color={Colors.placeholder}
+                  />
                   <Text className="text-gray-400 mt-2 font-medium">
                     Image Not Available
                   </Text>
