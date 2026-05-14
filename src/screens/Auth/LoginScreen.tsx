@@ -1,7 +1,9 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
@@ -14,11 +16,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { z } from "zod";
 
 import { MicrosoftLogo } from "../../assets/icons";
 import { useAuthStore } from "../../store/useAuthStore";
 
 WebBrowser.maybeCompleteAuthSession();
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 const decodeJWT = (token: string) => {
   try {
@@ -40,8 +50,18 @@ const decodeJWT = (token: string) => {
 };
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    },
+  });
+
   const { login, loginWithSSO, isLoading: authLoading } = useAuthStore();
   const [nonce] = useState(() => Crypto.randomUUID());
 
@@ -96,13 +116,9 @@ const LoginScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response, nonce]);
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert("Error", "Please enter both username and password.");
-      return;
-    }
+  const handleLogin = async (data: LoginFormValues) => {
     try {
-      await login(username, password);
+      await login(data.username, data.password);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       Alert.alert("Login Failed", "Please check your credentials.");
@@ -130,31 +146,59 @@ const LoginScreen = () => {
         </View>
 
         <View className="gap-y-4">
-          <View className="bg-slate-800/80 rounded-2xl border border-slate-700 px-5 py-4">
-            <TextInput
-              placeholder="Username"
-              placeholderTextColor="#94a3b8"
-              value={username}
-              onChangeText={setUsername}
-              autoCapitalize="none"
-              className="text-white text-lg font-medium"
-            />
+          <View>
+            <View className="bg-slate-800/80 rounded-2xl border border-slate-700 px-5 py-4">
+              <Controller
+                control={control}
+                name="username"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Username"
+                    placeholderTextColor="#94a3b8"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    autoCapitalize="none"
+                    className="text-white text-lg font-medium"
+                  />
+                )}
+              />
+            </View>
+            {errors.username && (
+              <Text className="text-red-500 text-xs mt-1 ml-2">
+                {errors.username.message}
+              </Text>
+            )}
           </View>
 
-          <View className="bg-slate-800/80 rounded-2xl border border-slate-700 px-5 py-4">
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor="#94a3b8"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              className="text-white text-lg font-medium"
-            />
+          <View>
+            <View className="bg-slate-800/80 rounded-2xl border border-slate-700 px-5 py-4">
+              <Controller
+                control={control}
+                name="password"
+                render={({ field: { onChange, onBlur, value } }) => (
+                  <TextInput
+                    placeholder="Password"
+                    placeholderTextColor="#94a3b8"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    value={value}
+                    secureTextEntry
+                    className="text-white text-lg font-medium"
+                  />
+                )}
+              />
+            </View>
+            {errors.password && (
+              <Text className="text-red-500 text-xs mt-1 ml-2">
+                {errors.password.message}
+              </Text>
+            )}
           </View>
         </View>
 
         <TouchableOpacity
-          onPress={handleLogin}
+          onPress={handleSubmit(handleLogin)}
           disabled={authLoading}
           className={`bg-blue-600 rounded-2xl py-4 mt-8 items-center shadow-lg shadow-blue-600/30 ${authLoading ? "opacity-70" : ""}`}
         >

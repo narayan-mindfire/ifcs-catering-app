@@ -1,4 +1,6 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Modal,
@@ -8,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { z } from "zod";
 
 import {
   AUXILIARY_DRIVE_ITEMS,
@@ -23,6 +26,27 @@ import {
   CreateACheckPayload,
   TruckACheck,
 } from "../../types/acheck";
+
+const acheckSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  vehicleNo: z.string().min(1, "Vehicle No. is required"),
+  date: z.string().min(1, "Date is required"),
+  lighting: z.record(z.string(), z.boolean()),
+  operation: z.record(z.string(), z.boolean()),
+  auxiliaryDrive: z.record(z.string(), z.boolean()),
+  hydraulicsFailAt: z.record(z.string(), z.boolean()),
+  engine: z.string(),
+  transmission: z.string(),
+  tires: z.record(z.string(), z.boolean()),
+  compressedAirLineLeaking: z.string(),
+  bodyDamage: z.record(z.string(), z.boolean()),
+  fallProtection: z.record(z.string(), z.boolean()),
+  details: z.string(),
+  accidentHazard: z.enum(["yes", "no"]).nullable(),
+  externalDamage: z.string(),
+});
+
+type AcheckFormValues = z.infer<typeof acheckSchema>;
 
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
@@ -335,7 +359,7 @@ function buildPayload(
   } as CreateACheckPayload;
 }
 
-function seedFromApiData(data: TruckACheck) {
+function seedFromApiData(data: TruckACheck): AcheckFormValues {
   const reverseMap = (
     map: Record<string, keyof CreateACheckPayload>,
     source: TruckACheck,
@@ -387,133 +411,93 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
   const isReadOnly = mode === "view";
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form state
-  const [name, setName] = useState("");
-  const [vehicleNo, setVehicleNo] = useState("");
-  const [date, setDate] = useState("");
-  const [lighting, setLighting] = useState(makeCheckboxState(LIGHTING_ITEMS));
-  const [operation, setOperation] = useState(
-    makeCheckboxState(OPERATION_ITEMS),
-  );
-  const [auxiliaryDrive, setAuxiliaryDrive] = useState(
-    makeCheckboxState(AUXILIARY_DRIVE_ITEMS),
-  );
-  const [hydraulicsFailAt, setHydraulicsFailAt] = useState(
-    makeCheckboxState(HYDRAULICS_ITEMS),
-  );
-  const [engine, setEngine] = useState("");
-  const [transmission, setTransmission] = useState("");
-  const [tires, setTires] = useState(makeCheckboxState(TIRES_ITEMS));
-  const [compressedAirLineLeaking, setCompressedAirLineLeaking] = useState("");
-  const [bodyDamage, setBodyDamage] = useState(
-    makeCheckboxState(BODY_DAMAGE_ITEMS),
-  );
-  const [fallProtection, setFallProtection] = useState(
-    makeCheckboxState(FALL_PROTECTION_ITEMS),
-  );
-  const [details, setDetails] = useState("");
-  const [accidentHazard, setAccidentHazard] = useState<"yes" | "no" | null>(
-    null,
-  );
-  const [externalDamage, setExternalDamage] = useState("");
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<AcheckFormValues>({
+    resolver: zodResolver(acheckSchema),
+    defaultValues: {
+      name: driverName || "",
+      vehicleNo: truckNo || "",
+      date: new Date().toISOString(),
+      lighting: makeCheckboxState(LIGHTING_ITEMS),
+      operation: makeCheckboxState(OPERATION_ITEMS),
+      auxiliaryDrive: makeCheckboxState(AUXILIARY_DRIVE_ITEMS),
+      hydraulicsFailAt: makeCheckboxState(HYDRAULICS_ITEMS),
+      engine: "",
+      transmission: "",
+      tires: makeCheckboxState(TIRES_ITEMS),
+      compressedAirLineLeaking: "",
+      bodyDamage: makeCheckboxState(BODY_DAMAGE_ITEMS),
+      fallProtection: makeCheckboxState(FALL_PROTECTION_ITEMS),
+      details: "",
+      accidentHazard: null,
+      externalDamage: "",
+    },
+  });
+
+  const formValues = watch();
 
   useEffect(() => {
     if (initialData && (mode === "view" || mode === "edit")) {
       const seeded = seedFromApiData(initialData);
-      setName(seeded.name);
-      setVehicleNo(seeded.vehicleNo);
-      setDate(seeded.date);
-      setLighting(seeded.lighting);
-      setOperation(seeded.operation);
-      setAuxiliaryDrive(seeded.auxiliaryDrive);
-      setHydraulicsFailAt(seeded.hydraulicsFailAt);
-      setEngine(seeded.engine);
-      setTransmission(seeded.transmission);
-      setTires(seeded.tires);
-      setCompressedAirLineLeaking(seeded.compressedAirLineLeaking);
-      setBodyDamage(seeded.bodyDamage);
-      setFallProtection(seeded.fallProtection);
-      setDetails(seeded.details);
-      setAccidentHazard(seeded.accidentHazard);
-      setExternalDamage(seeded.externalDamage);
+      reset(seeded as any);
     } else if (mode === "create") {
-      // Default Values for Create Mode
-      setName(driverName || "");
-      setVehicleNo(truckNo || "");
-      setDate(new Date().toISOString()); // <-- PATCH: Default to today
-      setLighting(makeCheckboxState(LIGHTING_ITEMS));
-      setOperation(makeCheckboxState(OPERATION_ITEMS));
-      setAuxiliaryDrive(makeCheckboxState(AUXILIARY_DRIVE_ITEMS));
-      setHydraulicsFailAt(makeCheckboxState(HYDRAULICS_ITEMS));
-      setEngine("");
-      setTransmission("");
-      setTires(makeCheckboxState(TIRES_ITEMS));
-      setCompressedAirLineLeaking("");
-      setBodyDamage(makeCheckboxState(BODY_DAMAGE_ITEMS));
-      setFallProtection(makeCheckboxState(FALL_PROTECTION_ITEMS));
-      setDetails("");
-      setAccidentHazard(null);
-      setExternalDamage("");
+      reset({
+        name: driverName || "",
+        vehicleNo: truckNo || "",
+        date: new Date().toISOString(),
+        lighting: makeCheckboxState(LIGHTING_ITEMS),
+        operation: makeCheckboxState(OPERATION_ITEMS),
+        auxiliaryDrive: makeCheckboxState(AUXILIARY_DRIVE_ITEMS),
+        hydraulicsFailAt: makeCheckboxState(HYDRAULICS_ITEMS),
+        engine: "",
+        transmission: "",
+        tires: makeCheckboxState(TIRES_ITEMS),
+        compressedAirLineLeaking: "",
+        bodyDamage: makeCheckboxState(BODY_DAMAGE_ITEMS),
+        fallProtection: makeCheckboxState(FALL_PROTECTION_ITEMS),
+        details: "",
+        accidentHazard: null,
+        externalDamage: "",
+      });
     }
-  }, [initialData, mode, driverName, truckNo]);
+  }, [initialData, mode, driverName, truckNo, reset]);
 
-  const handleCreate = async () => {
-    if (!onSubmit) return;
+  const onFormSubmit: SubmitHandler<AcheckFormValues> = async (data) => {
     setIsSubmitting(true);
     try {
       const payload = buildPayload(
-        name,
-        vehicleNo,
-        date,
-        lighting,
-        operation,
-        auxiliaryDrive,
-        hydraulicsFailAt,
-        engine,
-        transmission,
-        tires,
-        compressedAirLineLeaking,
-        bodyDamage,
-        fallProtection,
-        details,
-        accidentHazard,
-        externalDamage,
+        data.name,
+        data.vehicleNo,
+        data.date,
+        data.lighting,
+        data.operation,
+        data.auxiliaryDrive,
+        data.hydraulicsFailAt,
+        data.engine,
+        data.transmission,
+        data.tires,
+        data.compressedAirLineLeaking,
+        data.bodyDamage,
+        data.fallProtection,
+        data.details,
+        data.accidentHazard,
+        data.externalDamage,
         truckId,
         assignmentId,
         userId,
       );
-      await onSubmit(payload);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
-  const handleUpdate = async () => {
-    if (!onUpdate || !initialData) return;
-    setIsSubmitting(true);
-    try {
-      const payload = buildPayload(
-        name,
-        vehicleNo,
-        date,
-        lighting,
-        operation,
-        auxiliaryDrive,
-        hydraulicsFailAt,
-        engine,
-        transmission,
-        tires,
-        compressedAirLineLeaking,
-        bodyDamage,
-        fallProtection,
-        details,
-        accidentHazard,
-        externalDamage,
-        truckId,
-        assignmentId,
-        userId,
-      );
-      await onUpdate(initialData.id, payload);
+      if (mode === "edit" && initialData && onUpdate) {
+        await onUpdate(initialData.id, payload);
+      } else if (mode === "create" && onSubmit) {
+        await onSubmit(payload);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -554,40 +538,71 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <View className="flex-row gap-2 mb-3">
               <View className="flex-1">
                 <Text className="text-text-tertiary text-xs mb-1">Name</Text>
-                <TextInput
-                  placeholder="Enter Name"
-                  placeholderTextColor="#A09CAB"
-                  value={name}
-                  onChangeText={setName}
-                  editable={!isReadOnly}
-                  className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                <Controller
+                  control={control}
+                  name="name"
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      placeholder="Enter Name"
+                      placeholderTextColor="#A09CAB"
+                      value={value}
+                      onChangeText={onChange}
+                      editable={!isReadOnly}
+                      className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                    />
+                  )}
                 />
+                {errors.name && (
+                  <Text className="text-red-500 text-[10px] mt-0.5">
+                    {errors.name.message}
+                  </Text>
+                )}
               </View>
               <View className="flex-1">
                 <Text className="text-text-tertiary text-xs mb-1">
                   Vehicle No.
                 </Text>
-                <TextInput
-                  placeholder="Vehicle No."
-                  placeholderTextColor="#A09CAB"
-                  value={vehicleNo}
-                  onChangeText={setVehicleNo}
-                  editable={!isReadOnly}
-                  className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                <Controller
+                  control={control}
+                  name="vehicleNo"
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      placeholder="Vehicle No."
+                      placeholderTextColor="#A09CAB"
+                      value={value}
+                      onChangeText={onChange}
+                      editable={!isReadOnly}
+                      className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                    />
+                  )}
                 />
+                {errors.vehicleNo && (
+                  <Text className="text-red-500 text-[10px] mt-0.5">
+                    {errors.vehicleNo.message}
+                  </Text>
+                )}
               </View>
               <View className="flex-1">
                 <Text className="text-text-tertiary text-xs mb-1">Date</Text>
-                <TextInput
-                  placeholder="MM DD, YYYY"
-                  placeholderTextColor="#A09CAB"
-                  // Render ISO date safely as localized string
-                  value={date ? new Date(date).toLocaleDateString() : ""}
-                  onChangeText={setDate}
-                  // Locked for view, editable for create/edit
-                  editable={!isReadOnly}
-                  className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field: { onChange, value } }) => (
+                    <TextInput
+                      placeholder="MM DD, YYYY"
+                      placeholderTextColor="#A09CAB"
+                      value={value ? new Date(value).toLocaleDateString() : ""}
+                      onChangeText={onChange}
+                      editable={!isReadOnly}
+                      className={`bg-bg-surface border border-border-muted rounded-lg px-3 py-2.5 text-text-primary text-sm ${isReadOnly ? "opacity-60" : ""}`}
+                    />
+                  )}
                 />
+                {errors.date && (
+                  <Text className="text-red-500 text-[10px] mt-0.5">
+                    {errors.date.message}
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -596,12 +611,16 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Lighting"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setLighting((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue("lighting", checkAll(formValues.lighting))
+              }
             />
             <CheckboxGrid
               items={LIGHTING_ITEMS}
-              state={lighting}
-              onToggle={(key) => setLighting((s) => toggleKey(s, key))}
+              state={formValues.lighting}
+              onToggle={(key) =>
+                setValue("lighting", toggleKey(formValues.lighting, key))
+              }
               disabled={isReadOnly}
             />
 
@@ -610,12 +629,16 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Operation"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setOperation((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue("operation", checkAll(formValues.operation))
+              }
             />
             <CheckboxGrid
               items={OPERATION_ITEMS}
-              state={operation}
-              onToggle={(key) => setOperation((s) => toggleKey(s, key))}
+              state={formValues.operation}
+              onToggle={(key) =>
+                setValue("operation", toggleKey(formValues.operation, key))
+              }
               disabled={isReadOnly}
             />
 
@@ -624,12 +647,19 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Auxiliary Drive"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setAuxiliaryDrive((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue("auxiliaryDrive", checkAll(formValues.auxiliaryDrive))
+              }
             />
             <CheckboxGrid
               items={AUXILIARY_DRIVE_ITEMS}
-              state={auxiliaryDrive}
-              onToggle={(key) => setAuxiliaryDrive((s) => toggleKey(s, key))}
+              state={formValues.auxiliaryDrive}
+              onToggle={(key) =>
+                setValue(
+                  "auxiliaryDrive",
+                  toggleKey(formValues.auxiliaryDrive, key),
+                )
+              }
               disabled={isReadOnly}
             />
 
@@ -638,31 +668,53 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Hydraulics Fail At"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setHydraulicsFailAt((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue(
+                  "hydraulicsFailAt",
+                  checkAll(formValues.hydraulicsFailAt),
+                )
+              }
             />
             <CheckboxGrid
               items={HYDRAULICS_ITEMS}
-              state={hydraulicsFailAt}
-              onToggle={(key) => setHydraulicsFailAt((s) => toggleKey(s, key))}
+              state={formValues.hydraulicsFailAt}
+              onToggle={(key) =>
+                setValue(
+                  "hydraulicsFailAt",
+                  toggleKey(formValues.hydraulicsFailAt, key),
+                )
+              }
               disabled={isReadOnly}
             />
 
             <View className="h-px bg-border-muted my-3" />
 
             <SectionTitle label="Engine" />
-            <StyledInput
-              placeholder="Enter details"
-              value={engine}
-              onChangeText={setEngine}
-              editable={!isReadOnly}
+            <Controller
+              control={control}
+              name="engine"
+              render={({ field: { onChange, value } }) => (
+                <StyledInput
+                  placeholder="Enter details"
+                  value={value}
+                  onChangeText={onChange}
+                  editable={!isReadOnly}
+                />
+              )}
             />
 
             <SectionTitle label="Transmission" />
-            <StyledInput
-              placeholder="Enter details"
-              value={transmission}
-              onChangeText={setTransmission}
-              editable={!isReadOnly}
+            <Controller
+              control={control}
+              name="transmission"
+              render={({ field: { onChange, value } }) => (
+                <StyledInput
+                  placeholder="Enter details"
+                  value={value}
+                  onChangeText={onChange}
+                  editable={!isReadOnly}
+                />
+              )}
             />
 
             <View className="h-px bg-border-muted mb-3" />
@@ -670,12 +722,14 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Tires"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setTires((s) => checkAll(s))}
+              onCheckAll={() => setValue("tires", checkAll(formValues.tires))}
             />
             <CheckboxGrid
               items={TIRES_ITEMS}
-              state={tires}
-              onToggle={(key) => setTires((s) => toggleKey(s, key))}
+              state={formValues.tires}
+              onToggle={(key) =>
+                setValue("tires", toggleKey(formValues.tires, key))
+              }
               columns={2}
               disabled={isReadOnly}
             />
@@ -683,11 +737,17 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <View className="h-px bg-border-muted my-3" />
 
             <SectionTitle label="Compressed Air Line Leaking" />
-            <StyledInput
-              placeholder="Enter where"
-              value={compressedAirLineLeaking}
-              onChangeText={setCompressedAirLineLeaking}
-              editable={!isReadOnly}
+            <Controller
+              control={control}
+              name="compressedAirLineLeaking"
+              render={({ field: { onChange, value } }) => (
+                <StyledInput
+                  placeholder="Enter where"
+                  value={value}
+                  onChangeText={onChange}
+                  editable={!isReadOnly}
+                />
+              )}
             />
 
             <View className="h-px bg-border-muted mb-3" />
@@ -695,12 +755,16 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Body Damage"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setBodyDamage((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue("bodyDamage", checkAll(formValues.bodyDamage))
+              }
             />
             <CheckboxGrid
               items={BODY_DAMAGE_ITEMS}
-              state={bodyDamage}
-              onToggle={(key) => setBodyDamage((s) => toggleKey(s, key))}
+              state={formValues.bodyDamage}
+              onToggle={(key) =>
+                setValue("bodyDamage", toggleKey(formValues.bodyDamage, key))
+              }
               disabled={isReadOnly}
             />
 
@@ -709,12 +773,19 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <SectionTitle
               label="Fall Protection"
               showCheckAll={!isReadOnly}
-              onCheckAll={() => setFallProtection((s) => checkAll(s))}
+              onCheckAll={() =>
+                setValue("fallProtection", checkAll(formValues.fallProtection))
+              }
             />
             <CheckboxGrid
               items={FALL_PROTECTION_ITEMS}
-              state={fallProtection}
-              onToggle={(key) => setFallProtection((s) => toggleKey(s, key))}
+              state={formValues.fallProtection}
+              onToggle={(key) =>
+                setValue(
+                  "fallProtection",
+                  toggleKey(formValues.fallProtection, key),
+                )
+              }
               columns={3}
               disabled={isReadOnly}
             />
@@ -722,37 +793,55 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
             <View className="h-px bg-border-muted my-3" />
 
             <SectionTitle label="Details" />
-            <StyledInput
-              placeholder="Enter details"
-              value={details}
-              onChangeText={setDetails}
-              multiline
-              editable={!isReadOnly}
+            <Controller
+              control={control}
+              name="details"
+              render={({ field: { onChange, value } }) => (
+                <StyledInput
+                  placeholder="Enter details"
+                  value={value}
+                  onChangeText={onChange}
+                  multiline
+                  editable={!isReadOnly}
+                />
+              )}
             />
 
             <SectionTitle label="Accident Hazard" />
-            <View className="flex-row mb-3">
-              <RadioItem
-                label="Yes"
-                selected={accidentHazard === "yes"}
-                onSelect={() => setAccidentHazard("yes")}
-                disabled={isReadOnly}
-              />
-              <RadioItem
-                label="No"
-                selected={accidentHazard === "no"}
-                onSelect={() => setAccidentHazard("no")}
-                disabled={isReadOnly}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="accidentHazard"
+              render={({ field: { onChange, value } }) => (
+                <View className="flex-row mb-3">
+                  <RadioItem
+                    label="Yes"
+                    selected={value === "yes"}
+                    onSelect={() => onChange("yes")}
+                    disabled={isReadOnly}
+                  />
+                  <RadioItem
+                    label="No"
+                    selected={value === "no"}
+                    onSelect={() => onChange("no")}
+                    disabled={isReadOnly}
+                  />
+                </View>
+              )}
+            />
 
             <SectionTitle label="External Damage" />
-            <StyledInput
-              placeholder="Text Description"
-              value={externalDamage}
-              onChangeText={setExternalDamage}
-              multiline
-              editable={!isReadOnly}
+            <Controller
+              control={control}
+              name="externalDamage"
+              render={({ field: { onChange, value } }) => (
+                <StyledInput
+                  placeholder="Text Description"
+                  value={value}
+                  onChangeText={onChange}
+                  multiline
+                  editable={!isReadOnly}
+                />
+              )}
             />
 
             <View className="h-4" />
@@ -772,7 +861,7 @@ export const AcheckForm: React.FC<AcheckFormProps> = ({
 
             {mode !== "view" && (
               <TouchableOpacity
-                onPress={mode === "edit" ? handleUpdate : handleCreate}
+                onPress={handleSubmit(onFormSubmit as any)}
                 disabled={isSubmitting}
                 className="flex-1 bg-bg-button py-3 rounded-lg items-center justify-center"
                 activeOpacity={0.8}
