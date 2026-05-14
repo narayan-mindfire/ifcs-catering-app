@@ -5,6 +5,7 @@ import { log } from "../utils/logger";
 interface ApiResponse<T> {
   success: boolean;
   data: T;
+  message?: string;
   meta?: {
     timestamp: string;
     limit?: number;

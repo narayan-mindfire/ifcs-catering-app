@@ -92,7 +92,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     () => [
       {
         label: "Flights",
-        onPress: () => navigation.navigate("Flights", {}),
+        onPress: () => navigation.navigate("Flights", { flightId }),
       },
       {
         label: `Flight Details`,
@@ -102,7 +102,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         label: currentTab,
       },
     ],
-    [navigation, currentTab],
+    [navigation, currentTab, flightId],
   );
 
   const formattedDateString = useMemo(() => {

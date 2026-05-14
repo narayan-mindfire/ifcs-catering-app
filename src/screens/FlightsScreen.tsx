@@ -14,6 +14,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
 import { BreadCrumb } from "../components/common/BreadCrumbs";
 import { FlightGroupItem } from "../components/flight-list/FlightGroupItem";
@@ -50,7 +51,20 @@ const FlightsScreen: React.FC<Props> = ({ navigation }) => {
     loadMoreFlights,
     setFilters,
     filters,
-  } = useFlightStore();
+  } = useFlightStore(
+    useShallow((state) => ({
+      flightGroups: state.flightGroups,
+      isLoading: state.isLoading,
+      isRefreshing: state.isRefreshing,
+      isLoadingMore: state.isLoadingMore,
+      hasNextPage: state.hasNextPage,
+      error: state.error,
+      fetchFlights: state.fetchFlights,
+      loadMoreFlights: state.loadMoreFlights,
+      setFilters: state.setFilters,
+      filters: state.filters,
+    })),
+  );
 
   const [localFlightNum, setLocalFlightNum] = useState(filters.flight || "");
   const [startDate, setStartDate] = useState<Date | null>(

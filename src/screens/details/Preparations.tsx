@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
 import { LoadingOverlay } from "../../components/common/LoadingOverlay";
 import { PreparationsModals } from "../../components/preparation/PreparationModal";
@@ -43,10 +44,30 @@ export const PreparationsScreen: React.FC = () => {
     linkPriorPrep,
     fetchPreparationById,
     trucks,
-  } = useFlightPreparationStore();
+  } = useFlightPreparationStore(
+    useShallow((state) => ({
+      preparations: state.preparations,
+      isLoading: state.isLoading,
+      fetchPreparations: state.fetchPreparations,
+      updatePreparationFlag: state.updatePreparationFlag,
+      isUpdating: state.isUpdating,
+      checkUserSignature: state.checkUserSignature,
+      addUserSignature: state.addUserSignature,
+      linkPriorPrep: state.linkPriorPrep,
+      fetchPreparationById: state.fetchPreparationById,
+      trucks: state.trucks,
+    })),
+  );
 
   const { deliveries, selectedDeliveryId, fetchDeliveries, createDelivery } =
-    useDeliveryStore();
+    useDeliveryStore(
+      useShallow((state) => ({
+        deliveries: state.deliveries,
+        selectedDeliveryId: state.selectedDeliveryId,
+        fetchDeliveries: state.fetchDeliveries,
+        createDelivery: state.createDelivery,
+      })),
+    );
 
   const { user } = useAuthStore();
 
