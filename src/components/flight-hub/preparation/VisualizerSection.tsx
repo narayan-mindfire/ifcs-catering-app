@@ -1,6 +1,10 @@
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
+import {
+  PackingStandard,
+  PackingStandardContainer,
+} from "../../../types/preparations";
 import { CartVisualizer } from "../CartVisulaizer";
 import { ContainerVisualizer } from "../ContainerVisualizer";
 import { OvenVisualizer } from "../OvenVisualizer";
@@ -8,10 +12,13 @@ import { OvenVisualizer } from "../OvenVisualizer";
 interface VisualizerSectionProps {
   positionImage?: string | null;
   derivedEquipmentType: string;
-  packingStd: any;
-  drawersToRender: any[];
+  packingStd: PackingStandard | null | undefined;
+  drawersToRender: PackingStandardContainer[];
   activeDrawerIndex: number | null;
-  handleDrawerClick: (index: number | null, data: any | null) => void;
+  handleDrawerClick: (
+    index: number | null,
+    data: PackingStandardContainer | null,
+  ) => void;
   viewMode: "front" | "rear";
   setViewMode: (mode: "front" | "rear") => void;
   setActiveDrawerIndex: (index: number | null) => void;
@@ -52,7 +59,7 @@ export const VisualizerSection: React.FC<VisualizerSectionProps> = ({
               numberOfDrawers={drawersToRender.length}
               drawersData={drawersToRender}
               defaultOpenDrawer={activeDrawerIndex}
-              onDrawerClick={(idx: any) =>
+              onDrawerClick={(idx: number | null) =>
                 idx !== null && drawersToRender[idx]
                   ? handleDrawerClick(idx, drawersToRender[idx])
                   : handleDrawerClick(null, null)
