@@ -29,21 +29,17 @@ export const NavigationCard: React.FC<NavigationCardProps> = ({
         className="absolute inset-0 rounded-xl"
       />
       <RedirectIcon
-        style={{ position: "absolute", top: 10, right: 15 }}
+        className="absolute top-[10px] right-[15px]"
         fill="rgba(255, 255, 255, 0.7)"
         width={24}
         height={24}
       />
       <View className="items-start">
-        <IconComponent width={40} height={40} style={{ marginBottom: 4 }} />
+        <IconComponent width={40} height={40} className="mb-1" />
         <View className="flex-row items-baseline mt-2">
-          <Text className="font-[24px] text-white" style={{ fontSize: 22 }}>
-            {title}
-          </Text>
+          <Text className="text-[22px] text-white">{title}</Text>
           {count && (
-            <Text className="text-white ml-[6px]" style={{ fontSize: 22 }}>
-              ({count})
-            </Text>
+            <Text className="text-[22px] text-white ml-[6px]">({count})</Text>
           )}
         </View>
       </View>
