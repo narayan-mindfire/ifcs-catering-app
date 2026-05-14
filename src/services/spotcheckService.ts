@@ -136,16 +136,28 @@ export const spotCheckService = {
     limit: number = 50,
     offset: number = 0,
   ): Promise<SpotCheckLog[]> => {
-    const response = await apiClient.get<SpotCheckLogsResponse>(
-      "/spot-check/logs",
-      {
-        params: { userId, limit, offset },
-      },
-    );
+    try {
+      const response = await apiClient.get<SpotCheckLogsResponse>(
+        "/spot-check/logs",
+        {
+          params: { userId, limit, offset },
+        },
+      );
 
-    if (response.data.success) {
-      return response.data.data || [];
+      if (response.data.success) {
+        return response.data.data || [];
+      } else {
+        throw new Error(
+          response.data.message || "Failed to fetch spot check logs",
+        );
+      }
+    } catch (error: any) {
+      log.error("getSpotCheckLogs Error:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch spot check logs",
+      );
     }
-    return [];
   },
 };

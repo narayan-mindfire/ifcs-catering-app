@@ -54,7 +54,7 @@ export const useTimerStore = create<TimerStoreState>()(
       error: null,
 
       fetchStatus: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           const response = await attendanceService.getStatus();
           if (response.success && response.data) {
@@ -73,11 +73,15 @@ export const useTimerStore = create<TimerStoreState>()(
               totalWorkedMs: 0,
               totalBreakMs: 0,
               isLoading: false,
+              error: response.message || "Failed to fetch status",
             });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("Fetch status error:", err);
-          set({ isLoading: false });
+          set({
+            isLoading: false,
+            error: err.message || "Failed to fetch status",
+          });
         }
       },
 
@@ -104,9 +108,10 @@ export const useTimerStore = create<TimerStoreState>()(
               isLoading: false,
               shiftState: "OFF",
               lastStatusChangeAt: null,
+              error: response.message || "Failed to fetch history",
             });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("Fetch history error:", err);
           set({
             totalWorkedMs: 0,
@@ -115,12 +120,13 @@ export const useTimerStore = create<TimerStoreState>()(
             isLoading: false,
             shiftState: "OFF",
             lastStatusChangeAt: null,
+            error: err.message || "Failed to fetch history",
           });
         }
       },
 
       startShift: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           const startTime = getISOStringWithOffset(new Date());
           const response = await attendanceService.startShift(startTime);
@@ -134,15 +140,23 @@ export const useTimerStore = create<TimerStoreState>()(
               shiftType: data.shiftType,
               isLoading: false,
             });
+          } else {
+            set({
+              isLoading: false,
+              error: response.message || "Failed to start shift",
+            });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("Start shift error:", err);
-          set({ isLoading: false });
+          set({
+            isLoading: false,
+            error: err.message || "Failed to start shift",
+          });
         }
       },
 
       pauseShift: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           const response = await attendanceService.startBreak();
           if (response.success) {
@@ -155,15 +169,23 @@ export const useTimerStore = create<TimerStoreState>()(
               currentSessionDuration: 0,
               isLoading: false,
             });
+          } else {
+            set({
+              isLoading: false,
+              error: response.message || "Failed to pause shift",
+            });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("Pause shift error:", err);
-          set({ isLoading: false });
+          set({
+            isLoading: false,
+            error: err.message || "Failed to pause shift",
+          });
         }
       },
 
       resumeShift: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           const response = await attendanceService.endBreak();
           if (response.success) {
@@ -176,15 +198,23 @@ export const useTimerStore = create<TimerStoreState>()(
               currentBreakSessionDuration: 0,
               isLoading: false,
             });
+          } else {
+            set({
+              isLoading: false,
+              error: response.message || "Failed to resume shift",
+            });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("Resume shift error:", err);
-          set({ isLoading: false });
+          set({
+            isLoading: false,
+            error: err.message || "Failed to resume shift",
+          });
         }
       },
 
       endShift: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
           const response = await attendanceService.endShift();
           if (response.success) {
@@ -198,10 +228,18 @@ export const useTimerStore = create<TimerStoreState>()(
               currentBreakSessionDuration: 0,
               isLoading: false,
             });
+          } else {
+            set({
+              isLoading: false,
+              error: response.message || "Failed to end shift",
+            });
           }
-        } catch (err) {
+        } catch (err: any) {
           log.error("End shift error:", err);
-          set({ isLoading: false });
+          set({
+            isLoading: false,
+            error: err.message || "Failed to end shift",
+          });
         }
       },
 
