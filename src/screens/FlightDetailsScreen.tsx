@@ -2,6 +2,7 @@ import {
   createMaterialTopTabNavigator,
   MaterialTopTabBarProps,
 } from "@react-navigation/material-top-tabs";
+import { TabNavigationState } from "@react-navigation/native";
 import { StackScreenProps } from "@react-navigation/stack";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
@@ -91,7 +92,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     () => [
       {
         label: "Flights",
-        onPress: () => navigation.navigate("Flights", {} as any),
+        onPress: () => navigation.navigate("Flights", { flightId }),
       },
       {
         label: `Flight Details`,
@@ -101,7 +102,7 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         label: currentTab,
       },
     ],
-    [navigation, currentTab],
+    [navigation, currentTab, flightId],
   );
 
   const formattedDateString = useMemo(() => {
@@ -109,9 +110,8 @@ const FlightDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [date]);
 
   const handleStateChange = useCallback((e: any) => {
-    const index = e.data.state.index;
-    const routes = e.data.state.routes;
-    const currentRouteName = routes[index].name;
+    const state = e.data.state as TabNavigationState<FlightDetailTabParamList>;
+    const currentRouteName = state.routes[state.index].name;
     setCurrentTab(currentRouteName);
   }, []);
 

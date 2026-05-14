@@ -50,7 +50,7 @@ describe("DocumentsScreen", () => {
   it("renders correctly and fetches root folder on mount", () => {
     render(
       <NavigationContainer>
-        <DocumentsScreen navigation={mockNavigation} route={mockRoute as any} />
+        <DocumentsScreen navigation={mockNavigation as any} route={mockRoute as any} />
       </NavigationContainer>
     );
 
@@ -74,7 +74,7 @@ describe("DocumentsScreen", () => {
 
     const { getByText } = render(
       <NavigationContainer>
-        <DocumentsScreen navigation={mockNavigation} route={mockRoute as any} />
+        <DocumentsScreen navigation={mockNavigation as any} route={mockRoute as any} />
       </NavigationContainer>
     );
 

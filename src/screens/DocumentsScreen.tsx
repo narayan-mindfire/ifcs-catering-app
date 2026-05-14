@@ -1,4 +1,5 @@
 import { RouteProp } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import React, {
   useCallback,
   useEffect,
@@ -17,10 +18,14 @@ import { useDocumentStore } from "../store/useDocumentStore";
 import { DocumentFile, FileSystemItem } from "../types/documents";
 
 type DocumentsScreenRouteProp = RouteProp<RootStackParamList, "Documents">;
+type DocumentsScreenNavigationProp = StackNavigationProp<
+  RootStackParamList,
+  "Documents"
+>;
 
 interface DocumentsScreenProps {
   route: DocumentsScreenRouteProp;
-  navigation: any;
+  navigation: DocumentsScreenNavigationProp;
 }
 
 const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
@@ -149,7 +154,7 @@ const DocumentsScreen: React.FC<DocumentsScreenProps> = ({ navigation }) => {
           selectFile(null);
         },
       },
-      ...breadcrumbs.map((crumb: any, index: any) => ({
+      ...breadcrumbs.map((crumb, index) => ({
         label: crumb.name,
         onPress:
           index < breadcrumbs.length - 1

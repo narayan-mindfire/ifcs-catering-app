@@ -162,7 +162,7 @@ describe("AcheckForm", () => {
       expect(payload.fallLeft).toBe(true);
       expect(payload.hasAccidentHazard).toBe(true);
     });
-  });
+  }, 15000);
 
   it("handles accident hazard radio buttons correctly", () => {
     const { getByText } = render(

@@ -1,9 +1,11 @@
 import apiClient from "../api/axiosClient";
 import { Delivery } from "../types/deliveries";
+import { log } from "../utils/logger";
 
 interface ApiResponse<T> {
   success: boolean;
   data: T;
+  message?: string;
   meta?: {
     timestamp: string;
     limit?: number;
@@ -56,20 +58,37 @@ export const deliveryService = {
     signature: string,
     comment?: string,
   ): Promise<Delivery> => {
-    const cleanSignature = signature.replace(/^data:image\/[a-z]+;base64,/, "");
+    try {
+      const cleanSignature = signature.replace(
+        /^data:image\/[a-z]+;base64,/,
+        "",
+      );
 
-    const requestPayload = {
-      signature: cleanSignature,
-      comment: comment || "",
-    };
+      const requestPayload = {
+        signature: cleanSignature,
+        comment: comment || "",
+      };
 
-    const url = `/flights/${flightId}/deliveries/${deliveryId}/signatures?type=${type}`;
+      const url = `/flights/${flightId}/deliveries/${deliveryId}/signatures?type=${type}`;
 
-    const response = await apiClient.post<ApiResponse<Delivery>>(
-      url,
-      requestPayload,
-    );
-    return response.data.data;
+      const response = await apiClient.post<ApiResponse<Delivery>>(
+        url,
+        requestPayload,
+      );
+
+      if (response.data.success) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || "Failed to add signature");
+      }
+    } catch (error: any) {
+      log.error("addSignature Service Error:", error);
+      throw new Error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to add signature",
+      );
+    }
   },
 
   deleteDelivery: async (

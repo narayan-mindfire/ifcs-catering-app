@@ -149,7 +149,9 @@ describe("SpotCheckSelectionScreen", () => {
       const scanButton = getByText("Scan a Flight");
       fireEvent.press(scanButton);
 
-      expect(mockNavigate).toHaveBeenCalledWith("QRCodeScanner");
+      expect(mockNavigate).toHaveBeenCalledWith("QRCodeScanner", {
+        continuous: false,
+      });
       expect(mockNavigate).toHaveBeenCalledTimes(1);
     });
 
@@ -181,7 +183,9 @@ describe("SpotCheckSelectionScreen", () => {
 
       // Should navigate each time
       expect(mockNavigate).toHaveBeenCalledTimes(2);
-      expect(mockNavigate).toHaveBeenCalledWith("QRCodeScanner");
+      expect(mockNavigate).toHaveBeenCalledWith("QRCodeScanner", {
+        continuous: false,
+      });
     });
   });
 
@@ -278,7 +282,9 @@ describe("SpotCheckSelectionScreen", () => {
       );
 
       fireEvent.press(getByText("Scan a Flight"));
-      expect(customNavigation.navigate).toHaveBeenCalledWith("QRCodeScanner");
+      expect(customNavigation.navigate).toHaveBeenCalledWith("QRCodeScanner", {
+        continuous: false,
+      });
     });
 
     it("passes correct route params", () => {

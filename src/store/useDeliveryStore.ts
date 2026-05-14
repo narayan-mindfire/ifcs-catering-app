@@ -118,6 +118,7 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
     signature: string,
     comment?: string,
   ) => {
+    set({ isLoading: true, error: null });
     try {
       const updatedDelivery = await deliveryService.addSignature(
         flightId,
@@ -131,12 +132,14 @@ export const useDeliveryStore = create<DeliveryStore>((set, get) => ({
         deliveries: state.deliveries.map((d) =>
           d.id === deliveryId ? updatedDelivery : d,
         ),
+        isLoading: false,
       }));
     } catch (err: any) {
       log.error("Add Signature Error:", err);
-      if (err.response) {
-        log.error("Response data:", err.response.data);
-      }
+      set({
+        isLoading: false,
+        error: err.message || "Failed to add signature",
+      });
     }
   },
 

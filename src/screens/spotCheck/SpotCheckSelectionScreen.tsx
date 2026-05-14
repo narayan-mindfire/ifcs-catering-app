@@ -34,7 +34,7 @@ const SpotCheckSelectionScreen: React.FC<Props> = ({ navigation }) => {
   ];
 
   const handleScanPress = () => {
-    navigation.navigate("QRCodeScanner");
+    navigation.navigate("QRCodeScanner", { continuous: false });
   };
 
   const handleCompletedChecksPress = () => {

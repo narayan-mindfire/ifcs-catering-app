@@ -3,13 +3,16 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import { ImageIcon } from "../../../assets/icons";
 import { ConsumptionTrackingRecord } from "../../../types/consumption";
-import { PackingStandardItem } from "../../../types/preparations";
+import {
+  PackingStandardItem,
+  PreparationDetailData,
+} from "../../../types/preparations";
 
 interface ItemsListProps {
   activeEquipmentName: string;
   selectedDrawerContents: PackingStandardItem[];
   isConsumptionMode: boolean;
-  preparationDetail: any;
+  preparationDetail: PreparationDetailData;
   consumptionRecords: ConsumptionTrackingRecord[];
   handleOpenConsumptionModal: (item: PackingStandardItem) => void;
   handleImagePress: (

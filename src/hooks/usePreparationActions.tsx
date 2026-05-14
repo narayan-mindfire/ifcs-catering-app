@@ -17,7 +17,7 @@ interface UsePreparationActionsParams {
     flightId: string,
     preparationId: string,
     payload: PreparationFlagUpdatePayload,
-  ) => Promise<void>;
+  ) => Promise<boolean>;
   hasUserSignature: boolean;
   modals: PreparationModals;
   trucks: Truck[];
